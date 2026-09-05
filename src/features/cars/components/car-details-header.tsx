@@ -104,7 +104,7 @@ export function CarDetailsHeader({ car }: CarDetailsHeaderProps) {
             variant="outline"
             size="sm"
             nativeButton={false}
-            render={<Link href={`/sales/new?car=${car.carNumber}`} />}
+            render={<Link href={`/sell?carId=${car.carNumber}`} />}
             className="gap-1.5 shadow-xs"
             data-testid="sell-recovery-header-btn"
           >

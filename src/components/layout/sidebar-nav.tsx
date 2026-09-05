@@ -48,7 +48,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     title: "SALES",
-    items: [{ label: "Sell / Recovery", icon: Wrench, href: "/sales/new" }],
+    items: [{ label: "Sell / Recovery", icon: Wrench, href: "/sell" }],
   },
   {
     title: "CONTACTS",
