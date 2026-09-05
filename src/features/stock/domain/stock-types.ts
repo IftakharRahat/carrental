@@ -24,6 +24,7 @@ export type StockCarItem = {
   totalInvestment: number;
   recovery: number;
   pendingItemsCount: number | null; // null represents "N/A" (whole-car not yet dismantled)
+  totalItemsCount?: number | null;
   mainPhotoUrl: string | null;
   daysInStock: number;
   vinChassis: string | null;

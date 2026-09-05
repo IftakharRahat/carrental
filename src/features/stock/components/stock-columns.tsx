@@ -160,15 +160,26 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
     header: "Remaining / Pending",
     cell: ({ row }) => {
       const count = row.original.pendingItemsCount;
+      const total = row.original.totalItemsCount;
       if (count === null) {
-        return <span className="text-muted-foreground text-xs">N/A</span>;
+        return <span className="text-muted-foreground/60 text-xs font-mono">N/A</span>;
+      }
+      if (count === 0) {
+        return (
+          <Badge
+            variant="outline"
+            className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium"
+          >
+            All cleared
+          </Badge>
+        );
       }
       return (
         <Badge
-          variant="secondary"
-          className="text-xs font-normal"
+          variant="outline"
+          className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-medium"
         >
-          {formatPendingItems(count)}
+          {formatPendingItems(count, total)}
         </Badge>
       );
     },

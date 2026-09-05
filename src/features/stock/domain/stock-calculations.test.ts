@@ -108,5 +108,10 @@ describe("stock domain calculations", () => {
       expect(formatPendingItems(1)).toBe("1 pending");
       expect(formatPendingItems(4)).toBe("4 pending");
     });
+
+    it("returns ratio format when total is provided", () => {
+      expect(formatPendingItems(3, 8)).toBe("3 / 8 remaining");
+      expect(formatPendingItems(0, 5)).toBe("0 / 5 remaining");
+    });
   });
 });

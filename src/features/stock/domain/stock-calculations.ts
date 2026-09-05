@@ -44,8 +44,14 @@ export function calculateStockSummary(
   };
 }
 
-export function formatPendingItems(count: number | null): string {
+export function formatPendingItems(
+  count: number | null,
+  total?: number | null,
+): string {
   if (count === null) return "N/A";
+  if (total !== undefined && total !== null && total > 0) {
+    return `${count} / ${total} remaining`;
+  }
   if (count === 0) return "0 pending";
   if (count === 1) return "1 pending";
   return `${count} pending`;

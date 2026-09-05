@@ -103,11 +103,13 @@ export class PrismaStockRepository implements StockRepository {
           0,
         );
 
+        const totalItems = car.recoveryItems.length;
         const pendingItemsCount =
-          car.recoveryItems.length === 0
+          totalItems === 0
             ? null
             : car.recoveryItems.filter((item) => item.status === "PENDING")
                 .length;
+        const totalItemsCount = totalItems === 0 ? null : totalItems;
 
         const purchaseDateStr = car.purchaseDate.toISOString().split("T")[0];
         const completionDateStr = car.completionDate
@@ -137,6 +139,7 @@ export class PrismaStockRepository implements StockRepository {
           totalInvestment,
           recovery,
           pendingItemsCount,
+          totalItemsCount,
           mainPhotoUrl: car.mainPhotoUrl,
           daysInStock,
           vinChassis: car.vinChassis,
