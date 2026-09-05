@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
@@ -12,6 +13,37 @@ import { formatPendingItems } from "../domain/stock-calculations";
 import type { StockCarItem, StockCarStatus } from "../domain/stock-types";
 import { conditionLabels } from "../server/stock-reference-service";
 import { StockRowActions } from "./stock-row-actions";
+
+function CarThumbnail({
+  src,
+  alt,
+}: {
+  src: string | null;
+  alt: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+
+  if (!src || hasError) {
+    return (
+      <div className="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-md border">
+        <CarFront className="size-5" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-muted relative size-10 shrink-0 overflow-hidden rounded-md border">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        unoptimized
+        onError={() => setHasError(true)}
+        className="object-cover transition-transform duration-200 hover:scale-110"
+      />
+    </div>
+  );
+}
 
 const statusVariants: Record<
   StockCarStatus,
@@ -58,21 +90,10 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
       const car = row.original;
       return (
         <div className="flex items-center gap-3">
-          <div className="bg-muted relative size-10 shrink-0 overflow-hidden rounded-md border">
-            {car.mainPhotoUrl ? (
-              <Image
-                src={car.mainPhotoUrl}
-                alt={`${car.brand} ${car.model}`}
-                fill
-                unoptimized
-                className="object-cover"
-              />
-            ) : (
-              <div className="text-muted-foreground flex size-full items-center justify-center">
-                <CarFront className="size-5" />
-              </div>
-            )}
-          </div>
+          <CarThumbnail
+            src={car.mainPhotoUrl}
+            alt={`${car.brand} ${car.model}`}
+          />
           <div className="min-w-0">
             <p className="truncate font-medium text-foreground">
               {car.brand} {car.model}
