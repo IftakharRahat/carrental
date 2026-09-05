@@ -19,7 +19,10 @@ export type BuyCarReferenceData = {
 };
 
 export async function getBuyCarReferenceData(): Promise<BuyCarReferenceData> {
-  if (!isDatabaseConfigured() || !isClerkConfigured()) {
+  const authenticationUnavailable =
+    !isClerkConfigured() && process.env.NODE_ENV !== "development";
+
+  if (!isDatabaseConfigured() || authenticationUnavailable) {
     return { sellers: [], sources: [] };
   }
 
@@ -37,7 +40,11 @@ export async function getBuyCarReferenceData(): Promise<BuyCarReferenceData> {
   ]);
 
   return {
-    sellers: sellers.map(({ id, name, phone }) => ({ id, name, detail: phone })),
+    sellers: sellers.map(({ id, name, phone }) => ({
+      id,
+      name,
+      detail: phone,
+    })),
     sources: sources.map(({ id, name, phone, type }) => ({
       id,
       name,

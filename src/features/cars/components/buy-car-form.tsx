@@ -23,6 +23,7 @@ import {
   sourceTypeValues,
   type SourceType,
 } from "@/features/cars/domain/car-input";
+import { formatTaka } from "@/lib/currency";
 import {
   createCarAction,
   type CreateCarActionResult,
@@ -62,7 +63,7 @@ const clientSchema = z
     conditionOther: z.string(),
     purchasePrice: z
       .string()
-      .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid AED amount")
+      .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid Taka amount")
       .refine((value) => Number(value) > 0, "Amount must be greater than zero"),
     paymentMethod: z.enum(["CASH", "BANK_TRANSFER", "CHEQUE", "OTHER"]),
     sourceType: z.enum(sourceTypeValues),
@@ -91,7 +92,6 @@ type BuyCarFormProps = {
   initialSources: SourceOption[];
   purchaseDate: string;
   idempotencyKey: string;
-  servicesReady: boolean;
 };
 
 export function BuyCarForm({
@@ -99,7 +99,6 @@ export function BuyCarForm({
   initialSources,
   purchaseDate,
   idempotencyKey,
-  servicesReady,
 }: BuyCarFormProps) {
   const [sellers, setSellers] = useState(initialSellers);
   const [sources, setSources] = useState(initialSources);
@@ -170,26 +169,11 @@ export function BuyCarForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="space-y-6" noValidate>
-      {!servicesReady && (
-        <div className="flex gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
-          <AlertCircle className="mt-0.5 size-5 shrink-0" />
-          <div>
-            <p className="font-medium">
-              Connect Neon and Clerk to save purchases
-            </p>
-            <p className="mt-1 text-amber-900/80">
-              The complete form is available now, but saving stays disabled
-              until the required environment values are configured.
-            </p>
-          </div>
-        </div>
-      )}
-
+    <form onSubmit={handleSubmit(submit)} className="space-y-4" noValidate>
       {actionResult?.ok === false && (
         <div
           role="alert"
-          className="border-destructive/30 bg-destructive/5 text-destructive flex gap-3 rounded-xl border p-4 text-sm"
+          className="border-destructive/30 bg-destructive/5 text-destructive flex gap-3 rounded-lg border p-3 text-sm"
         >
           <AlertCircle className="mt-0.5 size-5 shrink-0" />
           <div>
@@ -204,8 +188,8 @@ export function BuyCarForm({
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="space-y-6">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-4">
           <FormSection
             title="Basic information"
             description="Identify the vehicle and purchase date."
@@ -271,7 +255,7 @@ export function BuyCarForm({
             description="Record the initial investment only."
           >
             <Field
-              label="Purchase price (AED) *"
+              label="Purchase price (৳) *"
               error={fieldError("purchasePrice")}
             >
               <Input
@@ -365,6 +349,7 @@ export function BuyCarForm({
               error={fieldError("sourceId")}
             >
               <ReferencePicker
+                key={`source-${values.sourceType}-${values.sourceId}`}
                 options={matchingSources}
                 value={values.sourceId}
                 onChange={(id) =>
@@ -409,8 +394,8 @@ export function BuyCarForm({
           </FormSection>
         </div>
 
-        <aside className="xl:sticky xl:top-24 xl:self-start">
-          <Card className="shadow-sm">
+        <aside className="xl:sticky xl:top-5 xl:self-start">
+          <Card size="sm" className="shadow-sm">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Calculator className="text-primary size-5" />
@@ -420,7 +405,7 @@ export function BuyCarForm({
                 Car expenses start at zero and are added later.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-5">
+            <CardContent className="space-y-4">
               <div className="bg-muted flex items-center gap-3 rounded-lg p-3">
                 <div className="bg-background text-primary flex size-10 items-center justify-center rounded-lg">
                   <CarFront className="size-5" />
@@ -434,13 +419,13 @@ export function BuyCarForm({
               </div>
               <SummaryLine
                 label="Purchase price"
-                value={formatAed(values.purchasePrice)}
+                value={formatTaka(values.purchasePrice)}
               />
-              <SummaryLine label="Car expenses" value="AED 0.00" />
+              <SummaryLine label="Car expenses" value="৳0.00" />
               <div className="border-t pt-4">
                 <SummaryLine
                   label="Initial investment"
-                  value={formatAed(values.purchasePrice)}
+                  value={formatTaka(values.purchasePrice)}
                   strong
                 />
               </div>
@@ -448,7 +433,7 @@ export function BuyCarForm({
                 type="submit"
                 size="lg"
                 className="w-full"
-                disabled={isPending || !servicesReady}
+                disabled={isPending}
               >
                 <Save className="size-4" />
                 {isPending ? "Saving car…" : "Save Car"}
@@ -495,13 +480,13 @@ function FormSection({
   single?: boolean;
 }) {
   return (
-    <Card>
+    <Card size="sm">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent
-        className={single ? "space-y-4" : "grid gap-5 sm:grid-cols-2"}
+        className={single ? "space-y-3" : "grid gap-x-4 gap-y-3 sm:grid-cols-2"}
       >
         {children}
       </CardContent>
@@ -562,16 +547,6 @@ function SummaryLine({
       <span>{value}</span>
     </div>
   );
-}
-
-function formatAed(value: string): string {
-  const amount = Number(value);
-  if (!Number.isFinite(amount)) return "AED 0.00";
-  return new Intl.NumberFormat("en-AE", {
-    style: "currency",
-    currency: "AED",
-    minimumFractionDigits: 2,
-  }).format(amount);
 }
 
 const commonBrands = [

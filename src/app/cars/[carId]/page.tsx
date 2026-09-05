@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseCarNumber } from "@/features/cars/domain/car-number";
 import { isDatabaseConfigured } from "@/lib/config-state";
+import { formatTaka } from "@/lib/currency";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Car Details" };
@@ -61,11 +62,15 @@ export default async function CarDetailsPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button render={<Link href={`/cars/${carId}/expenses/new`} />}>
+          <Button
+            nativeButton={false}
+            render={<Link href={`/cars/${carId}/expenses/new`} />}
+          >
             <Plus /> Add Expense
           </Button>
           <Button
             variant="outline"
+            nativeButton={false}
             render={<Link href={`/sales/new?car=${carId}`} />}
           >
             <Wrench /> Sell / Recovery
@@ -74,11 +79,11 @@ export default async function CarDetailsPage({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Metric title="Purchase price" value={formatAed(purchasePrice)} />
-        <Metric title="Car expenses" value="AED 0.00" />
+        <Metric title="Purchase price" value={formatTaka(purchasePrice)} />
+        <Metric title="Car expenses" value="৳0.00" />
         <Metric
           title="Initial investment"
-          value={formatAed(purchasePrice)}
+          value={formatTaka(purchasePrice)}
           emphasized
         />
       </div>
@@ -139,11 +144,4 @@ function Detail({ label, value }: { label: string; value: string }) {
       <p className="mt-1 font-medium">{value}</p>
     </div>
   );
-}
-
-function formatAed(value: string): string {
-  return new Intl.NumberFormat("en-AE", {
-    style: "currency",
-    currency: "AED",
-  }).format(Number(value));
 }

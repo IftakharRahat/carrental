@@ -20,22 +20,26 @@ import {
 const foundations = [
   {
     title: "Neon PostgreSQL",
-    description: "15-model relational schema with ledger and audit foundations.",
+    description:
+      "15-model relational schema with ledger and audit foundations.",
     icon: Database,
   },
   {
     title: "Financial integrity",
-    description: "Money uses exact decimals and business actions are transaction-ready.",
+    description:
+      "Money uses exact decimals and business actions are transaction-ready.",
     icon: CircleDollarSign,
   },
   {
     title: "Authentication",
-    description: "Clerk boundary with Admin, Staff and Viewer application roles.",
+    description:
+      "Clerk boundary with Admin, Staff and Viewer application roles.",
     icon: LockKeyhole,
   },
   {
     title: "Exports and files",
-    description: "XLSX, CSV and private file-storage packages are ready to integrate.",
+    description:
+      "XLSX, CSV and private file-storage packages are ready to integrate.",
     icon: FileSpreadsheet,
   },
 ];
@@ -60,15 +64,15 @@ export default function Home() {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Project setup is ready
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+          <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6 sm:text-base">
             The application shell, database model, validation boundary and test
             tooling are in place. Connect the external services, then build the
             transaction-generating workflow first.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-2 text-sm">
           <CheckCircle2 className="size-4 text-emerald-600" />
-          AED · Asia/Dubai · PostgreSQL-first
+          BDT (৳) · Asia/Dubai · PostgreSQL-first
         </div>
       </div>
 
@@ -76,7 +80,9 @@ export default function Home() {
         <CardContent className="flex gap-3 py-5 text-sm text-amber-950">
           <PackageOpen className="mt-0.5 size-5 shrink-0" />
           <div>
-            <p className="font-medium">External credentials are still required</p>
+            <p className="font-medium">
+              External credentials are still required
+            </p>
             <p className="mt-1 leading-6 text-amber-900/80">
               Copy <code>.env.example</code> to <code>.env</code>, then add the
               Neon, Clerk and Vercel Blob values before applying migrations.
@@ -93,7 +99,7 @@ export default function Home() {
           {foundations.map(({ title, description, icon: Icon }) => (
             <Card key={title} className="shadow-sm">
               <CardHeader>
-                <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <div className="bg-primary/10 text-primary mb-3 flex size-10 items-center justify-center rounded-xl">
                   <Icon className="size-5" />
                 </div>
                 <CardTitle className="text-base">{title}</CardTitle>
@@ -119,13 +125,13 @@ export default function Home() {
               {buildOrder.map((item, index) => (
                 <li
                   key={item}
-                  className="flex items-center gap-3 rounded-lg border bg-background px-4 py-3 text-sm"
+                  className="bg-background flex items-center gap-3 rounded-lg border px-4 py-3 text-sm"
                 >
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                  <span className="bg-primary text-primary-foreground flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
                     {index + 1}
                   </span>
                   <span className="flex-1">{item}</span>
-                  <ArrowRight className="size-4 text-muted-foreground" />
+                  <ArrowRight className="text-muted-foreground size-4" />
                 </li>
               ))}
             </ol>
@@ -155,7 +161,7 @@ function Rule({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b pb-4 last:border-0 last:pb-0">
       <span className="font-medium">{label}</span>
-      <span className="text-right text-muted-foreground">{value}</span>
+      <span className="text-muted-foreground text-right">{value}</span>
     </div>
   );
 }

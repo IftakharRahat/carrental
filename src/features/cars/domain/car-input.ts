@@ -18,10 +18,10 @@ export const peopleSourceTypes: ReadonlySet<SourceType> = new Set([
   "REFERRAL",
 ]);
 
-const positiveAedAmount = z
+const positiveTakaAmount = z
   .string()
   .trim()
-  .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid AED amount")
+  .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid Taka amount")
   .refine((value) => Number(value) > 0, "Amount must be greater than zero");
 
 const optionalTrimmedString = (maximum: number) =>
@@ -40,7 +40,12 @@ const optionalUuid = z
 
 const optionalYear = z.preprocess(
   (value) => (value === "" || value === undefined ? undefined : value),
-  z.coerce.number().int().min(1900).max(new Date().getFullYear() + 1).optional(),
+  z.coerce
+    .number()
+    .int()
+    .min(1900)
+    .max(new Date().getFullYear() + 1)
+    .optional(),
 );
 
 export const createCarInputSchema = z
@@ -60,7 +65,7 @@ export const createCarInputSchema = z
       "OTHER",
     ]),
     conditionOther: optionalTrimmedString(200),
-    purchasePrice: positiveAedAmount,
+    purchasePrice: positiveTakaAmount,
     paymentMethod: z.enum(["CASH", "BANK_TRANSFER", "CHEQUE", "OTHER"]),
     vinChassis: optionalTrimmedString(100),
     notes: optionalTrimmedString(2000),
@@ -76,7 +81,8 @@ export const createCarInputSchema = z
     },
   )
   .refine(
-    (input) => !peopleSourceTypes.has(input.sourceType) || Boolean(input.sourceId),
+    (input) =>
+      !peopleSourceTypes.has(input.sourceType) || Boolean(input.sourceId),
     {
       message: "Select a source name for this source type",
       path: ["sourceId"],
@@ -95,7 +101,9 @@ export function getBusinessDate(
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(date);
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const values = Object.fromEntries(
+    parts.map((part) => [part.type, part.value]),
+  );
 
   return `${values.year}-${values.month}-${values.day}`;
 }

@@ -27,10 +27,13 @@ const navItems: Array<{ label: string; icon: LucideIcon; href?: string }> = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-muted/35 min-h-screen lg:grid lg:grid-cols-[260px_1fr]">
+    <div className="bg-muted/35 min-h-screen lg:grid lg:grid-cols-[232px_1fr]">
       <aside className="bg-sidebar hidden border-r lg:flex lg:flex-col">
         <Brand />
-        <nav aria-label="Primary navigation" className="flex-1 space-y-1 p-3">
+        <nav
+          aria-label="Primary navigation"
+          className="flex-1 space-y-0.5 p-2.5"
+        >
           {navItems.map(({ label, icon: Icon, href }) => {
             const content = (
               <>
@@ -43,7 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 )}
               </>
             );
-            const className = `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${href ? "text-sidebar-foreground hover:bg-sidebar-accent" : "text-sidebar-foreground/65"}`;
+            const className = `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm ${href ? "text-sidebar-foreground hover:bg-sidebar-accent" : "text-sidebar-foreground/65"}`;
             return href ? (
               <Link key={label} href={href} className={className}>
                 {content}
@@ -61,14 +64,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="min-w-0">
-        <header className="bg-background/95 sticky top-0 z-20 flex h-16 items-center justify-between border-b px-4 backdrop-blur lg:px-8">
-          <div className="lg:hidden">
-            <Brand compact />
-          </div>
-          <div className="hidden lg:block">
-            <p className="text-sm font-medium">Dashboard</p>
-            <p className="text-muted-foreground text-xs">September 2026</p>
-          </div>
+        <header className="bg-background/95 sticky top-0 z-20 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
+          <Brand compact />
           <button
             type="button"
             aria-label="Navigation will be enabled with the application modules"
@@ -77,7 +74,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Menu className="size-4" />
           </button>
         </header>
-        <main className="mx-auto w-full max-w-[1500px] p-4 sm:p-6 lg:p-8">
+        <main className="mx-auto w-full max-w-[1500px] p-3 sm:p-4 lg:p-5">
           {children}
         </main>
       </div>
@@ -88,7 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <div
-      className={`flex items-center gap-3 ${compact ? "" : "h-20 border-b px-5"}`}
+      className={`flex items-center gap-3 ${compact ? "" : "h-16 border-b px-4"}`}
     >
       <div className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-xl shadow-sm">
         <CarFront className="size-5" />

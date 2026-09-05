@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { ImagePlus, Star, Trash2 } from "lucide-react";
 
@@ -65,7 +64,7 @@ export function PhotoPicker({ files, mainIndex, onChange }: PhotoPickerProps) {
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="bg-muted/30 text-muted-foreground hover:border-primary/50 hover:bg-muted/50 flex min-h-28 w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-4 text-sm transition-colors"
+        className="bg-muted/30 text-muted-foreground hover:border-primary/50 hover:bg-muted/50 flex min-h-20 w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed px-4 py-3 text-sm transition-colors"
       >
         <ImagePlus className="text-primary size-6" />
         <span className="text-foreground font-medium">Add vehicle photos</span>
@@ -115,17 +114,30 @@ export function PhotoPicker({ files, mainIndex, onChange }: PhotoPickerProps) {
 }
 
 function PhotoPreview({ file, index }: { file: File; index: number }) {
-  const [url] = useState(() => URL.createObjectURL(file));
+  const [url, setUrl] = useState<string>();
 
-  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+  useEffect(() => {
+    let active = true;
+    const objectUrl = URL.createObjectURL(file);
+
+    Promise.resolve().then(() => {
+      if (active) setUrl(objectUrl);
+    });
+
+    return () => {
+      active = false;
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [file]);
+
+  if (!url) return null;
 
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={url}
       alt={`Vehicle upload ${index + 1}`}
-      fill
-      unoptimized
-      className="object-cover"
+      className="size-full object-cover"
     />
   );
 }
