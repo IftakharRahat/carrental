@@ -1,69 +1,161 @@
-import Image from "next/image";
+import {
+  ArrowRight,
+  CheckCircle2,
+  CircleDollarSign,
+  Database,
+  FileSpreadsheet,
+  LockKeyhole,
+  PackageOpen,
+} from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+const foundations = [
+  {
+    title: "Neon PostgreSQL",
+    description: "15-model relational schema with ledger and audit foundations.",
+    icon: Database,
+  },
+  {
+    title: "Financial integrity",
+    description: "Money uses exact decimals and business actions are transaction-ready.",
+    icon: CircleDollarSign,
+  },
+  {
+    title: "Authentication",
+    description: "Clerk boundary with Admin, Staff and Viewer application roles.",
+    icon: LockKeyhole,
+  },
+  {
+    title: "Exports and files",
+    description: "XLSX, CSV and private file-storage packages are ready to integrate.",
+    icon: FileSpreadsheet,
+  },
+];
+
+const buildOrder = [
+  "Buy Car and automatic purchase ledger entry",
+  "Stock list and car financial summary",
+  "Car Details with expenses and activity history",
+  "Whole-car and dismantled-item recovery",
+  "Business expenses and cash-flow ledger",
+  "Monthly reports, exports and dashboard totals",
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <Badge variant="secondary" className="mb-3">
+            V1 foundation
+          </Badge>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Project setup is ready
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+            The application shell, database model, validation boundary and test
+            tooling are in place. Connect the external services, then build the
+            transaction-generating workflow first.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CheckCircle2 className="size-4 text-emerald-600" />
+          AED · Asia/Dubai · PostgreSQL-first
         </div>
-      </main>
+      </div>
+
+      <Card className="border-amber-200 bg-amber-50/70 shadow-none">
+        <CardContent className="flex gap-3 py-5 text-sm text-amber-950">
+          <PackageOpen className="mt-0.5 size-5 shrink-0" />
+          <div>
+            <p className="font-medium">External credentials are still required</p>
+            <p className="mt-1 leading-6 text-amber-900/80">
+              Copy <code>.env.example</code> to <code>.env</code>, then add the
+              Neon, Clerk and Vercel Blob values before applying migrations.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <section aria-labelledby="foundation-heading">
+        <h2 id="foundation-heading" className="sr-only">
+          Technical foundation
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {foundations.map(({ title, description, icon: Icon }) => (
+            <Card key={title} className="shadow-sm">
+              <CardHeader>
+                <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Icon className="size-5" />
+                </div>
+                <CardTitle className="text-base">{title}</CardTitle>
+                <CardDescription className="leading-5">
+                  {description}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recommended implementation sequence</CardTitle>
+            <CardDescription>
+              Keep every number traceable to its source transaction.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ol className="space-y-3">
+              {buildOrder.map((item, index) => (
+                <li
+                  key={item}
+                  className="flex items-center gap-3 rounded-lg border bg-background px-4 py-3 text-sm"
+                >
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                    {index + 1}
+                  </span>
+                  <span className="flex-1">{item}</span>
+                  <ArrowRight className="size-4 text-muted-foreground" />
+                </li>
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Accounting invariants</CardTitle>
+            <CardDescription>
+              These rules are encoded in the domain foundation.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <Rule label="Stock value" value="Purchase + active car expenses" />
+            <Rule label="Realized profit" value="Completed cars only" />
+            <Rule label="Available cash" value="Opening cash + In − Out" />
+            <Rule label="Corrections" value="Void with audit history" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function Rule({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b pb-4 last:border-0 last:pb-0">
+      <span className="font-medium">{label}</span>
+      <span className="text-right text-muted-foreground">{value}</span>
     </div>
   );
 }
