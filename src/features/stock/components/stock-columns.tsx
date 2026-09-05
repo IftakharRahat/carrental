@@ -10,8 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatTaka } from "@/lib/currency";
 import { formatPendingItems } from "../domain/stock-calculations";
-import type { StockCarItem, StockCarStatus } from "../domain/stock-types";
-import { conditionLabels } from "../server/stock-reference-service";
+import {
+  conditionLabels,
+  type StockCarItem,
+  type StockCarStatus,
+} from "../domain/stock-types";
 import { StockRowActions } from "./stock-row-actions";
 
 function CarThumbnail({

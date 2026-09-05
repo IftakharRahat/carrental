@@ -8,13 +8,7 @@ export type StockReferenceData = {
   brands: string[];
 };
 
-export const conditionLabels: Record<StockCarCondition, string> = {
-  SCRAP: "Scrap",
-  ACCIDENT_DAMAGED: "Accident / Damaged",
-  ENGINE_ISSUE: "Engine Issue",
-  GEARBOX_ISSUE: "Gearbox Issue",
-  OTHER: "Other",
-};
+export { conditionLabels } from "../domain/stock-types";
 
 export async function getStockReferenceData(): Promise<StockReferenceData> {
   if (!isDatabaseConfigured()) {

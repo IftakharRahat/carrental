@@ -7,6 +7,14 @@ export type StockCarCondition =
   | "GEARBOX_ISSUE"
   | "OTHER";
 
+export const conditionLabels: Record<StockCarCondition, string> = {
+  SCRAP: "Scrap",
+  ACCIDENT_DAMAGED: "Accident / Damaged",
+  ENGINE_ISSUE: "Engine Issue",
+  GEARBOX_ISSUE: "Gearbox Issue",
+  OTHER: "Other",
+};
+
 export type StockCarItem = {
   id: string;
   carNumber: string; // e.g. "CAR-0001"

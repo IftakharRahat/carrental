@@ -4,8 +4,7 @@ import { FilterX, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { StockFilterCriteria } from "../domain/stock-types";
-import { conditionLabels } from "../server/stock-reference-service";
+import { conditionLabels, type StockFilterCriteria } from "../domain/stock-types";
 
 type StockFiltersProps = {
   criteria: StockFilterCriteria;
