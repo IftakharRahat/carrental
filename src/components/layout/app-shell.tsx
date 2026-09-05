@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 const navItems: Array<{ label: string; icon: LucideIcon; href?: string }> = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/" },
   { label: "Buy Car", icon: PlusCircle, href: "/cars/new" },
-  { label: "Stock & Cars", icon: CarFront },
+  { label: "Stock & Cars", icon: CarFront, href: "/stock" },
   { label: "Sell / Recovery", icon: Wrench },
   { label: "Contacts", icon: ContactRound },
   { label: "Finance", icon: CircleDollarSign },
