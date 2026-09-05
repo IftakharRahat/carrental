@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { calculateStockSummary } from "../domain/stock-calculations";
 import type {
@@ -23,7 +24,48 @@ export function StockView({
   initialSummary,
   brands,
 }: StockViewProps) {
-  const [criteria, setCriteria] = useState<StockFilterCriteria>({});
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [criteria, setCriteria] = useState<StockFilterCriteria>(() => {
+    const initial: StockFilterCriteria = {};
+    const search = searchParams?.get("search");
+    if (search) initial.search = search;
+    const condition = searchParams?.get("condition");
+    if (condition) initial.condition = condition as any;
+    const status = searchParams?.get("status");
+    if (status) initial.status = status as any;
+    const brand = searchParams?.get("brand");
+    if (brand) initial.brand = brand;
+    if (searchParams?.get("includeCompleted") === "true") {
+      initial.includeCompleted = true;
+    }
+    return initial;
+  });
+
+  const syncUrlParams = (newCriteria: StockFilterCriteria) => {
+    const params = new URLSearchParams();
+    if (newCriteria.search) params.set("search", newCriteria.search);
+    if (newCriteria.condition) params.set("condition", newCriteria.condition);
+    if (newCriteria.status) params.set("status", newCriteria.status);
+    if (newCriteria.brand) params.set("brand", newCriteria.brand);
+    if (newCriteria.includeCompleted) params.set("includeCompleted", "true");
+
+    const query = params.toString();
+    const target = query ? `${pathname}?${query}` : pathname;
+    router.replace(target, { scroll: false });
+  };
+
+  const handleCriteriaChange = (updated: StockFilterCriteria) => {
+    setCriteria(updated);
+    syncUrlParams(updated);
+  };
+
+  const handleReset = () => {
+    setCriteria({});
+    syncUrlParams({});
+  };
 
   const filteredItems = useMemo(() => {
     return initialItems.filter((item) => {
@@ -87,8 +129,8 @@ export function StockView({
       <StockFilters
         criteria={criteria}
         brands={brands}
-        onChange={setCriteria}
-        onReset={() => setCriteria({})}
+        onChange={handleCriteriaChange}
+        onReset={handleReset}
       />
 
       {/* 6.3 Stock Table */}

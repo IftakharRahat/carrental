@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { flexRender, type SortingState } from "@tanstack/react-table";
 import {
-  flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type SortingState,
-} from "@tanstack/react-table";
+  useLegacyTable as useReactTable,
+} from "@tanstack/react-table/legacy";
 import { ChevronLeft, ChevronRight, PackageOpen } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -44,6 +43,7 @@ export function StockDataTable({ data }: StockDataTableProps) {
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: {
+        pageIndex: 0,
         pageSize: 15,
       },
     },

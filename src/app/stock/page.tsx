@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { StockView } from "@/features/stock/components/stock-view";
 import { PrismaStockRepository } from "@/features/stock/repositories/prisma-stock-repository";
 import { getStockReferenceData } from "@/features/stock/server/stock-reference-service";
+import StockLoading from "./loading";
 
 export const metadata: Metadata = {
   title: "Stock & Cars",
@@ -46,11 +48,13 @@ export default async function StockPage() {
       </div>
 
       {/* Interactive Stock View (Summary Cards, Filters, and Table) */}
-      <StockView
-        initialItems={stockData.items}
-        initialSummary={stockData.summary}
-        brands={refData.brands}
-      />
+      <Suspense fallback={<StockLoading />}>
+        <StockView
+          initialItems={stockData.items}
+          initialSummary={stockData.summary}
+          brands={refData.brands}
+        />
+      </Suspense>
     </div>
   );
 }
