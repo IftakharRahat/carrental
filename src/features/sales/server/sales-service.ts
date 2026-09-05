@@ -90,13 +90,37 @@ export async function getSellPageData(
     };
   });
 
-  const buyers: BuyerOption[] = buyersFromDb.map((b) => ({
+  let buyers: BuyerOption[] = buyersFromDb.map((b) => ({
     id: b.id,
     name: b.name,
     phone: b.phone,
     companyName: b.companyName,
     types: b.buyerTypes.map((bt) => bt.buyerType.name),
   }));
+
+  if (buyers.length === 0) {
+    try {
+      const defaultBuyer = await db.buyer.create({
+        data: {
+          name: "Al Baraka Auto Salvage",
+          phone: "+971 50 123 4567",
+          companyName: "Al Baraka Scrap LLC",
+          notes: "Default buyer",
+        },
+      });
+      buyers = [
+        {
+          id: defaultBuyer.id,
+          name: defaultBuyer.name,
+          phone: defaultBuyer.phone,
+          companyName: defaultBuyer.companyName,
+          types: ["Scrap / Salvage"],
+        },
+      ];
+    } catch {
+      // ignore if creation fails
+    }
+  }
 
   let selectedCarId: string | null = null;
   if (preselectedCarIdentifier) {

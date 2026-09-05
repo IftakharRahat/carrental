@@ -54,6 +54,9 @@ import {
 } from "../server/sales-actions";
 import { QuickAddBuyerDialog } from "./quick-add-buyer-dialog";
 
+const selectClassName =
+  "border-input bg-background text-foreground focus-visible:border-ring focus-visible:ring-ring/50 h-8 w-full rounded-lg border px-2.5 text-sm shadow-xs outline-none focus-visible:ring-3 transition-colors font-medium";
+
 type SellRecoveryViewProps = {
   cars: SellCarSummary[];
   initialBuyers: BuyerOption[];
@@ -273,8 +276,13 @@ export function SellRecoveryView({
                 aria-label="Select Car"
                 value={selectedCarId}
                 onChange={(e) => setSelectedCarId(e.target.value)}
-                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-3 font-medium"
+                className={selectClassName}
               >
+                {cars.length === 0 && (
+                  <option value="" disabled>
+                    No vehicles in stock
+                  </option>
+                )}
                 {cars.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.carNumber} — {c.brand} {c.model} ({c.year || "N/A"}) · {c.status.replace("_", " ")}
@@ -395,26 +403,44 @@ export function SellRecoveryView({
                         <Label htmlFor="whole-buyer-select">Buyer *</Label>
                         <button
                           type="button"
+                          data-testid="quick-add-buyer-btn"
                           onClick={() => setIsBuyerDialogOpen(true)}
-                          className="text-primary hover:underline text-xs flex items-center gap-1 font-medium cursor-pointer"
+                          className="text-primary hover:text-primary/80 hover:underline text-xs flex items-center gap-1 font-semibold cursor-pointer"
                         >
                           <UserPlus className="size-3" />
-                          Add Buyer
+                          + Add Buyer
                         </button>
                       </div>
                       <select
                         id="whole-buyer-select"
                         value={selectedBuyerId}
                         onChange={(e) => setSelectedBuyerId(e.target.value)}
-                        className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-3"
+                        className={selectClassName}
                         required
                       >
+                        <option value="" disabled selected={!selectedBuyerId}>
+                          {buyers.length === 0
+                            ? "-- No buyers registered yet (Click + Add Buyer) --"
+                            : "-- Select Buyer --"}
+                        </option>
                         {buyers.map((b) => (
                           <option key={b.id} value={b.id}>
                             {b.name} {b.companyName ? `(${b.companyName})` : ""}
                           </option>
                         ))}
                       </select>
+                      {buyers.length === 0 && (
+                        <div className="flex items-center justify-between rounded-lg bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-xs text-amber-900 dark:text-amber-300">
+                          <span>No buyers registered yet.</span>
+                          <button
+                            type="button"
+                            onClick={() => setIsBuyerDialogOpen(true)}
+                            className="font-semibold underline hover:text-amber-950 dark:hover:text-amber-100 cursor-pointer"
+                          >
+                            + Add Buyer
+                          </button>
+                        </div>
+                      )}
                       {fieldErrors.buyerId && (
                         <p className="text-destructive text-xs">{fieldErrors.buyerId[0]}</p>
                       )}
@@ -444,7 +470,7 @@ export function SellRecoveryView({
                         id="whole-payment-method"
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                        className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-3"
+                        className={selectClassName}
                         required
                       >
                         {Object.entries(paymentMethodLabels).map(([key, label]) => (
@@ -513,7 +539,7 @@ export function SellRecoveryView({
                             setSelectedItemType(val as RecoveryItemType);
                           }
                         }}
-                        className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-3"
+                        className={selectClassName}
                         required
                       >
                         <optgroup label="Pending Dismantle Items">
@@ -536,7 +562,7 @@ export function SellRecoveryView({
                         id="item-type-select"
                         value={selectedItemType}
                         onChange={(e) => setSelectedItemType(e.target.value as RecoveryItemType)}
-                        className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-3"
+                        className={selectClassName}
                         required
                       >
                         {Object.entries(recoveryItemTypeLabels).map(([key, label]) => (
@@ -559,25 +585,42 @@ export function SellRecoveryView({
                         <button
                           type="button"
                           onClick={() => setIsBuyerDialogOpen(true)}
-                          className="text-primary hover:underline text-xs flex items-center gap-1 font-medium cursor-pointer"
+                          className="text-primary hover:text-primary/80 hover:underline text-xs flex items-center gap-1 font-semibold cursor-pointer"
                         >
                           <UserPlus className="size-3" />
-                          Add Buyer
+                          + Add Buyer
                         </button>
                       </div>
                       <select
                         id="item-buyer-select"
                         value={selectedBuyerId}
                         onChange={(e) => setSelectedBuyerId(e.target.value)}
-                        className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-3"
+                        className={selectClassName}
                         required
                       >
+                        <option value="" disabled selected={!selectedBuyerId}>
+                          {buyers.length === 0
+                            ? "-- No buyers registered yet (Click + Add Buyer) --"
+                            : "-- Select Buyer --"}
+                        </option>
                         {buyers.map((b) => (
                           <option key={b.id} value={b.id}>
                             {b.name} {b.companyName ? `(${b.companyName})` : ""}
                           </option>
                         ))}
                       </select>
+                      {buyers.length === 0 && (
+                        <div className="flex items-center justify-between rounded-lg bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-xs text-amber-900 dark:text-amber-300">
+                          <span>No buyers registered yet.</span>
+                          <button
+                            type="button"
+                            onClick={() => setIsBuyerDialogOpen(true)}
+                            className="font-semibold underline hover:text-amber-950 dark:hover:text-amber-100 cursor-pointer"
+                          >
+                            + Add Buyer
+                          </button>
+                        </div>
+                      )}
                       {fieldErrors.buyerId && (
                         <p className="text-destructive text-xs">{fieldErrors.buyerId[0]}</p>
                       )}
@@ -621,7 +664,7 @@ export function SellRecoveryView({
                         id="item-payment-method"
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                        className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-3"
+                        className={selectClassName}
                         required
                       >
                         {Object.entries(paymentMethodLabels).map(([key, label]) => (
