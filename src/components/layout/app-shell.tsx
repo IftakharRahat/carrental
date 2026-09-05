@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 import {
   BarChart3,
   CarFront,
@@ -13,9 +14,9 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 
-const navItems: Array<{ label: string; icon: LucideIcon; ready?: boolean }> = [
-  { label: "Dashboard", icon: LayoutDashboard, ready: true },
-  { label: "Buy Car", icon: PlusCircle },
+const navItems: Array<{ label: string; icon: LucideIcon; href?: string }> = [
+  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { label: "Buy Car", icon: PlusCircle, href: "/cars/new" },
   { label: "Stock & Cars", icon: CarFront },
   { label: "Sell / Recovery", icon: Wrench },
   { label: "Contacts", icon: ContactRound },
@@ -30,24 +31,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden border-r bg-sidebar lg:flex lg:flex-col">
         <Brand />
         <nav aria-label="Primary navigation" className="flex-1 space-y-1 p-3">
-          {navItems.map(({ label, icon: Icon, ready }) => (
-            <div
-              key={label}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${
-                ready
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                  : "text-sidebar-foreground/65"
-              }`}
-            >
-              <Icon className="size-4" />
-              <span className="flex-1">{label}</span>
-              {!ready && (
-                <Badge variant="outline" className="px-1.5 text-[10px]">
-                  Soon
-                </Badge>
-              )}
-            </div>
-          ))}
+          {navItems.map(({ label, icon: Icon, href }) => {
+            const content = <><Icon className="size-4" /><span className="flex-1">{label}</span>{!href && <Badge variant="outline" className="px-1.5 text-[10px]">Soon</Badge>}</>;
+            const className = `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${href ? "text-sidebar-foreground hover:bg-sidebar-accent" : "text-sidebar-foreground/65"}`;
+            return href ? <Link key={label} href={href} className={className}>{content}</Link> : <div key={label} className={className}>{content}</div>;
+          })}
         </nav>
         <div className="border-t p-4 text-xs leading-5 text-muted-foreground">
           V1 · PostgreSQL source of truth
