@@ -50,6 +50,11 @@ test.describe("Page 4 - Car Details (/cars/[carId])", () => {
     await expect(page.getByRole("button", { name: /History/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /Documents \/ Photos/i })).toBeVisible();
 
+    // Switch to Overview tab and verify Section 7.5 Recovery Progress & Financial breakdown
+    await page.getByRole("button", { name: /Overview/i }).click();
+    await expect(page.getByText("Recovery Progress", { exact: true })).toBeVisible();
+    await expect(page.getByText("Purchase Information", { exact: true })).toBeVisible();
+
     // Switch to Expenses tab
     await page.getByRole("button", { name: /Expenses/i }).click();
     await expect(page.getByText("Car Expenses", { exact: true })).toBeVisible();

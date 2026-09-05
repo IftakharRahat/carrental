@@ -126,7 +126,7 @@ function OverviewTab({ car }: { car: CarDetailsFull }) {
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Wallet className="size-4 text-primary" />
-              Purchase Details
+              Purchase Information
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3.5 text-sm sm:grid-cols-2">
