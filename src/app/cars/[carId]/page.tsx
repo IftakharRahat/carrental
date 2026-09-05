@@ -1,17 +1,24 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CircleDollarSign, Plus, Wrench } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CarDetailsHeader } from "@/features/cars/components/car-details-header";
+import { CarKpiStrip } from "@/features/cars/components/car-kpi-strip";
+import { CarDetailsTabs } from "@/features/cars/components/car-details-tabs";
 import { parseCarNumber } from "@/features/cars/domain/car-number";
+import { getCarDetailsByNumber } from "@/features/cars/server/car-details-service";
 import { isDatabaseConfigured } from "@/lib/config-state";
-import { formatAed } from "@/lib/currency";
-import { db } from "@/lib/db";
 
-export const metadata: Metadata = { title: "Car Details" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ carId: string }>;
+}): Promise<Metadata> {
+  const { carId } = await params;
+  return {
+    title: `${carId} Details`,
+    description: `Complete financial and operational history of vehicle ${carId}.`,
+  };
+}
 
 export default async function CarDetailsPage({
   params,
@@ -25,123 +32,30 @@ export default async function CarDetailsPage({
 
   if (!carNumber || !isDatabaseConfigured()) notFound();
 
-  const car = await db.car.findUnique({
-    where: { carNumber },
-    include: { seller: true, source: true },
-  });
+  const car = await getCarDetailsByNumber(carNumber);
   if (!car) notFound();
 
-  const purchasePrice = car.purchasePrice.toString();
   const created = query.created === "1";
 
   return (
     <div className="space-y-6">
       {created && (
-        <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-950">
-          <p className="font-medium">Car purchase saved successfully.</p>
+        <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-950 shadow-xs">
+          <p className="font-semibold">Car purchase saved successfully.</p>
           <p className="mt-1 text-emerald-900/80">
-            The matching money-out transaction was created automatically.
+            The matching money-out transaction was created automatically in Finance.
           </p>
         </div>
       )}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Badge variant="outline" className="mb-3">
-            CAR-{String(car.carNumber).padStart(4, "0")}
-          </Badge>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            {car.brand} {car.model}
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Purchased{" "}
-            {car.purchaseDate.toLocaleDateString("en-AE", {
-              dateStyle: "medium",
-              timeZone: "UTC",
-            })}{" "}
-            from {car.seller.name}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            nativeButton={false}
-            render={<Link href={`/cars/${carId}/expenses/new`} />}
-          >
-            <Plus /> Add Expense
-          </Button>
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={<Link href={`/sales/new?car=${carId}`} />}
-          >
-            <Wrench /> Sell / Recovery
-          </Button>
-        </div>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Metric title="Purchase price" value={formatAed(purchasePrice)} />
-        <Metric title="Car expenses" value="AED 0.00" />
-        <Metric
-          title="Initial investment"
-          value={formatAed(purchasePrice)}
-          emphasized
-        />
-      </div>
+      {/* 7.1 Header */}
+      <CarDetailsHeader car={car} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Purchase information</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-5 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          <Detail label="Status" value={car.status.replaceAll("_", " ")} />
-          <Detail
-            label="Condition"
-            value={car.conditionOther || car.condition.replaceAll("_", " ")}
-          />
-          <Detail
-            label="Payment method"
-            value={car.paymentMethod.replaceAll("_", " ")}
-          />
-          <Detail label="VIN / Chassis" value={car.vinChassis || "—"} />
-          <Detail label="Seller" value={car.seller.name} />
-          <Detail label="Source" value={car.source?.name || "—"} />
-          <Detail label="Year" value={car.year?.toString() || "—"} />
-          <Detail label="Notes" value={car.notes || "—"} />
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+      {/* 7.2 KPI Strip */}
+      <CarKpiStrip kpis={car.kpis} />
 
-function Metric({
-  title,
-  value,
-  emphasized = false,
-}: {
-  title: string;
-  value: string;
-  emphasized?: boolean;
-}) {
-  return (
-    <Card className={emphasized ? "border-primary/30 bg-primary/5" : undefined}>
-      <CardContent className="flex items-center gap-3 py-5">
-        <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">
-          <CircleDollarSign className="size-5" />
-        </div>
-        <div>
-          <p className="text-muted-foreground text-xs">{title}</p>
-          <p className="mt-1 font-semibold">{value}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-muted-foreground text-xs">{label}</p>
-      <p className="mt-1 font-medium">{value}</p>
+      {/* 7.3 Tabs & Details */}
+      <CarDetailsTabs car={car} />
     </div>
   );
 }
