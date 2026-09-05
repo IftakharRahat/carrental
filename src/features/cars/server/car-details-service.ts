@@ -18,14 +18,25 @@ export async function getCarDetails(
 ): Promise<CarDetailsFull | null> {
   if (!isDatabaseConfigured()) return null;
 
+  const strId = String(identifier).trim();
   const parsedNum =
     typeof identifier === "number"
       ? identifier
-      : parseCarNumber(identifier);
+      : parseCarNumber(strId);
 
-  const where = parsedNum
-    ? { carNumber: parsedNum }
-    : { id: String(identifier) };
+  let where: { carNumber?: number; id?: string };
+
+  if (parsedNum !== null) {
+    where = { carNumber: parsedNum };
+  } else if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      strId,
+    )
+  ) {
+    where = { id: strId };
+  } else {
+    return null;
+  }
 
   const car = await db.car.findFirst({
     where,

@@ -1,4 +1,4 @@
-const carNumberPattern = /^CAR-(\d+)$/i;
+const carNumberPattern = /^(?:CAR-)?(\d+)$/i;
 
 export function formatCarNumber(value: number): string {
   if (!Number.isSafeInteger(value) || value < 1) {

@@ -10,6 +10,8 @@ describe("car number", () => {
 
   it("parses a valid display identifier", () => {
     expect(parseCarNumber("car-0025")).toBe(25);
+    expect(parseCarNumber("1")).toBe(1);
+    expect(parseCarNumber("0025")).toBe(25);
     expect(parseCarNumber("CAR-X25")).toBeNull();
   });
 });
