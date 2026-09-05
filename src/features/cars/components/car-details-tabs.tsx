@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table";
 import { formatAed } from "@/lib/currency";
 import {
+  carStatusConfig,
   expenseCategoryLabels,
   recoveryTypeLabels,
 } from "../domain/car-details-calculations";
@@ -232,6 +233,17 @@ function OverviewTab({ car }: { car: CarDetailsFull }) {
                     {formatAed(car.kpis.realizedProfit)}
                   </span>
                 )}
+              </div>
+              <div className="flex justify-between items-center border-t pt-1 text-xs">
+                <span className="text-muted-foreground font-medium">Status:</span>
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] ${
+                    carStatusConfig[car.status]?.className ?? ""
+                  }`}
+                >
+                  {carStatusConfig[car.status]?.label ?? car.status}
+                </Badge>
               </div>
             </div>
           </CardContent>

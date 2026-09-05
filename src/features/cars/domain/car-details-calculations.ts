@@ -25,6 +25,28 @@ export const recoveryTypeLabels: Record<RecoveryItemType, string> = {
   OTHER: "Other",
 };
 
+export const carStatusConfig: Record<
+  CarStatus,
+  { label: string; className: string }
+> = {
+  IN_STOCK: {
+    label: "In Stock",
+    className: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400 font-medium",
+  },
+  PARTIALLY_RECOVERED: {
+    label: "Partially Recovered",
+    className: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-medium",
+  },
+  COMPLETED: {
+    label: "Completed",
+    className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium",
+  },
+  VOIDED: {
+    label: "Voided",
+    className: "border-destructive/30 bg-destructive/10 text-destructive font-medium",
+  },
+};
+
 export function calculateCarKpis({
   status,
   purchasePrice,

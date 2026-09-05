@@ -4,8 +4,7 @@ import { notFound } from "next/navigation";
 import { CarDetailsHeader } from "@/features/cars/components/car-details-header";
 import { CarKpiStrip } from "@/features/cars/components/car-kpi-strip";
 import { CarDetailsTabs } from "@/features/cars/components/car-details-tabs";
-import { parseCarNumber } from "@/features/cars/domain/car-number";
-import { getCarDetailsByNumber } from "@/features/cars/server/car-details-service";
+import { getCarDetails } from "@/features/cars/server/car-details-service";
 import { isDatabaseConfigured } from "@/lib/config-state";
 
 export async function generateMetadata({
@@ -28,11 +27,10 @@ export default async function CarDetailsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ carId }, query] = await Promise.all([params, searchParams]);
-  const carNumber = parseCarNumber(carId);
 
-  if (!carNumber || !isDatabaseConfigured()) notFound();
+  if (!isDatabaseConfigured()) notFound();
 
-  const car = await getCarDetailsByNumber(carNumber);
+  const car = await getCarDetails(carId);
   if (!car) notFound();
 
   const created = query.created === "1";

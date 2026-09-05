@@ -1,6 +1,6 @@
 import "server-only";
 
-import { formatCarNumber } from "@/features/cars/domain/car-number";
+import { formatCarNumber, parseCarNumber } from "@/features/cars/domain/car-number";
 import { isDatabaseConfigured } from "@/lib/config-state";
 import { db } from "@/lib/db";
 import { calculateCarKpis } from "../domain/car-details-calculations";
@@ -13,13 +13,22 @@ import type {
   CarRecoveryRecord,
 } from "../domain/car-details-types";
 
-export async function getCarDetailsByNumber(
-  carNumber: number,
+export async function getCarDetails(
+  identifier: string | number,
 ): Promise<CarDetailsFull | null> {
   if (!isDatabaseConfigured()) return null;
 
-  const car = await db.car.findUnique({
-    where: { carNumber },
+  const parsedNum =
+    typeof identifier === "number"
+      ? identifier
+      : parseCarNumber(identifier);
+
+  const where = parsedNum
+    ? { carNumber: parsedNum }
+    : { id: String(identifier) };
+
+  const car = await db.car.findFirst({
+    where,
     include: {
       seller: true,
       source: true,
@@ -210,3 +219,6 @@ export async function getCarDetailsByNumber(
     photos,
   };
 }
+
+export const getCarDetailsByNumber = (carNumber: number) =>
+  getCarDetails(carNumber);
