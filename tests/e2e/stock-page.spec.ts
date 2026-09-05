@@ -80,6 +80,24 @@ test.describe("Stock Page (/stock)", () => {
     ).toBeVisible();
   });
 
+  test("navigates to /cars via the All Cars sidebar link", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "Desktop sidebar is hidden on mobile viewports");
+
+    await page.goto("/");
+
+    const allCarsNavLink = page.getByRole("link", { name: "All Cars", exact: true });
+    await expect(allCarsNavLink).toBeVisible();
+    await allCarsNavLink.click();
+
+    await expect(page).toHaveURL(/\/cars$/);
+    await expect(
+      page.getByRole("heading", { name: "All Cars", exact: true }),
+    ).toBeVisible();
+  });
+
   test("clicking primary Buy Car button navigates to /cars/new", async ({
     page,
   }) => {

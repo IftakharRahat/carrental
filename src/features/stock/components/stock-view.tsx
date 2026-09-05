@@ -17,12 +17,14 @@ type StockViewProps = {
   initialItems: StockCarItem[];
   initialSummary: StockSummary;
   brands: string[];
+  defaultIncludeCompleted?: boolean;
 };
 
 export function StockView({
   initialItems,
   initialSummary,
   brands,
+  defaultIncludeCompleted = false,
 }: StockViewProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -38,7 +40,12 @@ export function StockView({
     if (status) initial.status = status;
     const brand = searchParams?.get("brand");
     if (brand) initial.brand = brand;
-    if (searchParams?.get("includeCompleted") === "true") {
+    const incParam = searchParams?.get("includeCompleted");
+    if (incParam === "true") {
+      initial.includeCompleted = true;
+    } else if (incParam === "false") {
+      initial.includeCompleted = false;
+    } else if (defaultIncludeCompleted) {
       initial.includeCompleted = true;
     }
     return initial;
