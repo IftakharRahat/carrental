@@ -18,10 +18,10 @@ export const peopleSourceTypes: ReadonlySet<SourceType> = new Set([
   "REFERRAL",
 ]);
 
-const positiveTakaAmount = z
+const positiveAedAmount = z
   .string()
   .trim()
-  .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid Taka amount")
+  .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid AED amount")
   .refine((value) => Number(value) > 0, "Amount must be greater than zero");
 
 const optionalTrimmedString = (maximum: number) =>
@@ -65,7 +65,7 @@ export const createCarInputSchema = z
       "OTHER",
     ]),
     conditionOther: optionalTrimmedString(200),
-    purchasePrice: positiveTakaAmount,
+    purchasePrice: positiveAedAmount,
     paymentMethod: z.enum(["CASH", "BANK_TRANSFER", "CHEQUE", "OTHER"]),
     vinChassis: optionalTrimmedString(100),
     notes: optionalTrimmedString(2000),

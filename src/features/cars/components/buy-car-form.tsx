@@ -23,7 +23,7 @@ import {
   sourceTypeValues,
   type SourceType,
 } from "@/features/cars/domain/car-input";
-import { formatTaka } from "@/lib/currency";
+import { formatAed } from "@/lib/currency";
 import {
   createCarAction,
   type CreateCarActionResult,
@@ -63,7 +63,7 @@ const clientSchema = z
     conditionOther: z.string(),
     purchasePrice: z
       .string()
-      .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid Taka amount")
+      .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid AED amount")
       .refine((value) => Number(value) > 0, "Amount must be greater than zero"),
     paymentMethod: z.enum(["CASH", "BANK_TRANSFER", "CHEQUE", "OTHER"]),
     sourceType: z.enum(sourceTypeValues),
@@ -255,7 +255,7 @@ export function BuyCarForm({
             description="Record the initial investment only."
           >
             <Field
-              label="Purchase price (৳) *"
+              label="Purchase price (AED) *"
               error={fieldError("purchasePrice")}
             >
               <Input
@@ -419,13 +419,13 @@ export function BuyCarForm({
               </div>
               <SummaryLine
                 label="Purchase price"
-                value={formatTaka(values.purchasePrice)}
+                value={formatAed(values.purchasePrice)}
               />
-              <SummaryLine label="Car expenses" value="৳0.00" />
+              <SummaryLine label="Car expenses" value="AED 0.00" />
               <div className="border-t pt-4">
                 <SummaryLine
                   label="Initial investment"
-                  value={formatTaka(values.purchasePrice)}
+                  value={formatAed(values.purchasePrice)}
                   strong
                 />
               </div>

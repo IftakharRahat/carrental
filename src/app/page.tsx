@@ -72,7 +72,7 @@ export default function Home() {
         </div>
         <div className="text-muted-foreground flex items-center gap-2 text-sm">
           <CheckCircle2 className="size-4 text-emerald-600" />
-          BDT (৳) · Asia/Dubai · PostgreSQL-first
+          AED · Asia/Dubai · PostgreSQL-first
         </div>
       </div>
 

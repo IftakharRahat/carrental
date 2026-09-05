@@ -8,7 +8,7 @@ import { ArrowUpDown, CarFront } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatTaka } from "@/lib/currency";
+import { formatAed } from "@/lib/currency";
 import { formatPendingItems } from "../domain/stock-calculations";
 import {
   conditionLabels,
@@ -131,7 +131,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
     ),
     cell: ({ row }) => (
       <span className="text-foreground font-medium">
-        {formatTaka(row.original.purchasePrice)}
+        {formatAed(row.original.purchasePrice)}
       </span>
     ),
   },
@@ -140,7 +140,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
     header: "Total Expenses",
     cell: ({ row }) => (
       <span className="text-muted-foreground">
-        {formatTaka(row.original.totalExpenses)}
+        {formatAed(row.original.totalExpenses)}
       </span>
     ),
   },
@@ -159,7 +159,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
     ),
     cell: ({ row }) => (
       <span className="text-foreground font-semibold">
-        {formatTaka(row.original.totalInvestment)}
+        {formatAed(row.original.totalInvestment)}
       </span>
     ),
   },
@@ -168,7 +168,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
     header: "Recovery",
     cell: ({ row }) => (
       <span className="font-medium text-emerald-600 dark:text-emerald-400">
-        {formatTaka(row.original.recovery)}
+        {formatAed(row.original.recovery)}
       </span>
     ),
   },

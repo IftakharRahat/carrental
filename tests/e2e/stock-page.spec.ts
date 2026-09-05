@@ -21,9 +21,9 @@ test.describe("Stock Page (/stock)", () => {
       page.getByText("Recovered from Active Stock", { exact: true }),
     ).toBeVisible();
 
-    // Verify Taka symbol ৳ in summary cards
+    // Verify AED currency in summary cards
     const summaryCards = page.locator(".grid.gap-4.sm\\:grid-cols-3");
-    await expect(summaryCards).toContainText("৳");
+    await expect(summaryCards).toContainText("AED");
 
     // 6.2 Filter toolbar
     await expect(page.getByPlaceholder(/Search Car ID/i)).toBeVisible();

@@ -22,6 +22,6 @@ test("shows the complete Buy Car form and initial investment summary", async ({
   const expenseSummary = page
     .getByText("Car expenses", { exact: true })
     .locator("..");
-  await expect(expenseSummary).toContainText("৳0.00");
+  await expect(expenseSummary).toContainText("AED 0.00");
   await expect(page.getByRole("button", { name: "Save Car" })).toBeVisible();
 });

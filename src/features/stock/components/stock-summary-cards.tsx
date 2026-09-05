@@ -3,7 +3,7 @@
 import { CarFront, CircleDollarSign, TrendingUp } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { formatTaka } from "@/lib/currency";
+import { formatAed } from "@/lib/currency";
 import type { StockSummary } from "../domain/stock-types";
 
 type StockSummaryCardsProps = {
@@ -42,7 +42,7 @@ export function StockSummaryCards({ summary }: StockSummaryCardsProps) {
               Stock Value
             </p>
             <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
-              {formatTaka(summary.stockValue)}
+              {formatAed(summary.stockValue)}
             </p>
             <p className="text-muted-foreground mt-0.5 text-xs">
               Purchase + active car expenses
@@ -61,7 +61,7 @@ export function StockSummaryCards({ summary }: StockSummaryCardsProps) {
               Recovered from Active Stock
             </p>
             <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
-              {formatTaka(summary.recoveredFromActiveStock)}
+              {formatAed(summary.recoveredFromActiveStock)}
             </p>
             <p className="text-muted-foreground mt-0.5 text-xs">
               Realized from active inventory

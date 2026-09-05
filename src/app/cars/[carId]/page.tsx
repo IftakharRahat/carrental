@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseCarNumber } from "@/features/cars/domain/car-number";
 import { isDatabaseConfigured } from "@/lib/config-state";
-import { formatTaka } from "@/lib/currency";
+import { formatAed } from "@/lib/currency";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Car Details" };
@@ -79,11 +79,11 @@ export default async function CarDetailsPage({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Metric title="Purchase price" value={formatTaka(purchasePrice)} />
-        <Metric title="Car expenses" value="৳0.00" />
+        <Metric title="Purchase price" value={formatAed(purchasePrice)} />
+        <Metric title="Car expenses" value="AED 0.00" />
         <Metric
           title="Initial investment"
-          value={formatTaka(purchasePrice)}
+          value={formatAed(purchasePrice)}
           emphasized
         />
       </div>

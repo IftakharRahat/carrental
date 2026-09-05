@@ -1,12 +1,15 @@
-export function formatTaka(value: string | number | null | undefined): string {
+export function formatAed(value: string | number | null | undefined): string {
   const amount = Number(value);
-  if (!Number.isFinite(amount)) return "৳0.00";
+  if (!Number.isFinite(amount)) return "AED 0.00";
 
-  return new Intl.NumberFormat("en-BD", {
-    style: "currency",
-    currency: "BDT",
-    currencyDisplay: "narrowSymbol",
+  const formatted = Math.abs(amount).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  });
+
+  return amount < 0 ? `-AED ${formatted}` : `AED ${formatted}`;
 }
+
+export const formatCurrency = formatAed;
+// Backwards-compatibility alias
+export const formatTaka = formatAed;
