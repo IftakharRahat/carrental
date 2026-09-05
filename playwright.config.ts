@@ -7,7 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL: "http://localhost:3107",
     trace: "on-first-retry",
   },
   projects: [
@@ -15,8 +15,8 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: "pnpm dev",
-    url: "http://127.0.0.1:3000",
+    command: "pnpm dev --port 3107",
+    url: "http://localhost:3107",
     reuseExistingServer: !process.env.CI,
   },
 });

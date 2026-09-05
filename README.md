@@ -19,7 +19,7 @@ item recoveries, business expenses, cash flow, contacts and reports.
 - pnpm 10
 - A Neon project
 - A Clerk application
-- A Vercel Blob store before file uploads are implemented
+- A Vercel Blob store for private vehicle photo uploads
 
 ## Local setup
 
@@ -66,17 +66,27 @@ item recoveries, business expenses, cash flow, contacts and reports.
    Open <http://localhost:3000>. The health endpoint is available at
    <http://localhost:3000/api/health>.
 
+## Buy Car workflow
+
+Open <http://localhost:3000/cars/new> to create an initial purchase. The form
+supports searchable sellers and sources, quick-create contact dialogs, multiple
+validated vehicle photos, duplicate VIN warnings and Admin date overrides.
+
+Saving is idempotent and commits the car, its money-out purchase transaction,
+attachments and audit record in one database transaction. Car expenses are not
+created during purchase; they are added later from the saved car's details page.
+
 ## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | Run the local application |
-| `pnpm build` | Create a production build |
-| `pnpm check` | Validate schema, lint, type-check and unit-test |
-| `pnpm test:e2e` | Run browser tests |
-| `pnpm db:migrate` | Create/apply a development migration |
-| `pnpm db:migrate:deploy` | Apply committed migrations in production |
-| `pnpm db:studio` | Open Prisma Studio |
+| Command                  | Purpose                                         |
+| ------------------------ | ----------------------------------------------- |
+| `pnpm dev`               | Run the local application                       |
+| `pnpm build`             | Create a production build                       |
+| `pnpm check`             | Validate schema, lint, type-check and unit-test |
+| `pnpm test:e2e`          | Run browser tests                               |
+| `pnpm db:migrate`        | Create/apply a development migration            |
+| `pnpm db:migrate:deploy` | Apply committed migrations in production        |
+| `pnpm db:studio`         | Open Prisma Studio                              |
 
 ## Project structure
 

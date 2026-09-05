@@ -27,34 +27,52 @@ const navItems: Array<{ label: string; icon: LucideIcon; href?: string }> = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-muted/35 lg:grid lg:grid-cols-[260px_1fr]">
-      <aside className="hidden border-r bg-sidebar lg:flex lg:flex-col">
+    <div className="bg-muted/35 min-h-screen lg:grid lg:grid-cols-[260px_1fr]">
+      <aside className="bg-sidebar hidden border-r lg:flex lg:flex-col">
         <Brand />
         <nav aria-label="Primary navigation" className="flex-1 space-y-1 p-3">
           {navItems.map(({ label, icon: Icon, href }) => {
-            const content = <><Icon className="size-4" /><span className="flex-1">{label}</span>{!href && <Badge variant="outline" className="px-1.5 text-[10px]">Soon</Badge>}</>;
+            const content = (
+              <>
+                <Icon className="size-4" />
+                <span className="flex-1">{label}</span>
+                {!href && (
+                  <Badge variant="outline" className="px-1.5 text-[10px]">
+                    Soon
+                  </Badge>
+                )}
+              </>
+            );
             const className = `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${href ? "text-sidebar-foreground hover:bg-sidebar-accent" : "text-sidebar-foreground/65"}`;
-            return href ? <Link key={label} href={href} className={className}>{content}</Link> : <div key={label} className={className}>{content}</div>;
+            return href ? (
+              <Link key={label} href={href} className={className}>
+                {content}
+              </Link>
+            ) : (
+              <div key={label} className={className}>
+                {content}
+              </div>
+            );
           })}
         </nav>
-        <div className="border-t p-4 text-xs leading-5 text-muted-foreground">
+        <div className="text-muted-foreground border-t p-4 text-xs leading-5">
           V1 · PostgreSQL source of truth
         </div>
       </aside>
 
       <div className="min-w-0">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:px-8">
+        <header className="bg-background/95 sticky top-0 z-20 flex h-16 items-center justify-between border-b px-4 backdrop-blur lg:px-8">
           <div className="lg:hidden">
             <Brand compact />
           </div>
           <div className="hidden lg:block">
             <p className="text-sm font-medium">Dashboard</p>
-            <p className="text-xs text-muted-foreground">September 2026</p>
+            <p className="text-muted-foreground text-xs">September 2026</p>
           </div>
           <button
             type="button"
             aria-label="Navigation will be enabled with the application modules"
-            className="rounded-md border p-2 text-muted-foreground lg:hidden"
+            className="text-muted-foreground rounded-md border p-2 lg:hidden"
           >
             <Menu className="size-4" />
           </button>
@@ -69,13 +87,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={`flex items-center gap-3 ${compact ? "" : "h-20 border-b px-5"}`}>
-      <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+    <div
+      className={`flex items-center gap-3 ${compact ? "" : "h-20 border-b px-5"}`}
+    >
+      <div className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-xl shadow-sm">
         <CarFront className="size-5" />
       </div>
       <div>
-        <p className="text-sm font-semibold leading-tight">Car Scrap</p>
-        <p className="text-xs text-muted-foreground">Business Manager</p>
+        <p className="text-sm leading-tight font-semibold">Car Scrap</p>
+        <p className="text-muted-foreground text-xs">Business Manager</p>
       </div>
     </div>
   );

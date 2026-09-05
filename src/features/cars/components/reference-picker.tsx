@@ -60,7 +60,7 @@ export function ReferencePicker({
   return (
     <div className="relative">
       <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
         <Input
           role="combobox"
           aria-expanded={open}
@@ -95,7 +95,7 @@ export function ReferencePicker({
       {open && !disabled && (
         <div
           role="listbox"
-          className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-lg"
+          className="bg-popover text-popover-foreground absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-lg border p-1 shadow-lg"
         >
           {filtered.length > 0 ? (
             filtered.map((option) => (
@@ -107,14 +107,16 @@ export function ReferencePicker({
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => select(option)}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-accent",
+                  "hover:bg-accent flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm",
                   option.id === value && "bg-accent",
                 )}
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">{option.name}</span>
+                  <span className="block truncate font-medium">
+                    {option.name}
+                  </span>
                   {option.detail && (
-                    <span className="block truncate text-xs text-muted-foreground">
+                    <span className="text-muted-foreground block truncate text-xs">
                       {option.detail}
                     </span>
                   )}
@@ -123,7 +125,7 @@ export function ReferencePicker({
               </button>
             ))
           ) : (
-            <p className="px-3 py-4 text-center text-sm text-muted-foreground">
+            <p className="text-muted-foreground px-3 py-4 text-center text-sm">
               {emptyText}
             </p>
           )}
@@ -132,7 +134,7 @@ export function ReferencePicker({
               type="button"
               onMouseDown={(event) => event.preventDefault()}
               onClick={onAdd}
-              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-primary hover:bg-accent"
+              className="text-primary hover:bg-accent flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium"
             >
               <Plus className="size-4" />
               {addLabel}

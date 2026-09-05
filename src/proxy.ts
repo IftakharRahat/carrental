@@ -1,15 +1,13 @@
-import {
-  clerkMiddleware,
-  createRouteMatcher,
-} from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { isClerkConfigured } from "@/lib/config-state";
 
-const isPublicRoute = createRouteMatcher(["/api/health(.*)"]);
 const protectedProxy = clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) await auth.protect();
+  if (!request.nextUrl.pathname.startsWith("/api/health")) {
+    await auth.protect();
+  }
 });
 
 export default function proxy(request: NextRequest, event: NextFetchEvent) {

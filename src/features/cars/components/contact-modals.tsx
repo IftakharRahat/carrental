@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,8 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { SourceType } from "@/features/cars/domain/car-input";
-import { createSellerAction, createSourceAction } from "@/features/cars/server/contact-actions";
-import type { SellerOption, SourceOption } from "@/features/cars/server/reference-data";
+import {
+  createSellerAction,
+  createSourceAction,
+} from "@/features/cars/server/contact-actions";
+import type {
+  SellerOption,
+  SourceOption,
+} from "@/features/cars/server/reference-data";
 
 type DialogStateProps = {
   open: boolean;
@@ -48,10 +54,6 @@ export function AddSellerDialog({
   const [message, setMessage] = useState<string>();
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    if (!open) setMessage(undefined);
-  }, [open]);
-
   function update(name: keyof typeof fields, value: string) {
     setFields((current) => ({ ...current, [name]: value }));
   }
@@ -76,7 +78,10 @@ export function AddSellerDialog({
       title="Add new seller"
       description="Save the actual owner or person selling this car."
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) setMessage(undefined);
+        onOpenChange(nextOpen);
+      }}
       fields={fields}
       onUpdate={update}
       onSave={save}
@@ -108,10 +113,6 @@ export function AddSourceDialog({
   const [message, setMessage] = useState<string>();
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    if (!open) setMessage(undefined);
-  }, [open]);
-
   function update(name: keyof ContactFields, value: string) {
     setFields((current) => ({ ...current, [name]: value }));
   }
@@ -136,7 +137,10 @@ export function AddSourceDialog({
       title="Add new source"
       description="Save this source once, then reuse it for future purchases."
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) setMessage(undefined);
+        onOpenChange(nextOpen);
+      }}
       fields={fields}
       onUpdate={update}
       onSave={save}
@@ -184,7 +188,11 @@ function ContactDialog<TFields extends ContactFields>({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-2 sm:grid-cols-2">
-          <Field label="Name *" htmlFor={`${title}-name`} className="sm:col-span-2">
+          <Field
+            label="Name *"
+            htmlFor={`${title}-name`}
+            className="sm:col-span-2"
+          >
             <Input
               id={`${title}-name`}
               autoFocus
@@ -216,7 +224,11 @@ function ContactDialog<TFields extends ContactFields>({
               onChange={(event) => onUpdate("location", event.target.value)}
             />
           </Field>
-          <Field label="Notes" htmlFor={`${title}-notes`} className="sm:col-span-2">
+          <Field
+            label="Notes"
+            htmlFor={`${title}-notes`}
+            className="sm:col-span-2"
+          >
             <Textarea
               id={`${title}-notes`}
               value={fields.notes}
@@ -224,12 +236,20 @@ function ContactDialog<TFields extends ContactFields>({
             />
           </Field>
         </div>
-        {message && <p className="text-sm text-destructive">{message}</p>}
+        {message && <p className="text-destructive text-sm">{message}</p>}
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button type="button" disabled={isPending || fields.name.trim().length < 2} onClick={onSave}>
+          <Button
+            type="button"
+            disabled={isPending || fields.name.trim().length < 2}
+            onClick={onSave}
+          >
             {isPending ? "Saving…" : "Save and select"}
           </Button>
         </DialogFooter>

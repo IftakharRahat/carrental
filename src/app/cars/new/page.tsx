@@ -15,11 +15,13 @@ export default async function BuyCarPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Badge variant="secondary" className="mb-3">Cars · Purchase</Badge>
+        <Badge variant="secondary" className="mb-3">
+          Cars · Purchase
+        </Badge>
         <h1 className="text-3xl font-semibold tracking-tight">Buy Car</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Create the initial purchase record. Add transport, labour, repairs and other car
-          expenses later from Car Details.
+        <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
+          Create the initial purchase record. Add transport, labour, repairs and
+          other car expenses later from Car Details.
         </p>
       </div>
       <BuyCarForm
