@@ -116,6 +116,7 @@ export async function createSourceAction(
 function actionFailure(error: unknown): ActionResult<never> {
   return {
     ok: false,
-    message: error instanceof Error ? error.message : "Unable to save the record.",
+    message:
+      error instanceof Error ? error.message : "Unable to save the record.",
   };
 }

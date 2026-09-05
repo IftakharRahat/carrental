@@ -89,8 +89,13 @@ export async function createCarAction(
     }
 
     if (parsed.data.vinChassis) {
-      const duplicate = await repository.findDuplicateVin(parsed.data.vinChassis);
-      if (duplicate && (!parsed.data.confirmDuplicateVin || actor.role !== "ADMIN")) {
+      const duplicate = await repository.findDuplicateVin(
+        parsed.data.vinChassis,
+      );
+      if (
+        duplicate &&
+        (!parsed.data.confirmDuplicateVin || actor.role !== "ADMIN")
+      ) {
         return {
           ok: false,
           message:

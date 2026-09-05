@@ -17,13 +17,7 @@ import {
 } from "../domain/stock-types";
 import { StockRowActions } from "./stock-row-actions";
 
-function CarThumbnail({
-  src,
-  alt,
-}: {
-  src: string | null;
-  alt: string;
-}) {
+function CarThumbnail({ src, alt }: { src: string | null; alt: string }) {
   const [hasError, setHasError] = useState(false);
 
   if (!src || hasError) {
@@ -54,8 +48,7 @@ const statusVariants: Record<
 > = {
   IN_STOCK: {
     label: "In Stock",
-    className:
-      "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400",
+    className: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400",
   },
   PARTIALLY_RECOVERED: {
     label: "Partially Recovered",
@@ -78,7 +71,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
       return (
         <Link
           href={`/cars/${car.carNumber}`}
-          className="text-primary hover:underline font-semibold"
+          className="text-primary font-semibold hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           {car.carNumber}
@@ -98,7 +91,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
             alt={`${car.brand} ${car.model}`}
           />
           <div className="min-w-0">
-            <p className="truncate font-medium text-foreground">
+            <p className="text-foreground truncate font-medium">
               {car.brand} {car.model}
             </p>
             <p className="text-muted-foreground text-xs">{car.year ?? "—"}</p>
@@ -115,7 +108,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
       const label =
         car.condition === "OTHER" && car.conditionOther
           ? car.conditionOther
-          : conditionLabels[car.condition] ?? car.condition;
+          : (conditionLabels[car.condition] ?? car.condition);
       return (
         <Badge variant="outline" className="text-xs font-normal">
           {label}
@@ -137,7 +130,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="font-medium text-foreground">
+      <span className="text-foreground font-medium">
         {formatTaka(row.original.purchasePrice)}
       </span>
     ),
@@ -165,7 +158,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="font-semibold text-foreground">
+      <span className="text-foreground font-semibold">
         {formatTaka(row.original.totalInvestment)}
       </span>
     ),
@@ -186,13 +179,17 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
       const count = row.original.pendingItemsCount;
       const total = row.original.totalItemsCount;
       if (count === null) {
-        return <span className="text-muted-foreground/60 text-xs font-mono">N/A</span>;
+        return (
+          <span className="text-muted-foreground/60 font-mono text-xs">
+            N/A
+          </span>
+        );
       }
       if (count === 0) {
         return (
           <Badge
             variant="outline"
-            className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium"
+            className="border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-700 dark:text-emerald-400"
           >
             All cleared
           </Badge>
@@ -201,7 +198,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
       return (
         <Badge
           variant="outline"
-          className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-medium"
+          className="border-amber-500/30 bg-amber-500/10 text-xs font-medium text-amber-700 dark:text-amber-400"
         >
           {formatPendingItems(count, total)}
         </Badge>

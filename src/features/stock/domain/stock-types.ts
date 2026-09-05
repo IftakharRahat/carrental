@@ -1,11 +1,7 @@
 export type StockCarStatus = "IN_STOCK" | "PARTIALLY_RECOVERED" | "COMPLETED";
 
 export type StockCarCondition =
-  | "SCRAP"
-  | "ACCIDENT_DAMAGED"
-  | "ENGINE_ISSUE"
-  | "GEARBOX_ISSUE"
-  | "OTHER";
+  "SCRAP" | "ACCIDENT_DAMAGED" | "ENGINE_ISSUE" | "GEARBOX_ISSUE" | "OTHER";
 
 export const conditionLabels: Record<StockCarCondition, string> = {
   SCRAP: "Scrap",

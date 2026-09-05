@@ -27,7 +27,7 @@ export default async function StockPage() {
       {/* Header with Title and Primary Action */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
             Stock
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
@@ -38,7 +38,7 @@ export default async function StockPage() {
           <Button
             nativeButton={false}
             render={<Link href="/cars/new" />}
-            className="shadow-sm gap-2 font-medium"
+            className="gap-2 font-medium shadow-sm"
             data-testid="buy-car-header-btn"
           >
             <PlusCircle className="size-4" />

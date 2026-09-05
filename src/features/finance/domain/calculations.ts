@@ -1,7 +1,5 @@
 export type CarFinancialStatus =
-  | "IN_STOCK"
-  | "PARTIALLY_RECOVERED"
-  | "COMPLETED";
+  "IN_STOCK" | "PARTIALLY_RECOVERED" | "COMPLETED";
 
 export type CarFinancialInput = {
   purchaseFils: bigint;

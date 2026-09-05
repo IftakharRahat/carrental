@@ -55,7 +55,10 @@ export function StockDataTable({ data }: StockDataTableProps) {
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-muted/40 hover:bg-muted/40">
+              <TableRow
+                key={headerGroup.id}
+                className="bg-muted/40 hover:bg-muted/40"
+              >
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id} className="text-xs font-semibold">
                     {header.isPlaceholder
@@ -96,7 +99,7 @@ export function StockDataTable({ data }: StockDataTableProps) {
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
                     <PackageOpen className="text-muted-foreground/60 size-8" />
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-foreground text-sm font-medium">
                       No vehicles found
                     </p>
                     <p className="text-muted-foreground text-xs">
@@ -112,7 +115,7 @@ export function StockDataTable({ data }: StockDataTableProps) {
 
       {/* Pagination controls */}
       {table.getPageCount() > 1 && (
-        <div className="flex items-center justify-between px-2 text-xs text-muted-foreground">
+        <div className="text-muted-foreground flex items-center justify-between px-2 text-xs">
           <div>
             Showing{" "}
             {table.getState().pagination.pageIndex *
@@ -137,7 +140,7 @@ export function StockDataTable({ data }: StockDataTableProps) {
               <ChevronLeft className="size-3.5" />
               Previous
             </Button>
-            <span className="px-2 font-medium text-foreground">
+            <span className="text-foreground px-2 font-medium">
               Page {table.getState().pagination.pageIndex + 1} of{" "}
               {table.getPageCount()}
             </span>

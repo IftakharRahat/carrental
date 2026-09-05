@@ -22,9 +22,7 @@ export class PrismaCarRepository implements CarRepository {
       select: { id: true, carNumber: true, brand: true, model: true },
     });
 
-    return car
-      ? { ...car, carNumber: formatCarNumber(car.carNumber) }
-      : null;
+    return car ? { ...car, carNumber: formatCarNumber(car.carNumber) } : null;
   }
 
   async createWithPurchaseLedger(
@@ -44,7 +42,8 @@ export class PrismaCarRepository implements CarRepository {
           where: { id: input.sellerId, isActive: true },
           select: { id: true },
         });
-        if (!seller) throw new PurchaseReferenceError("Select an active seller.");
+        if (!seller)
+          throw new PurchaseReferenceError("Select an active seller.");
 
         if (input.sourceId) {
           const source = await tx.source.findFirst({

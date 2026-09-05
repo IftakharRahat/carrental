@@ -33,9 +33,9 @@ export function StockView({
     const search = searchParams?.get("search");
     if (search) initial.search = search;
     const condition = searchParams?.get("condition");
-    if (condition) initial.condition = condition as any;
+    if (condition) initial.condition = condition;
     const status = searchParams?.get("status");
-    if (status) initial.status = status as any;
+    if (status) initial.status = status;
     const brand = searchParams?.get("brand");
     if (brand) initial.brand = brand;
     if (searchParams?.get("includeCompleted") === "true") {
@@ -95,9 +95,15 @@ export function StockView({
         const matchesCarNumber = item.carNumber.toLowerCase().includes(query);
         const matchesBrand = item.brand.toLowerCase().includes(query);
         const matchesModel = item.model.toLowerCase().includes(query);
-        const matchesVin = item.vinChassis?.toLowerCase().includes(query) ?? false;
+        const matchesVin =
+          item.vinChassis?.toLowerCase().includes(query) ?? false;
 
-        if (!matchesCarNumber && !matchesBrand && !matchesModel && !matchesVin) {
+        if (
+          !matchesCarNumber &&
+          !matchesBrand &&
+          !matchesModel &&
+          !matchesVin
+        ) {
           return false;
         }
       }
@@ -115,9 +121,7 @@ export function StockView({
       criteria.status ||
       criteria.includeCompleted;
 
-    return hasFilter
-      ? calculateStockSummary(filteredItems)
-      : initialSummary;
+    return hasFilter ? calculateStockSummary(filteredItems) : initialSummary;
   }, [filteredItems, initialSummary, criteria]);
 
   return (

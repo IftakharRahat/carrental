@@ -4,7 +4,10 @@ import { FilterX, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { conditionLabels, type StockFilterCriteria } from "../domain/stock-types";
+import {
+  conditionLabels,
+  type StockFilterCriteria,
+} from "../domain/stock-types";
 
 type StockFiltersProps = {
   criteria: StockFilterCriteria;
@@ -21,10 +24,10 @@ export function StockFilters({
 }: StockFiltersProps) {
   const hasActiveFilters = Boolean(
     criteria.search ||
-      criteria.condition ||
-      criteria.brand ||
-      criteria.status ||
-      criteria.includeCompleted,
+    criteria.condition ||
+    criteria.brand ||
+    criteria.status ||
+    criteria.includeCompleted,
   );
 
   return (

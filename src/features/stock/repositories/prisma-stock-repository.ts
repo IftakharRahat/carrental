@@ -1,6 +1,9 @@
 import "server-only";
 
-import { formatCarNumber, parseCarNumber } from "@/features/cars/domain/car-number";
+import {
+  formatCarNumber,
+  parseCarNumber,
+} from "@/features/cars/domain/car-number";
 import { isDatabaseConfigured } from "@/lib/config-state";
 import { db } from "@/lib/db";
 import {
@@ -16,11 +19,17 @@ import type {
 import type { StockQueryResult, StockRepository } from "./stock-repository";
 
 export class PrismaStockRepository implements StockRepository {
-  async getStock(criteria: StockFilterCriteria = {}): Promise<StockQueryResult> {
+  async getStock(
+    criteria: StockFilterCriteria = {},
+  ): Promise<StockQueryResult> {
     if (!isDatabaseConfigured()) {
       return {
         items: [],
-        summary: { activeCarsCount: 0, stockValue: 0, recoveredFromActiveStock: 0 },
+        summary: {
+          activeCarsCount: 0,
+          stockValue: 0,
+          recoveredFromActiveStock: 0,
+        },
       };
     }
 
@@ -31,7 +40,9 @@ export class PrismaStockRepository implements StockRepository {
         ? (["IN_STOCK", "PARTIALLY_RECOVERED", "COMPLETED"] as StockCarStatus[])
         : (["IN_STOCK", "PARTIALLY_RECOVERED"] as StockCarStatus[]);
 
-    const parsedCarNum = criteria.search ? parseCarNumber(criteria.search) : null;
+    const parsedCarNum = criteria.search
+      ? parseCarNumber(criteria.search)
+      : null;
 
     const whereClause: Record<string, unknown> = {
       status: { in: statusFilter },

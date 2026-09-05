@@ -2,7 +2,6 @@ import "server-only";
 
 import { isDatabaseConfigured } from "@/lib/config-state";
 import { db } from "@/lib/db";
-import type { StockCarCondition } from "../domain/stock-types";
 
 export type StockReferenceData = {
   brands: string[];

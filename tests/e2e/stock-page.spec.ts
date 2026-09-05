@@ -7,7 +7,9 @@ test.describe("Stock Page (/stock)", () => {
     await page.goto("/stock");
 
     // Header & Primary action
-    await expect(page.getByRole("heading", { name: "Stock", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Stock", exact: true }),
+    ).toBeVisible();
     const buyCarBtn = page.getByTestId("buy-car-header-btn");
     await expect(buyCarBtn).toBeVisible();
     await expect(buyCarBtn).toHaveAttribute("href", "/cars/new");
@@ -24,22 +26,40 @@ test.describe("Stock Page (/stock)", () => {
     await expect(summaryCards).toContainText("৳");
 
     // 6.2 Filter toolbar
-    await expect(
-      page.getByPlaceholder(/Search Car ID/i),
-    ).toBeVisible();
+    await expect(page.getByPlaceholder(/Search Car ID/i)).toBeVisible();
     await expect(page.getByText("Include Completed")).toBeVisible();
 
     // 6.3 Stock Table columns
-    await expect(page.getByRole("columnheader", { name: "Car ID" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Car", exact: true })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Condition" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Purchase Price" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Total Expenses" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Total Investment" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Recovery" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Remaining / Pending" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Status" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Days in Stock" })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Car ID" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Car", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Condition" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Purchase Price" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Total Expenses" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Total Investment" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Recovery" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Remaining / Pending" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Status" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Days in Stock" }),
+    ).toBeVisible();
   });
 
   test("navigates to /stock via the app sidebar navigation", async ({
@@ -55,10 +75,14 @@ test.describe("Stock Page (/stock)", () => {
     await stockNavLink.click();
 
     await expect(page).toHaveURL(/\/stock/);
-    await expect(page.getByRole("heading", { name: "Stock", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Stock", exact: true }),
+    ).toBeVisible();
   });
 
-  test("clicking primary Buy Car button navigates to /cars/new", async ({ page }) => {
+  test("clicking primary Buy Car button navigates to /cars/new", async ({
+    page,
+  }) => {
     await page.goto("/stock");
 
     const buyCarBtn = page.getByTestId("buy-car-header-btn");

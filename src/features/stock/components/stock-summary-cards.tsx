@@ -19,10 +19,10 @@ export function StockSummaryCards({ summary }: StockSummaryCardsProps) {
             <CarFront className="size-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+            <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
               Active Cars
             </p>
-            <p className="mt-0.5 text-2xl font-bold tracking-tight text-foreground">
+            <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
               {summary.activeCarsCount}
             </p>
             <p className="text-muted-foreground mt-0.5 text-xs">
@@ -32,16 +32,16 @@ export function StockSummaryCards({ summary }: StockSummaryCardsProps) {
         </CardContent>
       </Card>
 
-      <Card className="shadow-xs border-primary/20 bg-primary/2">
+      <Card className="border-primary/20 bg-primary/2 shadow-xs">
         <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
           <div className="bg-primary text-primary-foreground flex size-11 shrink-0 items-center justify-center rounded-xl shadow-xs">
             <CircleDollarSign className="size-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+            <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
               Stock Value
             </p>
-            <p className="mt-0.5 text-2xl font-bold tracking-tight text-foreground">
+            <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
               {formatTaka(summary.stockValue)}
             </p>
             <p className="text-muted-foreground mt-0.5 text-xs">
@@ -53,14 +53,14 @@ export function StockSummaryCards({ summary }: StockSummaryCardsProps) {
 
       <Card className="shadow-xs">
         <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
-          <div className="bg-emerald-500/10 text-emerald-600 flex size-11 shrink-0 items-center justify-center rounded-xl dark:bg-emerald-500/20 dark:text-emerald-400">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
             <TrendingUp className="size-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+            <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
               Recovered from Active Stock
             </p>
-            <p className="mt-0.5 text-2xl font-bold tracking-tight text-foreground">
+            <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
               {formatTaka(summary.recoveredFromActiveStock)}
             </p>
             <p className="text-muted-foreground mt-0.5 text-xs">
