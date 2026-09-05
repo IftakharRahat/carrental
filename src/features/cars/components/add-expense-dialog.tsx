@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Receipt } from "lucide-react";
+import { Plus, Receipt, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -35,11 +35,68 @@ export function AddExpenseDialog({
   const [isPending, startTransition] = useTransition();
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [category, setCategory] = useState("TRANSPORT");
+  const [categoryOther, setCategoryOther] = useState("");
+  const [customCategories, setCustomCategories] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("custom_car_expense_categories") || "[]",
+      );
+      if (Array.isArray(stored)) return stored;
+    } catch {}
+    return [];
+  });
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [notes, setNotes] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+
+  const handleAddNewCategory = () => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
+      toast.error("Category name cannot be empty.");
+      return;
+    }
+
+    if (!customCategories.includes(trimmed)) {
+      const updated = [...customCategories, trimmed];
+      setCustomCategories(updated);
+      try {
+        localStorage.setItem(
+          "custom_car_expense_categories",
+          JSON.stringify(updated),
+        );
+      } catch {}
+    }
+
+    setCategory("OTHER");
+    setCategoryOther(trimmed);
+    setIsAddingCategory(false);
+    setNewCategoryName("");
+    toast.success(`Category "${trimmed}" added and selected.`);
+  };
+
+  const handleCategorySelectChange = (val: string) => {
+    if (val === "__NEW__") {
+      setIsAddingCategory(true);
+      return;
+    }
+
+    if (val.startsWith("CUSTOM:")) {
+      const customName = val.replace("CUSTOM:", "");
+      setCategory("OTHER");
+      setCategoryOther(customName);
+      return;
+    }
+
+    setCategory(val);
+    if (val !== "OTHER") {
+      setCategoryOther("");
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +107,9 @@ export function AddExpenseDialog({
     formData.append("carNumber", carNumber);
     formData.append("expenseDate", date);
     formData.append("category", category);
+    if (category === "OTHER" && categoryOther.trim()) {
+      formData.append("categoryOther", categoryOther.trim());
+    }
     formData.append("amount", amount);
     formData.append("description", description);
     formData.append("paymentMethod", paymentMethod);
@@ -63,6 +123,8 @@ export function AddExpenseDialog({
         setAmount("");
         setDescription("");
         setNotes("");
+        setCategoryOther("");
+        setIsAddingCategory(false);
         onOpenChange(false);
       } else {
         toast.error(result.message);
@@ -107,20 +169,125 @@ export function AddExpenseDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="expense-category">Category *</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="expense-category">Category *</Label>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingCategory((v) => !v)}
+                    className="text-primary hover:underline text-xs flex items-center gap-1 font-medium cursor-pointer"
+                    title="Add a custom category"
+                  >
+                    <Plus className="size-3" />
+                    Add Category
+                  </button>
+                </div>
+
                 <select
                   id="expense-category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  value={
+                    category === "OTHER" && categoryOther
+                      ? `CUSTOM:${categoryOther}`
+                      : category
+                  }
+                  onChange={(e) => handleCategorySelectChange(e.target.value)}
                   className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-3"
                   required
                 >
-                  {Object.entries(expenseCategoryLabels).map(([key, label]) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
+                  <optgroup label="Standard Categories">
+                    {Object.entries(expenseCategoryLabels).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </optgroup>
+
+                  {customCategories.length > 0 && (
+                    <optgroup label="Custom Categories">
+                      {customCategories.map((c) => (
+                        <option key={c} value={`CUSTOM:${c}`}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+
+                  <option value="__NEW__">+ Add new category...</option>
                 </select>
+
+                {/* Inline Add Category input */}
+                {isAddingCategory && (
+                  <div className="mt-1 flex items-center gap-1.5 animate-in fade-in-50 duration-200">
+                    <Input
+                      placeholder="e.g. Towing, Inspection"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      className="h-8 text-xs flex-1"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddNewCategory();
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-8 text-xs px-2.5"
+                      onClick={handleAddNewCategory}
+                    >
+                      Add
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs px-1.5 text-muted-foreground"
+                      onClick={() => {
+                        setIsAddingCategory(false);
+                        setNewCategoryName("");
+                      }}
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* If OTHER is chosen directly, allow typing custom name */}
+                {category === "OTHER" && !isAddingCategory && !categoryOther && (
+                  <div className="mt-1 space-y-1">
+                    <Input
+                      id="custom-category-name"
+                      placeholder="Specify custom category name *"
+                      value={categoryOther}
+                      onChange={(e) => setCategoryOther(e.target.value)}
+                      required
+                      className="h-8 text-xs"
+                      autoFocus
+                    />
+                  </div>
+                )}
+
+                {/* Show active custom category badge if selected */}
+                {category === "OTHER" && categoryOther && !isAddingCategory && (
+                  <div className="mt-1 flex items-center justify-between bg-primary/5 border border-primary/20 rounded-md px-2 py-0.5 text-xs text-primary font-medium">
+                    <span className="flex items-center gap-1 truncate">
+                      <Sparkles className="size-3 shrink-0" />
+                      Custom: {categoryOther}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCategory("TRANSPORT");
+                        setCategoryOther("");
+                      }}
+                      className="text-muted-foreground hover:text-foreground text-[10px] ml-1.5"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                )}
+
                 {fieldErrors.category && (
                   <p className="text-destructive text-xs">
                     {fieldErrors.category[0]}

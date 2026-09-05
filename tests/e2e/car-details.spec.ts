@@ -76,6 +76,20 @@ test.describe("Page 4 - Car Details (/cars/[carId])", () => {
     await expect(page.getByRole("heading", { name: /Add Car Expense/i })).toBeVisible();
     await expect(page.getByLabel(/Expense Date/i)).toBeVisible();
     await expect(page.getByLabel(/Category/i)).toBeVisible();
+
+    // Test adding custom category option
+    const addCatBtn = page.getByRole("button", { name: "Add Category" });
+    await expect(addCatBtn).toBeVisible();
+    await addCatBtn.click();
+
+    const newCatInput = page.getByPlaceholder("e.g. Towing, Inspection");
+    await expect(newCatInput).toBeVisible();
+    await newCatInput.fill("Towing");
+    await page.getByRole("button", { name: "Add", exact: true }).click();
+
+    // Verify custom category is displayed as active
+    await expect(page.getByText("Custom: Towing")).toBeVisible();
+
     await expect(page.getByLabel(/Amount \(AED\)/i)).toBeVisible();
     await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
 

@@ -57,6 +57,7 @@ export async function getCarDetails(
     carId: exp.carId,
     expenseDate: exp.expenseDate.toISOString().split("T")[0],
     category: exp.category,
+    categoryOther: exp.categoryOther,
     amount: Number(exp.amount),
     paymentMethod: exp.paymentMethod,
     description: exp.description,
@@ -222,3 +223,14 @@ export async function getCarDetails(
 
 export const getCarDetailsByNumber = (carNumber: number) =>
   getCarDetails(carNumber);
+
+export async function getCustomExpenseCategories(): Promise<string[]> {
+  if (!isDatabaseConfigured()) return [];
+
+  const records = await db.customExpenseCategory.findMany({
+    orderBy: { name: "asc" },
+    select: { name: true },
+  });
+
+  return records.map((r) => r.name);
+}

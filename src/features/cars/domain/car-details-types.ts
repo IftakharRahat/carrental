@@ -43,6 +43,7 @@ export type CarExpenseRecord = {
   carId: string;
   expenseDate: string; // "YYYY-MM-DD"
   category: CarExpenseCategory;
+  categoryOther: string | null;
   amount: number;
   paymentMethod: PaymentMethod;
   description: string;

@@ -19,6 +19,7 @@ const carExpenseInputSchema = z.object({
     "RTA_DOCUMENTATION",
     "OTHER",
   ]),
+  categoryOther: z.string().trim().max(100).optional(),
   amount: z
     .string()
     .trim()
@@ -48,6 +49,7 @@ export async function createCarExpenseAction(
     carNumber: formData.get("carNumber") as string,
     expenseDate: formData.get("expenseDate") as string,
     category: formData.get("category") as string,
+    categoryOther: (formData.get("categoryOther") as string) || undefined,
     amount: formData.get("amount") as string,
     description: formData.get("description") as string,
     paymentMethod: formData.get("paymentMethod") as string,
@@ -72,6 +74,7 @@ export async function createCarExpenseAction(
       carNumber,
       expenseDate,
       category,
+      categoryOther,
       amount,
       description,
       paymentMethod,
@@ -92,6 +95,15 @@ export async function createCarExpenseAction(
       const idempotencyKey = crypto.randomUUID();
       const decimalAmount = amount;
 
+      // If custom category name provided, save to custom categories table
+      if (categoryOther) {
+        await tx.customExpenseCategory.upsert({
+          where: { name: categoryOther },
+          update: {},
+          create: { name: categoryOther },
+        });
+      }
+
       // 2. Create CarExpense record
       const expense = await tx.carExpense.create({
         data: {
@@ -99,6 +111,7 @@ export async function createCarExpenseAction(
           carId: car.id,
           expenseDate: new Date(`${expenseDate}T00:00:00.000Z`),
           category,
+          categoryOther: categoryOther || null,
           amount: decimalAmount,
           paymentMethod,
           description,
@@ -158,3 +171,31 @@ export async function createCarExpenseAction(
     };
   }
 }
+
+export async function addCustomExpenseCategoryAction(
+  name: string,
+): Promise<{ ok: boolean; message?: string }> {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    return { ok: false, message: "Category name cannot be empty." };
+  }
+
+  if (!isDatabaseConfigured()) {
+    return { ok: false, message: "Database is not configured." };
+  }
+
+  try {
+    await db.customExpenseCategory.upsert({
+      where: { name: trimmed },
+      update: {},
+      create: { name: trimmed },
+    });
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      message: e instanceof Error ? e.message : "Failed to add category.",
+    };
+  }
+}
+

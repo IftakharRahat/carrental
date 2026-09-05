@@ -300,7 +300,9 @@ function ExpensesTab({
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-[11px] font-normal">
-                        {expenseCategoryLabels[exp.category] || exp.category}
+                        {exp.categoryOther ||
+                          expenseCategoryLabels[exp.category] ||
+                          exp.category}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs font-medium max-w-xs truncate">
