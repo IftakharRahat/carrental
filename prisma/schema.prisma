@@ -1,0 +1,399 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  VIEWER
+}
+
+enum CarStatus {
+  IN_STOCK
+  PARTIALLY_RECOVERED
+  COMPLETED
+  VOIDED
+}
+
+enum RecordStatus {
+  ACTIVE
+  VOIDED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CHEQUE
+  OTHER
+}
+
+enum CarCondition {
+  SCRAP
+  ACCIDENT_DAMAGED
+  ENGINE_ISSUE
+  GEARBOX_ISSUE
+  OTHER
+}
+
+enum CarExpenseCategory {
+  TRANSPORT
+  LABOUR
+  PARTS
+  REPAIR
+  RTA_DOCUMENTATION
+  OTHER
+}
+
+enum BusinessExpenseCategory {
+  RENT
+  UTILITIES
+  FUEL
+  SALARY
+  OFFICE
+  MARKETING
+  MAINTENANCE
+  PROFESSIONAL_FEES
+  OTHER
+}
+
+enum RecoveryMode {
+  WHOLE_CAR
+  ITEM
+}
+
+enum RecoveryItemType {
+  ENGINE
+  BODY
+  GEARBOX
+  COPPER
+  PARTS
+  OTHER
+}
+
+enum RecoveryItemStatus {
+  PENDING
+  SOLD
+  CLOSED
+}
+
+enum CashDirection {
+  IN
+  OUT
+}
+
+enum CashCategory {
+  CAR_PURCHASE
+  CAR_EXPENSE
+  BUSINESS_EXPENSE
+  COMMISSION
+  WHOLE_CAR_SALE
+  ITEM_SALE
+  CAPITAL_INJECTION
+  OTHER_INCOME
+  ADJUSTMENT
+}
+
+enum AttachmentKind {
+  PHOTO
+  DOCUMENT
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  VOID
+  COMPLETE
+  RESTORE
+}
+
+model UserProfile {
+  id         String   @id @default(uuid()) @db.Uuid
+  authUserId String   @unique @map("auth_user_id")
+  email      String   @unique
+  name       String
+  role       UserRole @default(STAFF)
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("user_profiles")
+}
+
+model Seller {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  phone      String?
+  whatsapp   String?
+  emiratesId String?  @map("emirates_id")
+  location   String?
+  notes      String?
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  cars       Car[]
+
+  @@index([name])
+  @@index([phone])
+  @@map("sellers")
+}
+
+model Source {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  type      String
+  phone     String?
+  whatsapp  String?
+  location  String?
+  notes     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  cars      Car[]
+
+  @@index([type])
+  @@index([name])
+  @@map("sources")
+}
+
+model Buyer {
+  id                   String                @id @default(uuid()) @db.Uuid
+  name                 String
+  phone                String?
+  whatsapp             String?
+  companyName          String?               @map("company_name")
+  location             String?
+  notes                String?
+  isActive             Boolean               @default(true) @map("is_active")
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  recoveryTransactions RecoveryTransaction[]
+  buyerTypes           BuyerTypeAssignment[]
+
+  @@index([name])
+  @@index([phone])
+  @@map("buyers")
+}
+
+model BuyerType {
+  id        String                @id @default(uuid()) @db.Uuid
+  name      String                @unique
+  createdAt DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  buyers    BuyerTypeAssignment[]
+
+  @@map("buyer_types")
+}
+
+model BuyerTypeAssignment {
+  buyerId     String    @map("buyer_id") @db.Uuid
+  buyerTypeId String    @map("buyer_type_id") @db.Uuid
+  buyer       Buyer     @relation(fields: [buyerId], references: [id], onDelete: Restrict)
+  buyerType   BuyerType @relation(fields: [buyerTypeId], references: [id], onDelete: Restrict)
+
+  @@id([buyerId, buyerTypeId])
+  @@map("buyer_type_assignments")
+}
+
+model Car {
+  id               String                @id @default(uuid()) @db.Uuid
+  carNumber        Int                   @unique @default(autoincrement()) @map("car_number")
+  idempotencyKey   String                @unique @map("idempotency_key") @db.Uuid
+  purchaseDate     DateTime              @map("purchase_date") @db.Date
+  sellerId         String                @map("seller_id") @db.Uuid
+  sourceId         String?               @map("source_id") @db.Uuid
+  brand            String
+  model            String
+  year             Int?
+  condition        CarCondition
+  conditionOther   String?               @map("condition_other")
+  purchasePrice    Decimal               @map("purchase_price") @db.Decimal(14, 2)
+  paymentMethod    PaymentMethod         @map("payment_method")
+  vinChassis       String?               @map("vin_chassis")
+  status           CarStatus             @default(IN_STOCK)
+  completionDate   DateTime?             @map("completion_date") @db.Date
+  mainPhotoUrl     String?               @map("main_photo_url")
+  notes            String?
+  version          Int                   @default(1)
+  createdById      String                @map("created_by_id")
+  updatedById      String                @map("updated_by_id")
+  createdAt        DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  seller           Seller                @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  source           Source?               @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  expenses         CarExpense[]
+  recoveries       RecoveryTransaction[]
+  recoveryItems    RecoveryItem[]
+  cashTransactions CashTransaction[]
+  attachments      Attachment[]
+
+  @@index([status, purchaseDate])
+  @@index([brand, model])
+  @@index([vinChassis])
+  @@index([sellerId])
+  @@index([sourceId])
+  @@map("cars")
+}
+
+model CarExpense {
+  id             String             @id @default(uuid()) @db.Uuid
+  idempotencyKey String             @unique @map("idempotency_key") @db.Uuid
+  carId          String             @map("car_id") @db.Uuid
+  expenseDate    DateTime           @map("expense_date") @db.Date
+  category       CarExpenseCategory
+  amount         Decimal            @db.Decimal(14, 2)
+  paymentMethod  PaymentMethod      @map("payment_method")
+  description    String
+  notes          String?
+  status         RecordStatus       @default(ACTIVE)
+  voidReason     String?            @map("void_reason")
+  voidedById     String?            @map("voided_by_id")
+  voidedAt       DateTime?          @map("voided_at") @db.Timestamptz(3)
+  createdById    String             @map("created_by_id")
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  car            Car                @relation(fields: [carId], references: [id], onDelete: Restrict)
+
+  @@index([carId, expenseDate])
+  @@index([expenseDate, status])
+  @@map("car_expenses")
+}
+
+model RecoveryItem {
+  id          String             @id @default(uuid()) @db.Uuid
+  carId       String             @map("car_id") @db.Uuid
+  type        RecoveryItemType
+  label       String?
+  status      RecoveryItemStatus @default(PENDING)
+  closedNotes String?            @map("closed_notes")
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  car         Car                @relation(fields: [carId], references: [id], onDelete: Restrict)
+
+  @@index([carId, status])
+  @@map("recovery_items")
+}
+
+model RecoveryTransaction {
+  id             String            @id @default(uuid()) @db.Uuid
+  idempotencyKey String            @unique @map("idempotency_key") @db.Uuid
+  carId          String            @map("car_id") @db.Uuid
+  buyerId        String            @map("buyer_id") @db.Uuid
+  mode           RecoveryMode
+  itemType       RecoveryItemType? @map("item_type")
+  itemLabel      String?           @map("item_label")
+  saleDate       DateTime          @map("sale_date") @db.Date
+  amount         Decimal           @db.Decimal(14, 2)
+  paymentMethod  PaymentMethod     @map("payment_method")
+  notes          String?
+  status         RecordStatus      @default(ACTIVE)
+  voidReason     String?           @map("void_reason")
+  voidedById     String?           @map("voided_by_id")
+  voidedAt       DateTime?         @map("voided_at") @db.Timestamptz(3)
+  createdById    String            @map("created_by_id")
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  car            Car               @relation(fields: [carId], references: [id], onDelete: Restrict)
+  buyer          Buyer             @relation(fields: [buyerId], references: [id], onDelete: Restrict)
+
+  @@index([carId, saleDate])
+  @@index([buyerId, saleDate])
+  @@index([saleDate, status])
+  @@map("recovery_transactions")
+}
+
+model BusinessExpense {
+  id             String                  @id @default(uuid()) @db.Uuid
+  idempotencyKey String                  @unique @map("idempotency_key") @db.Uuid
+  expenseDate    DateTime                @map("expense_date") @db.Date
+  category       BusinessExpenseCategory
+  amount         Decimal                 @db.Decimal(14, 2)
+  paymentMethod  PaymentMethod           @map("payment_method")
+  description    String
+  notes          String?
+  status         RecordStatus            @default(ACTIVE)
+  voidReason     String?                 @map("void_reason")
+  voidedById     String?                 @map("voided_by_id")
+  voidedAt       DateTime?               @map("voided_at") @db.Timestamptz(3)
+  createdById    String                  @map("created_by_id")
+  createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([expenseDate, status])
+  @@map("business_expenses")
+}
+
+model CashTransaction {
+  id              String        @id @default(uuid()) @db.Uuid
+  transactionDate DateTime      @map("transaction_date") @db.Date
+  direction       CashDirection
+  category        CashCategory
+  amount          Decimal       @db.Decimal(14, 2)
+  paymentMethod   PaymentMethod @map("payment_method")
+  referenceType   String        @map("reference_type")
+  referenceId     String        @map("reference_id")
+  carId           String?       @map("car_id") @db.Uuid
+  description     String
+  status          RecordStatus  @default(ACTIVE)
+  voidReason      String?       @map("void_reason")
+  createdById     String        @map("created_by_id")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  car             Car?          @relation(fields: [carId], references: [id], onDelete: Restrict)
+
+  @@unique([referenceType, referenceId])
+  @@index([transactionDate, status])
+  @@index([carId])
+  @@map("cash_transactions")
+}
+
+model Attachment {
+  id           String         @id @default(uuid()) @db.Uuid
+  carId        String         @map("car_id") @db.Uuid
+  kind         AttachmentKind
+  pathname     String         @unique
+  contentType  String         @map("content_type")
+  sizeBytes    Int            @map("size_bytes")
+  isMain       Boolean        @default(false) @map("is_main")
+  uploadedById String         @map("uploaded_by_id")
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  car          Car            @relation(fields: [carId], references: [id], onDelete: Restrict)
+
+  @@index([carId, kind])
+  @@map("attachments")
+}
+
+model MonthlySnapshot {
+  id                String   @id @default(uuid()) @db.Uuid
+  year              Int
+  month             Int
+  closingStockCars  Int      @map("closing_stock_cars")
+  closingStockValue Decimal  @map("closing_stock_value") @db.Decimal(14, 2)
+  closingCash       Decimal  @map("closing_cash") @db.Decimal(14, 2)
+  realizedCarProfit Decimal  @map("realized_car_profit") @db.Decimal(14, 2)
+  netBusinessProfit Decimal  @map("net_business_profit") @db.Decimal(14, 2)
+  generatedById     String   @map("generated_by_id")
+  generatedAt       DateTime @default(now()) @map("generated_at") @db.Timestamptz(3)
+
+  @@unique([year, month])
+  @@map("monthly_snapshots")
+}
+
+model AuditLog {
+  id         String      @id @default(uuid()) @db.Uuid
+  actorId    String      @map("actor_id")
+  action     AuditAction
+  entityType String      @map("entity_type")
+  entityId   String      @map("entity_id")
+  reason     String?
+  before     Json?
+  after      Json?
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
+}
