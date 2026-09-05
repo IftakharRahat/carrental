@@ -53,8 +53,8 @@ export const navGroups: NavGroup[] = [
   {
     title: "CONTACTS",
     items: [
-      { label: "Sources", icon: GitFork },
-      { label: "Sellers", icon: ContactRound },
+      { label: "Sources", icon: GitFork, href: "/sources" },
+      { label: "Sellers", icon: ContactRound, href: "/sellers" },
       { label: "Buyers", icon: ShoppingBag, href: "/buyers" },
     ],
   },
