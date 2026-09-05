@@ -32,12 +32,12 @@ export default async function StockPage() {
             Operational view of all currently active vehicles.
           </p>
         </div>
-        <div>
+        <div className="flex items-center gap-2">
           <Button
             nativeButton={false}
             render={<Link href="/cars/new" />}
-            size="sm"
-            className="shadow-xs gap-1.5"
+            className="shadow-sm gap-2 font-medium"
+            data-testid="buy-car-header-btn"
           >
             <PlusCircle className="size-4" />
             Buy Car
