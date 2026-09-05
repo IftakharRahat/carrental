@@ -70,7 +70,7 @@ test.describe("Stock Page (/stock)", () => {
 
     await page.goto("/");
 
-    const stockNavLink = page.getByRole("link", { name: "Stock & Cars" });
+    const stockNavLink = page.getByRole("link", { name: "Stock", exact: true });
     await expect(stockNavLink).toBeVisible();
     await stockNavLink.click();
 
