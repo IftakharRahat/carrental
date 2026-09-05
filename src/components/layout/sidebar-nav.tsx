@@ -55,7 +55,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { label: "Sources", icon: GitFork },
       { label: "Sellers", icon: ContactRound },
-      { label: "Buyers", icon: ShoppingBag },
+      { label: "Buyers", icon: ShoppingBag, href: "/buyers" },
     ],
   },
   {
