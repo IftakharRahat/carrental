@@ -36,7 +36,7 @@ type NavGroup = {
 
 export const navGroups: NavGroup[] = [
   {
-    items: [{ label: "Dashboard", icon: LayoutDashboard, href: "/" }],
+    items: [{ label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" }],
   },
   {
     title: "CARS",
@@ -61,21 +61,27 @@ export const navGroups: NavGroup[] = [
   {
     title: "FINANCE",
     items: [
-      { label: "Cash Flow", icon: CircleDollarSign },
-      { label: "Business Expenses", icon: Receipt },
-      { label: "Expense Details", icon: TrendingUp },
+      { label: "Cash Flow", icon: CircleDollarSign, href: "/finance" },
+      { label: "Business Expenses", icon: Receipt, href: "/expenses/business" },
+      { label: "Expense Details", icon: TrendingUp, href: "/expenses/details" },
     ],
   },
   {
     title: "REPORTS",
     items: [
-      { label: "Monthly Report", icon: FileSpreadsheet },
-      { label: "Analytics", icon: BarChart3 },
+      { label: "Monthly Report", icon: FileSpreadsheet, href: "/reports/monthly" },
+      { label: "Analytics", icon: BarChart3, href: "/analytics" },
     ],
   },
   {
     title: "SETTINGS",
-    items: [{ label: "Security", icon: ShieldCheck }],
+    items: [
+      {
+        label: "Security & Backup",
+        icon: ShieldCheck,
+        href: "/settings/security",
+      },
+    ],
   },
 ];
 
@@ -96,11 +102,13 @@ export function SidebarNav() {
           )}
           {group.items.map(({ label, icon: Icon, href, badge }) => {
             const isActive =
-              href === "/"
-                ? pathname === "/"
-                : href
-                  ? pathname === href || (href !== "/" && pathname.startsWith(href) && href !== "/cars" && href !== "/stock") || (href === "/cars" && pathname === "/cars")
-                  : false;
+              href === "/dashboard"
+                ? pathname === "/" || pathname === "/dashboard"
+                : href === "/"
+                  ? pathname === "/" || pathname === "/dashboard"
+                  : href
+                    ? pathname === href || (href !== "/" && pathname.startsWith(href) && href !== "/cars" && href !== "/stock") || (href === "/cars" && pathname === "/cars")
+                    : false;
 
             const content = (
               <>

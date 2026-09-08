@@ -1,48 +1,38 @@
+import { headers } from "next/headers";
 import {
   CarFront,
-  LogOut,
   Menu,
-  User,
 } from "lucide-react";
 
+import { getSessionActor } from "@/lib/auth/actor";
+import { SidebarFooter } from "./sidebar-footer";
 import { SidebarNav } from "./sidebar-nav";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+type AppShellProps = {
+  children: React.ReactNode;
+};
+
+export async function AppShell({ children }: AppShellProps) {
+  // Detect if we're on a fullscreen page (e.g. login)
+  const headersList = await headers();
+  const pathname = headersList.get("x-next-pathname") ?? "";
+  const isFullscreenPage = pathname === "/login";
+
+  if (isFullscreenPage) {
+    return <>{children}</>;
+  }
+
+  const actor = await getSessionActor();
+
   return (
     <div className="bg-muted/35 min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
-      <aside className="bg-sidebar hidden border-r lg:flex lg:flex-col">
+      <aside className="bg-sidebar sticky top-0 hidden h-screen border-r lg:flex lg:flex-col">
         <Brand />
         <SidebarNav />
-
-        {/* User profile and logout footer matching spec screenshot */}
-        <div className="border-t p-3">
-          <div className="flex items-center justify-between rounded-lg p-1.5">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
-                <User className="size-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-medium text-sidebar-foreground">
-                  Logged-in User
-                </p>
-                <p className="text-muted-foreground truncate text-[11px]">
-                  admin@carscrap.local
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              title="Logout"
-              aria-label="Logout"
-              className="text-muted-foreground hover:text-sidebar-foreground rounded-md p-1.5 transition-colors"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </div>
-        </div>
+        <SidebarFooter user={actor} />
       </aside>
 
-      <div className="min-w-0">
+      <div className="min-w-0 overflow-y-auto">
         <header className="bg-background/95 sticky top-0 z-20 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
           <Brand compact />
           <button

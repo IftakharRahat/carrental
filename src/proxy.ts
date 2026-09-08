@@ -1,23 +1,55 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
-import type { NextFetchEvent, NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { isClerkConfigured } from "@/lib/config-state";
+import { COOKIE_NAME, verifyToken } from "@/lib/auth/jwt";
 
-const protectedProxy = clerkMiddleware(async (auth, request) => {
-  if (!request.nextUrl.pathname.startsWith("/api/health")) {
-    await auth.protect();
+/** Routes that do not require authentication */
+const PUBLIC_PATHS = [
+  "/login",
+  "/api/auth/login",
+  "/api/auth/logout",
+  "/api/health",
+];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
+}
+
+export default async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get(COOKIE_NAME)?.value;
+  const session = token ? await verifyToken(token) : null;
+
+  // If user is already authenticated and tries to visit /login, redirect to dashboard
+  if (session && pathname === "/login") {
+    return NextResponse.redirect(new URL("/", request.url));
   }
-});
 
-export default function proxy(request: NextRequest, event: NextFetchEvent) {
-  if (!isClerkConfigured()) return NextResponse.next();
-  return protectedProxy(request, event);
+  // If path is protected and user has no valid session
+  if (!isPublicPath(pathname) && !session) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized. Please sign in." },
+        { status: 401 },
+      );
+    }
+
+    const loginUrl = new URL("/login", request.url);
+    if (pathname !== "/") {
+      loginUrl.searchParams.set("from", pathname);
+    }
+    return NextResponse.redirect(loginUrl);
+  }
+
+  const response = NextResponse.next();
+  response.headers.set("x-next-pathname", pathname);
+  return response;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

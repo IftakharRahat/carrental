@@ -8,16 +8,14 @@ export function isDatabaseConfigured(): boolean {
   );
 }
 
-export function isClerkConfigured(): boolean {
-  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  const secretKey = process.env.CLERK_SECRET_KEY;
-
+export function isAuthConfigured(): boolean {
   return Boolean(
-    publishableKey &&
-    secretKey &&
-    !publishableKey.includes("replace_me") &&
-    !secretKey.includes("replace_me"),
+    process.env.JWT_SECRET || process.env.NODE_ENV === "development",
   );
+}
+
+export function isClerkConfigured(): boolean {
+  return false;
 }
 
 export function isCloudinaryConfigured(): boolean {

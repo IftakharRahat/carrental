@@ -1,6 +1,6 @@
 import "server-only";
 
-import { isClerkConfigured, isDatabaseConfigured } from "@/lib/config-state";
+import { isAuthConfigured, isDatabaseConfigured } from "@/lib/config-state";
 import { db } from "@/lib/db";
 
 export type SellerOption = {
@@ -19,8 +19,7 @@ export type BuyCarReferenceData = {
 };
 
 export async function getBuyCarReferenceData(): Promise<BuyCarReferenceData> {
-  const authenticationUnavailable =
-    !isClerkConfigured() && process.env.NODE_ENV !== "development";
+  const authenticationUnavailable = !isAuthConfigured();
 
   if (!isDatabaseConfigured() || authenticationUnavailable) {
     return { sellers: [], sources: [] };
