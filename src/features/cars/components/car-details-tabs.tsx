@@ -37,11 +37,12 @@ import { AddExpenseDialog } from "./add-expense-dialog";
 
 type CarDetailsTabsProps = {
   car: CarDetailsFull;
+  isViewer?: boolean;
 };
 
 type TabKey = "overview" | "expenses" | "recovery" | "history" | "documents";
 
-export function CarDetailsTabs({ car }: CarDetailsTabsProps) {
+export function CarDetailsTabs({ car, isViewer = false }: CarDetailsTabsProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
 
@@ -90,15 +91,19 @@ export function CarDetailsTabs({ car }: CarDetailsTabsProps) {
 
       {/* Tab Content */}
       <div className="pt-1">
-        {activeTab === "overview" && <OverviewTab car={car} />}
+        {activeTab === "overview" && <OverviewTab car={car} isViewer={isViewer} />}
 
         {activeTab === "expenses" && (
-          <ExpensesTab car={car} onAddExpense={() => setAddExpenseOpen(true)} />
+          <ExpensesTab
+            car={car}
+            isViewer={isViewer}
+            onAddExpense={() => setAddExpenseOpen(true)}
+          />
         )}
 
-        {activeTab === "recovery" && <RecoveryTab car={car} />}
+        {activeTab === "recovery" && <RecoveryTab car={car} isViewer={isViewer} />}
 
-        {activeTab === "history" && <HistoryTab car={car} />}
+        {activeTab === "history" && <HistoryTab car={car} isViewer={isViewer} />}
 
         {activeTab === "documents" && <DocumentsTab car={car} />}
       </div>
@@ -117,7 +122,13 @@ export function CarDetailsTabs({ car }: CarDetailsTabsProps) {
 /* =========================================================================
    1. OVERVIEW TAB
    ========================================================================= */
-function OverviewTab({ car }: { car: CarDetailsFull }) {
+function OverviewTab({
+  car,
+  isViewer = false,
+}: {
+  car: CarDetailsFull;
+  isViewer?: boolean;
+}) {
   return (
     <div className="space-y-6">
       <div className="grid gap-5 md:grid-cols-2">
@@ -133,7 +144,16 @@ function OverviewTab({ car }: { car: CarDetailsFull }) {
             <DetailItem label="Purchase Date" value={car.purchaseDate} />
             <DetailItem label="Purchase Price" value={formatAed(car.purchasePrice)} isStrong />
             <DetailItem label="Seller" value={car.seller.name} />
-            <DetailItem label="Source" value={car.source ? `${car.source.name} (${car.source.type})` : "Direct Walk-In"} />
+            <DetailItem
+              label="Source"
+              value={
+                isViewer
+                  ? "[Protected / Confidential]"
+                  : car.source
+                    ? `${car.source.name} (${car.source.type})`
+                    : "Direct Walk-In"
+              }
+            />
             <DetailItem label="Payment Method" value={car.paymentMethod.replaceAll("_", " ")} />
             <DetailItem label="VIN / Chassis" value={car.vinChassis || "—"} />
             <DetailItem label="Year" value={car.year?.toString() || "—"} />
@@ -258,9 +278,11 @@ function OverviewTab({ car }: { car: CarDetailsFull }) {
    ========================================================================= */
 function ExpensesTab({
   car,
+  isViewer = false,
   onAddExpense,
 }: {
   car: CarDetailsFull;
+  isViewer?: boolean;
   onAddExpense: () => void;
 }) {
   return (
@@ -273,10 +295,12 @@ function ExpensesTab({
             <span className="font-bold text-foreground">{formatAed(car.kpis.expenses)}</span>
           </p>
         </div>
-        <Button onClick={onAddExpense} size="sm" className="gap-1.5">
-          <Plus className="size-4" />
-          Add Expense
-        </Button>
+        {!isViewer && (
+          <Button onClick={onAddExpense} size="sm" className="gap-1.5">
+            <Plus className="size-4" />
+            Add Expense
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         {car.expenses.length > 0 ? (
@@ -341,10 +365,12 @@ function ExpensesTab({
             <p className="text-muted-foreground text-xs mt-1">
               Add transport, repair, or parts expenses to reflect true investment.
             </p>
-            <Button onClick={onAddExpense} size="sm" variant="outline" className="mt-4 gap-1.5">
-              <Plus className="size-4" />
-              Add Expense Now
-            </Button>
+            {!isViewer && (
+              <Button onClick={onAddExpense} size="sm" variant="outline" className="mt-4 gap-1.5">
+                <Plus className="size-4" />
+                Add Expense Now
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
@@ -355,7 +381,13 @@ function ExpensesTab({
 /* =========================================================================
    3. RECOVERY / SALES TAB (Section 7.3)
    ========================================================================= */
-function RecoveryTab({ car }: { car: CarDetailsFull }) {
+function RecoveryTab({
+  car,
+  isViewer = false,
+}: {
+  car: CarDetailsFull;
+  isViewer?: boolean;
+}) {
   return (
     <div className="space-y-5">
       {/* Recovery Transactions */}
@@ -398,7 +430,9 @@ function RecoveryTab({ car }: { car: CarDetailsFull }) {
                         {rec.itemType ? recoveryTypeLabels[rec.itemType] : "Whole Car"}
                         {rec.itemLabel ? ` - ${rec.itemLabel}` : ""}
                       </TableCell>
-                      <TableCell className="text-xs font-medium">{rec.buyerName}</TableCell>
+                      <TableCell className="text-xs font-medium">
+                        {isViewer ? "[Protected Buyer]" : rec.buyerName}
+                      </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {rec.paymentMethod.replaceAll("_", " ")}
                       </TableCell>
@@ -428,7 +462,13 @@ function RecoveryTab({ car }: { car: CarDetailsFull }) {
 /* =========================================================================
    4. HISTORY TAB (Section 7.3)
    ========================================================================= */
-function HistoryTab({ car }: { car: CarDetailsFull }) {
+function HistoryTab({
+  car,
+  isViewer = false,
+}: {
+  car: CarDetailsFull;
+  isViewer?: boolean;
+}) {
   return (
     <Card className="shadow-xs">
       <CardHeader className="pb-3">

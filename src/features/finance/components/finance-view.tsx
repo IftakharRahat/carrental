@@ -47,6 +47,7 @@ type FinanceViewProps = {
     model: string;
     year: number | null;
   }>;
+  isViewer?: boolean;
 };
 
 export function FinanceView({
@@ -54,6 +55,7 @@ export function FinanceView({
   initialSummary,
   customCategories,
   availableCars,
+  isViewer = false,
 }: FinanceViewProps) {
   // Filters state
   const [datePreset, setDatePreset] = useState<
@@ -285,17 +287,21 @@ export function FinanceView({
             Export CSV
           </Button>
 
-          <AddCategoryDialog
-            open={addCategoryOpen}
-            onOpenChange={setAddCategoryOpen}
-          />
+          {!isViewer && (
+            <>
+              <AddCategoryDialog
+                open={addCategoryOpen}
+                onOpenChange={setAddCategoryOpen}
+              />
 
-          <ManualTransactionDialog
-            customCategories={customCategories}
-            availableCars={availableCars}
-            open={manualTxOpen}
-            onOpenChange={setManualTxOpen}
-          />
+              <ManualTransactionDialog
+                customCategories={customCategories}
+                availableCars={availableCars}
+                open={manualTxOpen}
+                onOpenChange={setManualTxOpen}
+              />
+            </>
+          )}
         </div>
       </div>
 

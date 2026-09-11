@@ -106,6 +106,20 @@ describe("buyer-calculations", () => {
       expect(kpis.activeBuyers).toBe(2);
       expect(kpis.totalRecoveredAmount).toBe(30000);
       expect(kpis.averagePurchasePerBuyer).toBe(15000); // 30000 / 2 buyers with purchases
+      expect(kpis.topCategory).toBe("Engine"); // 20000 > 10000
+      expect(kpis.repeatBuyersCount).toBe(1); // 1 buyer with purchases > 1
+      expect(kpis.repeatBuyerRate).toBe(50); // 1 / 2 * 100
+    });
+
+    it("returns zero counts and N/A topCategory for empty buyers list", () => {
+      const kpis = calculateOverallBuyersKpis([]);
+      expect(kpis.totalBuyers).toBe(0);
+      expect(kpis.activeBuyers).toBe(0);
+      expect(kpis.totalRecoveredAmount).toBe(0);
+      expect(kpis.averagePurchasePerBuyer).toBe(0);
+      expect(kpis.topCategory).toBe("N/A");
+      expect(kpis.repeatBuyersCount).toBe(0);
+      expect(kpis.repeatBuyerRate).toBe(0);
     });
   });
 });

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Archive,
+  Award,
   CircleDollarSign,
   Edit2,
   ExternalLink,
@@ -11,10 +12,11 @@ import {
   MessageCircle,
   MoreHorizontal,
   Phone,
+  RefreshCw,
   Search,
   ShoppingBag,
+  Tag,
   TrendingUp,
-  UserCheck,
   Users,
 } from "lucide-react";
 
@@ -28,8 +30,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { formatAed } from "@/lib/currency";
+import { calculateOverallBuyersKpis } from "../domain/buyer-calculations";
 import type { BuyerListItem, BuyerTypeOption, BuyersPageKpis } from "../domain/buyer-types";
 import { AddBuyerDialog } from "./add-buyer-dialog";
+import { AddBuyerTypeDialog } from "./add-buyer-type-dialog";
 import { ArchiveBuyerDialog } from "./archive-buyer-dialog";
 import { EditBuyerDialog } from "./edit-buyer-dialog";
 
@@ -44,6 +48,7 @@ export function BuyersView({
   initialPageKpis,
   availableTypes,
 }: BuyersViewProps) {
+  const [typesList, setTypesList] = useState<BuyerTypeOption[]>(availableTypes);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<"ACTIVE" | "ARCHIVED" | "ALL">("ACTIVE");
@@ -51,6 +56,14 @@ export function BuyersView({
   // Modals state
   const [editingBuyer, setEditingBuyer] = useState<BuyerListItem | null>(null);
   const [archivingBuyer, setArchivingBuyer] = useState<BuyerListItem | null>(null);
+
+  const handleCategoryCreated = (newType: BuyerTypeOption) => {
+    setTypesList((prev) => {
+      if (prev.some((t) => t.id === newType.id)) return prev;
+      return [...prev, newType].sort((a, b) => a.name.localeCompare(b.name));
+    });
+    setSelectedTypeFilter(newType.id);
+  };
 
   // Filtered Buyers
   const filteredBuyers = useMemo(() => {
@@ -81,6 +94,11 @@ export function BuyersView({
     });
   }, [initialBuyers, statusFilter, selectedTypeFilter, searchTerm]);
 
+  // Reactive KPIs calculated specifically for currently filtered buyers
+  const dynamicKpis = useMemo(() => {
+    return calculateOverallBuyersKpis(filteredBuyers);
+  }, [filteredBuyers]);
+
   return (
     <div className="space-y-6">
       {/* 11. Header */}
@@ -95,14 +113,19 @@ export function BuyersView({
           </p>
         </div>
 
-        {/* 11. Primary Action */}
+        {/* 11. Primary Actions */}
         <div className="flex items-center gap-2">
-          <AddBuyerDialog availableTypes={availableTypes} />
+          <AddBuyerTypeDialog
+            onSuccess={handleCategoryCreated}
+            triggerLabel="+ Add Category"
+          />
+          <AddBuyerDialog availableTypes={typesList} />
         </div>
       </div>
 
-      {/* KPI Cards Strip */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* KPI Cards Strip (Reactive to selected category and search filters) */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {/* 1. Total Buyers */}
         <Card className="shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-muted-foreground text-xs font-medium">
@@ -112,31 +135,51 @@ export function BuyersView({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold tracking-tight text-foreground">
-              {initialPageKpis.totalBuyers}
+              {dynamicKpis.totalBuyers}
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              {initialPageKpis.activeBuyers} active in business
+              {dynamicKpis.activeBuyers} active in business
             </p>
           </CardContent>
         </Card>
 
+        {/* 2. Top Category */}
         <Card className="shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-muted-foreground text-xs font-medium">
-              Active Buyers
+              Top Category
             </CardTitle>
-            <UserCheck className="size-4 text-emerald-600" />
+            <Award className="size-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
-              {initialPageKpis.activeBuyers}
+            <div className="text-xl font-bold tracking-tight text-foreground truncate" title={dynamicKpis.topCategory}>
+              {dynamicKpis.topCategory}
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              Available for sale recovery
+              Leading recovery segment
             </p>
           </CardContent>
         </Card>
 
+        {/* 3. Repeat Buyer Rate */}
+        <Card className="shadow-xs">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-muted-foreground text-xs font-medium">
+              Repeat Buyer Rate
+            </CardTitle>
+            <RefreshCw className="size-4 text-emerald-600 dark:text-emerald-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+              {dynamicKpis.repeatBuyerRate}%
+            </div>
+            <p className="text-muted-foreground mt-1 text-xs">
+              {dynamicKpis.repeatBuyersCount} repeat buyer{dynamicKpis.repeatBuyersCount === 1 ? "" : "s"} (&gt;1 purchase)
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 4. Total Recovered */}
         <Card className="shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-muted-foreground text-xs font-medium">
@@ -146,7 +189,7 @@ export function BuyersView({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold tracking-tight text-foreground">
-              {formatAed(initialPageKpis.totalRecoveredAmount)}
+              {formatAed(dynamicKpis.totalRecoveredAmount)}
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
               Cumulative buyer revenue
@@ -154,16 +197,17 @@ export function BuyersView({
           </CardContent>
         </Card>
 
-        <Card className="shadow-xs">
+        {/* 5. Avg. Purchase / Buyer */}
+        <Card className="shadow-xs col-span-2 sm:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-muted-foreground text-xs font-medium">
               Avg. Purchase / Buyer
             </CardTitle>
-            <TrendingUp className="size-4 text-amber-600" />
+            <TrendingUp className="size-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold tracking-tight text-foreground">
-              {formatAed(initialPageKpis.averagePurchasePerBuyer)}
+              {formatAed(dynamicKpis.averagePurchasePerBuyer)}
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
               Across buyers with purchases
@@ -240,7 +284,7 @@ export function BuyersView({
             >
               All Categories
             </button>
-            {availableTypes.map((type) => (
+            {typesList.map((type) => (
               <button
                 key={type.id}
                 type="button"
@@ -254,6 +298,10 @@ export function BuyersView({
                 {type.name}
               </button>
             ))}
+            <AddBuyerTypeDialog
+              onSuccess={handleCategoryCreated}
+              triggerLabel="+ New Category"
+            />
           </div>
         </CardContent>
       </Card>
@@ -444,7 +492,7 @@ export function BuyersView({
       {/* Edit Buyer Dialog */}
       <EditBuyerDialog
         buyer={editingBuyer}
-        availableTypes={availableTypes}
+        availableTypes={typesList}
         open={Boolean(editingBuyer)}
         onOpenChange={(open) => !open && setEditingBuyer(null)}
       />

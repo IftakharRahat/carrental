@@ -9,6 +9,7 @@ export const SOURCE_TYPES = [
   "GARAGE_OWNER",
   "MIDDLEMAN",
   "REFERRAL",
+  "AUCTION",
   // Online
   "FACEBOOK",
   "TIKTOK",
@@ -26,6 +27,7 @@ export const SOURCE_TYPE_METADATA: Record<
   GARAGE_OWNER: { label: "Garage Owner", category: "PEOPLE" },
   MIDDLEMAN: { label: "Middleman", category: "PEOPLE" },
   REFERRAL: { label: "Referral", category: "PEOPLE" },
+  AUCTION: { label: "Auction", category: "PEOPLE" },
   FACEBOOK: { label: "Facebook", category: "ONLINE" },
   TIKTOK: { label: "TikTok", category: "ONLINE" },
   INSTAGRAM: { label: "Instagram", category: "ONLINE" },
@@ -100,6 +102,8 @@ export type SourceKpis = {
   carsBought: number;
   totalPurchaseValue: number;
   commissionPaid: number;
+  totalProfit: number;
+  avgProfitPerCar: number;
   lastDeal: string | null;
 };
 
@@ -109,6 +113,10 @@ export type OverallSourcesKpis = {
   totalCarsBought: number;
   totalPurchaseValue: number;
   totalCommissionPaid: number;
+  topSource: string;
+  topSourceType: string;
+  avgProfitFromSource: number;
+  repeatDealFrequency: number;
 };
 
 export type SourcedCarItem = {

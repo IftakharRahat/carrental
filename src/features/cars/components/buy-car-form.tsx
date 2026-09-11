@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Calculator, CarFront, Save } from "lucide-react";
+import { AlertCircle, Calculator, CarFront, Layers, Plus, Save } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -15,6 +15,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { BulkBuyCarForm } from "./bulk-buy-car-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +37,7 @@ import {
   createCarAction,
   type CreateCarActionResult,
 } from "@/features/cars/server/create-car-action";
+import { createBrandAction } from "@/features/cars/server/brand-actions";
 import type {
   SellerOption,
   SourceOption,
@@ -90,6 +100,7 @@ type FormValues = z.infer<typeof clientSchema>;
 type BuyCarFormProps = {
   initialSellers: SellerOption[];
   initialSources: SourceOption[];
+  initialBrands?: string[];
   purchaseDate: string;
   idempotencyKey: string;
 };
@@ -97,15 +108,21 @@ type BuyCarFormProps = {
 export function BuyCarForm({
   initialSellers,
   initialSources,
+  initialBrands,
   purchaseDate,
   idempotencyKey,
 }: BuyCarFormProps) {
   const [sellers, setSellers] = useState(initialSellers);
   const [sources, setSources] = useState(initialSources);
+  const [brands, setBrands] = useState(
+    initialBrands && initialBrands.length > 0 ? initialBrands : commonBrands,
+  );
   const [photos, setPhotos] = useState<File[]>([]);
   const [mainPhotoIndex, setMainPhotoIndex] = useState(0);
   const [sellerDialogOpen, setSellerDialogOpen] = useState(false);
   const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
+  const [brandDialogOpen, setBrandDialogOpen] = useState(false);
+  const [purchaseMode, setPurchaseMode] = useState<"SINGLE" | "BULK">("SINGLE");
   const [actionResult, setActionResult] = useState<CreateCarActionResult>();
   const [isPending, startTransition] = useTransition();
   const {
@@ -169,26 +186,65 @@ export function BuyCarForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="space-y-4" noValidate>
-      {actionResult?.ok === false && (
-        <div
-          role="alert"
-          className="border-destructive/30 bg-destructive/5 text-destructive flex gap-3 rounded-lg border p-3 text-sm"
+    <div className="space-y-6">
+      {/* Mode Switch: Single Car vs Bulk Quantity */}
+      <div className="flex items-center justify-between bg-muted/40 p-1.5 rounded-xl border max-w-md shadow-xs">
+        <button
+          type="button"
+          onClick={() => setPurchaseMode("SINGLE")}
+          className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            purchaseMode === "SINGLE"
+              ? "bg-background text-foreground shadow-xs font-bold"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          data-testid="mode-single-car"
         >
-          <AlertCircle className="mt-0.5 size-5 shrink-0" />
-          <div>
-            <p className="font-medium">{actionResult.message}</p>
-            {actionResult.duplicateVin && (
-              <p className="mt-1">
-                Match: {actionResult.duplicateVin.carNumber} ·{" "}
-                {actionResult.duplicateVin.carLabel}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
+          <CarFront className="size-4" />
+          Single Car (Default)
+        </button>
+        <button
+          type="button"
+          onClick={() => setPurchaseMode("BULK")}
+          className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            purchaseMode === "BULK"
+              ? "bg-background text-foreground shadow-xs font-bold"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          data-testid="mode-bulk-quantity"
+        >
+          <Layers className="size-4 text-primary" />
+          Bulk Quantity (4, 5, 8+ Cars)
+        </button>
+      </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+      {purchaseMode === "BULK" ? (
+        <BulkBuyCarForm
+          initialSellers={sellers}
+          initialSources={sources}
+          initialBrands={brands}
+          purchaseDate={purchaseDate}
+        />
+      ) : (
+        <form onSubmit={handleSubmit(submit)} className="space-y-4" noValidate>
+          {actionResult?.ok === false && (
+            <div
+              role="alert"
+              className="border-destructive/30 bg-destructive/5 text-destructive flex gap-3 rounded-lg border p-3 text-sm"
+            >
+              <AlertCircle className="mt-0.5 size-5 shrink-0" />
+              <div>
+                <p className="font-medium">{actionResult.message}</p>
+                {actionResult.duplicateVin && (
+                  <p className="mt-1">
+                    Match: {actionResult.duplicateVin.carNumber} ·{" "}
+                    {actionResult.duplicateVin.carLabel}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-4">
           <FormSection
             title="Basic information"
@@ -204,14 +260,36 @@ export function BuyCarForm({
                 aria-invalid={Boolean(fieldError("purchaseDate"))}
               />
             </Field>
-            <Field label="Brand *" error={fieldError("brand")}>
+            <Field
+              label={
+                <div className="flex items-center justify-between">
+                  <span>Brand *</span>
+                  <button
+                    type="button"
+                    onClick={() => setBrandDialogOpen(true)}
+                    className="text-primary hover:text-primary/80 hover:underline text-xs flex items-center gap-1 font-semibold cursor-pointer"
+                  >
+                    <Plus className="size-3" />
+                    Add Brand
+                  </button>
+                </div>
+              }
+              error={fieldError("brand")}
+            >
               <Input
                 list="car-brands"
-                placeholder="Toyota"
-                {...register("brand")}
+                placeholder="Toyota, Nissan, BMW..."
+                value={values.brand || ""}
+                onChange={(e) =>
+                  setValue("brand", e.target.value, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                    shouldTouch: true,
+                  })
+                }
               />
               <datalist id="car-brands">
-                {commonBrands.map((brand) => (
+                {brands.map((brand) => (
                   <option key={brand} value={brand} />
                 ))}
               </datalist>
@@ -464,7 +542,19 @@ export function BuyCarForm({
           setValue("sourceId", source.id, { shouldValidate: true });
         }}
       />
-    </form>
+      <AddBrandDialog
+        open={brandDialogOpen}
+        onOpenChange={setBrandDialogOpen}
+        onCreated={(newBrand) => {
+          setBrands((current) =>
+            current.includes(newBrand) ? current : [newBrand, ...current],
+          );
+          setValue("brand", newBrand, { shouldValidate: true });
+        }}
+      />
+        </form>
+      )}
+    </div>
   );
 }
 
@@ -501,7 +591,7 @@ function Field({
   className,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   hint?: string;
   error?: string;
   className?: string;
@@ -509,7 +599,7 @@ function Field({
 }) {
   return (
     <div className={className ? `space-y-2 ${className}` : "space-y-2"}>
-      <Label>{label}</Label>
+      {typeof label === "string" ? <Label>{label}</Label> : label}
       {children}
       {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
       {error && <p className="text-destructive text-xs">{error}</p>}
@@ -559,7 +649,118 @@ const commonBrands = [
   "Hyundai",
   "Kia",
   "Lexus",
+  "Audi",
+  "Chevrolet",
+  "Mitsubishi",
+  "Volkswagen",
+  "Mazda",
+  "Land Rover",
+  "Porsche",
+  "Suzuki",
+  "Jeep",
+  "Volvo",
+  "Renault",
+  "Peugeot",
+  "GMC",
+  "Dodge",
+  "Infiniti",
+  "Subaru",
+  "Cadillac",
+  "Jaguar",
+  "MG",
+  "BYD",
+  "Chery",
+  "Geely",
+  "Haval",
+  "Changan",
+  "Jetour",
 ];
+
+export function AddBrandDialog({
+  open,
+  onOpenChange,
+  onCreated,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreated: (brand: string) => void;
+}) {
+  const [name, setName] = useState("");
+  const [error, setError] = useState<string>();
+  const [isPending, startTransition] = useTransition();
+
+  function handleSave() {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setError("Please enter a brand name");
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await createBrandAction(trimmed);
+      if (!res.ok) {
+        setError(res.message);
+        return;
+      }
+      onCreated(trimmed);
+      setName("");
+      setError(undefined);
+      onOpenChange(false);
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add New Brand</DialogTitle>
+          <DialogDescription>
+            Enter the vehicle manufacturer or brand name.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="new-brand-name">Brand Name *</Label>
+            <Input
+              id="new-brand-name"
+              placeholder="e.g. Audi, Changan, BYD, Porsche"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (error) setError(undefined);
+              }}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+            />
+            {error && <p className="text-destructive text-xs">{error}</p>}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={isPending || !name.trim()}
+          >
+            {isPending ? "Adding..." : "Add Brand"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const conditionOptions = [
   ["SCRAP", "Scrap"],
@@ -573,6 +774,7 @@ const sourceTypeLabels: Record<SourceType, string> = {
   GARAGE_OWNER: "Garage Owner",
   MIDDLEMAN: "Middleman",
   REFERRAL: "Referral",
+  AUCTION: "Auction",
   FACEBOOK: "Facebook",
   TIKTOK: "TikTok",
   INSTAGRAM: "Instagram",

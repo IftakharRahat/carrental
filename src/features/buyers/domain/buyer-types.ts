@@ -61,6 +61,9 @@ export type BuyersPageKpis = {
   activeBuyers: number;
   totalRecoveredAmount: number;
   averagePurchasePerBuyer: number;
+  topCategory: string;
+  repeatBuyerRate: number;
+  repeatBuyersCount: number;
 };
 
 // Zod validation schemas

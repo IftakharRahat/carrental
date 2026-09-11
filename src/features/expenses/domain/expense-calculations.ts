@@ -72,19 +72,40 @@ export function getDatePresetRange(
   return null;
 }
 
+export type BusinessExpenseKpiOptions = {
+  referenceDate?: Date;
+  carsPurchasedCount?: number;
+  monthlyRevenue?: number;
+  lastMonthTotal?: number;
+};
+
 /**
  * Calculates current month KPIs for Page 10 (Business Expenses).
  */
 export function calculateBusinessExpensesKpis(
   expenses: BusinessExpenseItem[],
-  referenceDate: Date = new Date(),
+  referenceDateOrOptions?: Date | BusinessExpenseKpiOptions,
 ): BusinessExpensesPageKpis {
+  const options: BusinessExpenseKpiOptions =
+    referenceDateOrOptions instanceof Date
+      ? { referenceDate: referenceDateOrOptions }
+      : referenceDateOrOptions || {};
+
+  const referenceDate = options.referenceDate || new Date();
   const year = referenceDate.getFullYear();
-  const monthStr = String(referenceDate.getMonth() + 1).padStart(2, "0");
+  const month = referenceDate.getMonth();
+  const monthStr = String(month + 1).padStart(2, "0");
   const monthPrefix = `${year}-${monthStr}`;
+
+  // Previous month prefix (e.g. 2026-08)
+  const prevDate = new Date(year, month - 1, 1);
+  const prevYear = prevDate.getFullYear();
+  const prevMonthStr = String(prevDate.getMonth() + 1).padStart(2, "0");
+  const prevMonthPrefix = `${prevYear}-${prevMonthStr}`;
 
   let currentMonthTotal = 0;
   let currentMonthCount = 0;
+  let computedLastMonthTotal = 0;
   const categoryTotals = new Map<string, number>();
 
   for (const exp of expenses) {
@@ -96,6 +117,8 @@ export function calculateBusinessExpensesKpis(
 
       const existing = categoryTotals.get(exp.category) || 0;
       categoryTotals.set(exp.category, existing + exp.amount);
+    } else if (exp.expenseDate.startsWith(prevMonthPrefix)) {
+      computedLastMonthTotal += exp.amount;
     }
   }
 
@@ -109,11 +132,58 @@ export function calculateBusinessExpensesKpis(
     }
   }
 
+  const roundedCurrentMonthTotal = Math.round(currentMonthTotal * 100) / 100;
+  const lastMonthTotal =
+    options.lastMonthTotal !== undefined
+      ? options.lastMonthTotal
+      : Math.round(computedLastMonthTotal * 100) / 100;
+
+  const carsPurchasedCount = options.carsPurchasedCount ?? 0;
+  const monthlyRevenue = options.monthlyRevenue ?? 0;
+
+  // 1. Avg Daily Overhead
+  const daysElapsedInMonth = Math.max(1, referenceDate.getDate());
+  const avgDailyOverhead =
+    Math.round((roundedCurrentMonthTotal / daysElapsedInMonth) * 100) / 100;
+
+  // 2. Overhead Cost Per Car Purchased: (Total Business Expenses ÷ Total Cars Purchased in Month)
+  const overheadCostPerCarPurchased =
+    carsPurchasedCount > 0
+      ? Math.round((roundedCurrentMonthTotal / carsPurchasedCount) * 100) / 100
+      : 0;
+
+  // 3. Expense-to-Revenue Ratio (%)
+  const expenseToRevenueRatio =
+    monthlyRevenue > 0
+      ? Math.round((roundedCurrentMonthTotal / monthlyRevenue) * 1000) / 10
+      : 0;
+
+  // 4. MoM Expense Growth (% Change): ((Current - Last) / Last) * 100
+  let momExpenseGrowth = 0;
+  if (lastMonthTotal > 0) {
+    momExpenseGrowth =
+      Math.round(
+        ((roundedCurrentMonthTotal - lastMonthTotal) / lastMonthTotal) * 1000,
+      ) / 10;
+  } else if (lastMonthTotal === 0 && roundedCurrentMonthTotal > 0) {
+    momExpenseGrowth = 100;
+  } else {
+    momExpenseGrowth = 0;
+  }
+
   return {
-    currentMonthTotal: Math.round(currentMonthTotal * 100) / 100,
+    currentMonthTotal: roundedCurrentMonthTotal,
     currentMonthCount,
     topCategoryThisMonth,
     topCategoryAmount: Math.round(topCategoryAmount * 100) / 100,
+    expenseToRevenueRatio,
+    avgDailyOverhead,
+    daysElapsedInMonth,
+    overheadCostPerCarPurchased,
+    carsPurchasedThisMonthCount: carsPurchasedCount,
+    momExpenseGrowth,
+    lastMonthTotal,
+    monthlyRevenue,
   };
 }
 

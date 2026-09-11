@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  Award,
   Car,
   Coins,
   DollarSign,
@@ -14,8 +15,9 @@ import {
   MoreHorizontal,
   Phone,
   Power,
+  RefreshCw,
   Search,
-  Users,
+  TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -35,26 +37,49 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { formatAed } from "@/lib/currency";
+import { calculateOverallSourcesKpis } from "../domain/source-calculations";
 import {
   SOURCE_CATEGORIES,
   SOURCE_CATEGORY_LABELS,
   type OverallSourcesKpis,
+  type SourceCategory,
   type SourceRowData,
+  type SourceType,
 } from "../domain/source-types";
 import { toggleSourceActiveAction } from "../server/source-actions";
 import { AddSourceDialog } from "./add-source-dialog";
 import { EditSourceDialog } from "./edit-source-dialog";
 import { PayCommissionDialog } from "./pay-commission-dialog";
 
+const SUBCATEGORIES_BY_CATEGORY: Record<
+  SourceCategory,
+  Array<{ type: SourceType; label: string }>
+> = {
+  PEOPLE: [
+    { type: "GARAGE_OWNER", label: "Garage Owner" },
+    { type: "MIDDLEMAN", label: "Middleman" },
+    { type: "REFERRAL", label: "Referral" },
+    { type: "AUCTION", label: "Auction" },
+  ],
+  ONLINE: [
+    { type: "TIKTOK", label: "TikTok" },
+    { type: "FACEBOOK", label: "Facebook" },
+    { type: "INSTAGRAM", label: "Instagram" },
+  ],
+  OFFLINE: [
+    { type: "WALK_IN", label: "Walk-in" },
+  ],
+};
+
 export function SourcesView({
   initialSources,
-  initialOverallKpis,
 }: {
   initialSources: SourceRowData[];
   initialOverallKpis: OverallSourcesKpis;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [selectedType, setSelectedType] = useState<string>("ALL");
   const [editingSource, setEditingSource] = useState<SourceRowData | null>(null);
   const [commissionSource, setCommissionSource] = useState<SourceRowData | null>(
     null,
@@ -68,6 +93,10 @@ export function SourcesView({
       if (selectedCategory !== "ALL" && s.category !== selectedCategory) {
         return false;
       }
+      // Subcategory / Type filter
+      if (selectedType !== "ALL" && s.type !== selectedType) {
+        return false;
+      }
       // Search filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
@@ -79,7 +108,12 @@ export function SourcesView({
       }
       return true;
     });
-  }, [initialSources, selectedCategory, searchQuery]);
+  }, [initialSources, selectedCategory, selectedType, searchQuery]);
+
+  // Reactive KPIs calculated specifically for the currently filtered category/subcategory
+  const dynamicKpis = useMemo(() => {
+    return calculateOverallSourcesKpis(filteredSources);
+  }, [filteredSources]);
 
   function handleToggleActive(source: SourceRowData) {
     const actionText = source.isActive ? "archive" : "activate";
@@ -122,31 +156,34 @@ export function SourcesView({
         </div>
       </div>
 
-      {/* KPI Cards Strip */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/* KPI Cards Strip (Reactive to selected category / subcategory) */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {/* 1. Top Source */}
         <Card className="shadow-xs border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Active Sources
+            <CardTitle className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              Top Source
             </CardTitle>
-            <Users className="size-4 text-primary" />
+            <Award className="size-4 text-purple-600 dark:text-purple-400" />
           </CardHeader>
           <CardContent>
             <div
-              className="text-2xl font-bold text-foreground"
-              data-testid="kpi-active-sources"
+              className="text-base sm:text-lg font-bold text-foreground truncate"
+              title={dynamicKpis.topSource}
+              data-testid="kpi-top-source"
             >
-              {initialOverallKpis.activeSources}
+              {dynamicKpis.topSource}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Out of {initialOverallKpis.totalSources} registered channels
+            <p className="text-[10px] text-muted-foreground mt-1 truncate">
+              Leading channel
             </p>
           </CardContent>
         </Card>
 
+        {/* 2. Cars Bought */}
         <Card className="shadow-xs border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <CardTitle className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               Cars Bought
             </CardTitle>
             <Car className="size-4 text-emerald-600 dark:text-emerald-400" />
@@ -156,91 +193,183 @@ export function SourcesView({
               className="text-2xl font-bold text-foreground"
               data-testid="kpi-cars-bought"
             >
-              {initialOverallKpis.totalCarsBought}
+              {dynamicKpis.totalCarsBought}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Vehicles acquired via sources
+            <p className="text-[10px] text-muted-foreground mt-1 truncate">
+              Vehicles acquired
             </p>
           </CardContent>
         </Card>
 
+        {/* 3. Average Profit from Source */}
         <Card className="shadow-xs border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Total Purchase Value
+            <CardTitle className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              Avg Profit / Source
             </CardTitle>
-            <DollarSign className="size-4 text-blue-600 dark:text-blue-400" />
+            <TrendingUp className="size-4 text-blue-600 dark:text-blue-400" />
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-xl font-bold truncate ${
+                dynamicKpis.avgProfitFromSource >= 0
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-rose-600 dark:text-rose-400"
+              }`}
+              data-testid="kpi-avg-profit"
+            >
+              {formatAed(dynamicKpis.avgProfitFromSource)}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1 truncate">
+              Net profit per car
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 4. Repeat Deal Frequency */}
+        <Card className="shadow-xs border">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              Repeat Deals
+            </CardTitle>
+            <RefreshCw className="size-4 text-cyan-600 dark:text-cyan-400" />
           </CardHeader>
           <CardContent>
             <div
               className="text-2xl font-bold text-foreground"
-              data-testid="kpi-purchase-value"
+              data-testid="kpi-repeat-frequency"
             >
-              {formatAed(initialOverallKpis.totalPurchaseValue)}
+              {dynamicKpis.repeatDealFrequency}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Total inventory capital sourced
+            <p className="text-[10px] text-muted-foreground mt-1 truncate">
+              Avg deals / source
             </p>
           </CardContent>
         </Card>
 
+        {/* 5. Total Purchase Value */}
         <Card className="shadow-xs border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <CardTitle className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              Purchase Value
+            </CardTitle>
+            <DollarSign className="size-4 text-amber-600 dark:text-amber-400" />
+          </CardHeader>
+          <CardContent>
+            <div
+              className="text-xl font-bold text-foreground truncate"
+              data-testid="kpi-purchase-value"
+            >
+              {formatAed(dynamicKpis.totalPurchaseValue)}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1 truncate">
+              Capital deployed
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 6. Commission Paid */}
+        <Card className="shadow-xs border">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               Commission Paid
             </CardTitle>
             <Coins className="size-4 text-amber-500" />
           </CardHeader>
           <CardContent>
             <div
-              className="text-2xl font-bold text-foreground"
+              className="text-xl font-bold text-foreground truncate"
               data-testid="kpi-commission-paid"
             >
-              {formatAed(initialOverallKpis.totalCommissionPaid)}
+              {formatAed(dynamicKpis.totalCommissionPaid)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Total payouts recorded to date
+            <p className="text-[10px] text-muted-foreground mt-1 truncate">
+              Partner payouts
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {/* Category Pill Filters */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <Button
-            size="sm"
-            variant={selectedCategory === "ALL" ? "default" : "outline"}
-            className="text-xs h-8"
-            onClick={() => setSelectedCategory("ALL")}
-          >
-            All Categories
-          </Button>
-          {SOURCE_CATEGORIES.map((cat) => (
-            <Button
-              key={cat}
-              size="sm"
-              variant={selectedCategory === cat ? "default" : "outline"}
-              className="text-xs h-8"
-              onClick={() => setSelectedCategory(cat)}
-            >
-              {SOURCE_CATEGORY_LABELS[cat]}
-            </Button>
-          ))}
-        </div>
+      {/* Filter and Search Bar with Hierarchical Category & Subcategory Pills */}
+      <Card className="shadow-xs">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Primary Category Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              <Button
+                size="sm"
+                variant={selectedCategory === "ALL" ? "default" : "outline"}
+                className="text-xs h-8"
+                onClick={() => {
+                  setSelectedCategory("ALL");
+                  setSelectedType("ALL");
+                }}
+              >
+                All Categories
+              </Button>
+              {SOURCE_CATEGORIES.map((cat) => (
+                <Button
+                  key={cat}
+                  size="sm"
+                  variant={selectedCategory === cat ? "default" : "outline"}
+                  className="text-xs h-8"
+                  onClick={() => {
+                    setSelectedCategory(cat);
+                    setSelectedType("ALL");
+                  }}
+                >
+                  {SOURCE_CATEGORY_LABELS[cat]}
+                </Button>
+              ))}
+            </div>
 
-        {/* Search Input */}
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Search name, phone, area..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-9 text-xs"
-          />
-        </div>
-      </div>
+            {/* Search Input */}
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search name, phone, area..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 h-8 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Subcategory Pills (Appears when a specific category is selected) */}
+          {selectedCategory !== "ALL" && (
+            <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-border/40">
+              <span className="text-[11px] font-medium text-muted-foreground mr-1">
+                Subcategory:
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedType("ALL")}
+                className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                  selectedType === "ALL"
+                    ? "bg-primary text-primary-foreground border-primary font-medium shadow-xs"
+                    : "bg-background text-muted-foreground hover:bg-muted/50 border-input"
+                }`}
+              >
+                All {SOURCE_CATEGORY_LABELS[selectedCategory as SourceCategory]}
+              </button>
+              {SUBCATEGORIES_BY_CATEGORY[selectedCategory as SourceCategory]?.map((sub) => (
+                <button
+                  key={sub.type}
+                  type="button"
+                  onClick={() => setSelectedType(sub.type)}
+                  className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                    selectedType === sub.type
+                      ? "bg-primary text-primary-foreground border-primary font-medium shadow-xs"
+                      : "bg-background text-muted-foreground hover:bg-muted/50 border-input"
+                  }`}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Sources Data Table (Section 9.2) */}
       <Card className="shadow-xs overflow-hidden">

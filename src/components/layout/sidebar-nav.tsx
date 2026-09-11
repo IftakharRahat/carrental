@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  Briefcase,
   CarFront,
   CircleDollarSign,
   ContactRound,
@@ -56,6 +57,7 @@ export const navGroups: NavGroup[] = [
       { label: "Sources", icon: GitFork, href: "/sources" },
       { label: "Sellers", icon: ContactRound, href: "/sellers" },
       { label: "Buyers", icon: ShoppingBag, href: "/buyers" },
+      { label: "Business Contacts", icon: Briefcase, href: "/business-contacts" },
     ],
   },
   {
@@ -85,15 +87,43 @@ export const navGroups: NavGroup[] = [
   },
 ];
 
-export function SidebarNav() {
+export function SidebarNav({ userRole }: { userRole?: string | null }) {
   const pathname = usePathname();
+
+  const isViewer = userRole === "VIEWER";
+  const isAdmin = userRole === "ADMIN";
+
+  const visibleGroups = navGroups
+    .map((group) => {
+      const filteredItems = group.items.filter((item) => {
+        // Viewers cannot access Buy Car, Sell, Sources, or Buyers
+        if (isViewer) {
+          if (item.href === "/cars/new") return false;
+          if (item.href === "/sell") return false;
+          if (item.href === "/sources") return false;
+          if (item.href === "/buyers") return false;
+          if (item.href === "/business-contacts") return false;
+        }
+        // Only Admin can access Security & Backup
+        if (item.href === "/settings/security" && !isAdmin) {
+          return false;
+        }
+        return true;
+      });
+
+      return {
+        ...group,
+        items: filteredItems,
+      };
+    })
+    .filter((group) => group.items.length > 0);
 
   return (
     <nav
       aria-label="Primary navigation"
       className="flex-1 space-y-4 overflow-y-auto p-3"
     >
-      {navGroups.map((group, groupIdx) => (
+      {visibleGroups.map((group, groupIdx) => (
         <div key={groupIdx} className="space-y-1">
           {group.title && (
             <p className="text-muted-foreground/80 px-2.5 pt-1 text-[11px] font-semibold tracking-wider uppercase">

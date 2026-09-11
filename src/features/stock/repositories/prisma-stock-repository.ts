@@ -29,6 +29,10 @@ export class PrismaStockRepository implements StockRepository {
           activeCarsCount: 0,
           stockValue: 0,
           recoveredFromActiveStock: 0,
+          avgCarBuyPrice: 0,
+          avgCarExpenses: 0,
+          avgDaysToComplete: 0,
+          avgNetProfit: 0,
         },
       };
     }

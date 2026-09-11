@@ -30,9 +30,10 @@ import { saveMonthlySnapshotAction } from "../server/monthly-report-actions";
 
 type MonthlyReportViewProps = {
   data: MonthlyReportViewData;
+  isViewer?: boolean;
 };
 
-export function MonthlyReportView({ data }: MonthlyReportViewProps) {
+export function MonthlyReportView({ data, isViewer = false }: MonthlyReportViewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"COMPLETED" | "PURCHASES" | "EXPENSES">(
@@ -102,11 +103,20 @@ export function MonthlyReportView({ data }: MonthlyReportViewProps) {
     lines.push("");
 
     lines.push("--- CARS PURCHASED IN MONTH ---");
-    lines.push("Car Number,Brand,Model,Purchase Date,Seller,Source,Purchase Price (AED),Payment Method");
-    for (const p of purchasedCars) {
-      lines.push(
-        `CAR-${p.carNumber},"${p.brand}","${p.model}",${p.purchaseDate},"${p.sellerName}","${p.sourceName || "N/A"}",${p.purchasePrice},${p.paymentMethod}`,
-      );
+    if (!isViewer) {
+      lines.push("Car Number,Brand,Model,Purchase Date,Seller,Source,Purchase Price (AED),Payment Method");
+      for (const p of purchasedCars) {
+        lines.push(
+          `CAR-${p.carNumber},"${p.brand}","${p.model}",${p.purchaseDate},"${p.sellerName}","${p.sourceName || "N/A"}",${p.purchasePrice},${p.paymentMethod}`,
+        );
+      }
+    } else {
+      lines.push("Car Number,Brand,Model,Purchase Date,Seller,Purchase Price (AED),Payment Method");
+      for (const p of purchasedCars) {
+        lines.push(
+          `CAR-${p.carNumber},"${p.brand}","${p.model}",${p.purchaseDate},"${p.sellerName}",${p.purchasePrice},${p.paymentMethod}`,
+        );
+      }
     }
     lines.push("");
 
@@ -525,7 +535,7 @@ export function MonthlyReportView({ data }: MonthlyReportViewProps) {
                   <th className="py-2.5 px-3 font-semibold">Vehicle</th>
                   <th className="py-2.5 px-3 font-semibold">Purchase Date</th>
                   <th className="py-2.5 px-3 font-semibold">Seller</th>
-                  <th className="py-2.5 px-3 font-semibold">Source</th>
+                  {!isViewer && <th className="py-2.5 px-3 font-semibold">Source</th>}
                   <th className="py-2.5 px-3 font-semibold">Method</th>
                   <th className="py-2.5 px-3 font-semibold text-right">Price (AED)</th>
                 </tr>
@@ -533,7 +543,7 @@ export function MonthlyReportView({ data }: MonthlyReportViewProps) {
               <tbody className="divide-y divide-border/60">
                 {purchasedCars.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                    <td colSpan={isViewer ? 6 : 7} className="py-8 text-center text-muted-foreground">
                       No cars purchased during {monthLabel}.
                     </td>
                   </tr>
@@ -555,9 +565,11 @@ export function MonthlyReportView({ data }: MonthlyReportViewProps) {
                         {p.purchaseDate}
                       </td>
                       <td className="py-2.5 px-3">{p.sellerName}</td>
-                      <td className="py-2.5 px-3 text-muted-foreground">
-                        {p.sourceName || "Walk-in"}
-                      </td>
+                      {!isViewer && (
+                        <td className="py-2.5 px-3 text-muted-foreground">
+                          {p.sourceName || "Walk-in"}
+                        </td>
+                      )}
                       <td className="py-2.5 px-3">
                         <Badge variant="outline" className="text-[10px]">
                           {p.paymentMethod}

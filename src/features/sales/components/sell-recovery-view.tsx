@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Clock,
   Layers,
+  Plus,
   TrendingUp,
   UserPlus,
   Wrench,
@@ -53,20 +54,45 @@ import {
   recordWholeCarSaleAction,
 } from "../server/sales-actions";
 import { QuickAddBuyerDialog } from "./quick-add-buyer-dialog";
+import { VehicleSearchPicker } from "./vehicle-search-picker";
 
 const selectClassName =
   "border-input bg-background text-foreground focus-visible:border-ring focus-visible:ring-ring/50 h-8 w-full rounded-lg border px-2.5 text-sm shadow-xs outline-none focus-visible:ring-3 transition-colors font-medium";
+
+const commonDismantleParts: Array<{ name: string; type: RecoveryItemType }> = [
+  { name: "AC Compressor", type: "PARTS" },
+  { name: "Alternator", type: "PARTS" },
+  { name: "Starter Motor", type: "PARTS" },
+  { name: "Radiator & Cooling Fan", type: "PARTS" },
+  { name: "Catalytic Converter", type: "PARTS" },
+  { name: "Battery", type: "PARTS" },
+  { name: "Front Bumper", type: "BODY" },
+  { name: "Rear Bumper", type: "BODY" },
+  { name: "Bonnet / Hood", type: "BODY" },
+  { name: "Doors (Left / Right)", type: "BODY" },
+  { name: "Headlights (Pair / Single)", type: "PARTS" },
+  { name: "Taillights", type: "PARTS" },
+  { name: "Alloy Wheels / Rims", type: "PARTS" },
+  { name: "Suspension & Shocks", type: "PARTS" },
+  { name: "Steering Rack / Box", type: "PARTS" },
+  { name: "ECM / Engine Computer", type: "PARTS" },
+  { name: "Seats & Interior Trim", type: "PARTS" },
+  { name: "Windshield / Window Glass", type: "BODY" },
+  { name: "Wiring Harness (Copper)", type: "COPPER" },
+];
 
 type SellRecoveryViewProps = {
   cars: SellCarSummary[];
   initialBuyers: BuyerOption[];
   preselectedCarId: string | null;
+  initialCustomItems?: Array<{ name: string; type: RecoveryItemType }>;
 };
 
 export function SellRecoveryView({
   cars,
   initialBuyers,
   preselectedCarId,
+  initialCustomItems,
 }: SellRecoveryViewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -97,6 +123,59 @@ export function SellRecoveryView({
   const [selectedItemType, setSelectedItemType] = useState<RecoveryItemType>("ENGINE");
   const [itemLabel, setItemLabel] = useState("");
   const [itemAmount, setItemAmount] = useState("");
+  const [customItems, setCustomItems] = useState<
+    Array<{ name: string; type: RecoveryItemType }>
+  >(initialCustomItems ?? []);
+  const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
+
+  const currentSelectValue = useMemo(() => {
+    if (selectedItemId) return selectedItemId;
+    if (itemLabel) {
+      const matchCustom = customItems.find(
+        (c) => c.name.toLowerCase() === itemLabel.toLowerCase(),
+      );
+      if (matchCustom) return `custom:${matchCustom.name}`;
+      const matchCommon = commonDismantleParts.find(
+        (c) => c.name.toLowerCase() === itemLabel.toLowerCase(),
+      );
+      if (matchCommon) return `part:${matchCommon.name}`;
+      return `custom:${itemLabel}`;
+    }
+    return `standard:${selectedItemType}`;
+  }, [selectedItemId, itemLabel, selectedItemType, customItems]);
+
+  const handleChangeItemSelect = (val: string) => {
+    if (val === "__CREATE_NEW__") {
+      setIsItemDialogOpen(true);
+      return;
+    }
+    const matchingPending = selectedCar?.pendingItems.find((p) => p.id === val);
+    if (matchingPending) {
+      setSelectedItemId(matchingPending.id);
+      setSelectedItemType(matchingPending.type);
+      setItemLabel(matchingPending.label || "");
+      return;
+    }
+    setSelectedItemId("");
+    if (val.startsWith("custom:")) {
+      const name = val.slice(7);
+      const found = customItems.find((c) => c.name === name);
+      setSelectedItemType(found?.type || "PARTS");
+      setItemLabel(name);
+    } else if (val.startsWith("part:")) {
+      const name = val.slice(5);
+      const found = commonDismantleParts.find((c) => c.name === name);
+      setSelectedItemType(found?.type || "PARTS");
+      setItemLabel(name);
+    } else if (val.startsWith("standard:")) {
+      const type = val.slice(9) as RecoveryItemType;
+      setSelectedItemType(type);
+      setItemLabel("");
+    } else {
+      setSelectedItemType((val as RecoveryItemType) || "OTHER");
+      setItemLabel("");
+    }
+  };
 
   // Completion Warning Dialog State (8.4)
   const [isCompleteWarningOpen, setIsCompleteWarningOpen] = useState(false);
@@ -271,24 +350,11 @@ export function SellRecoveryView({
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 items-center">
             <div className="sm:col-span-2">
-              <select
-                id="select-car-input"
-                aria-label="Select Car"
-                value={selectedCarId}
-                onChange={(e) => setSelectedCarId(e.target.value)}
-                className={selectClassName}
-              >
-                {cars.length === 0 && (
-                  <option value="" disabled>
-                    No vehicles in stock
-                  </option>
-                )}
-                {cars.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.carNumber} — {c.brand} {c.model} ({c.year || "N/A"}) · {c.status.replace("_", " ")}
-                  </option>
-                ))}
-              </select>
+              <VehicleSearchPicker
+                cars={cars}
+                selectedCarId={selectedCarId}
+                onSelectCar={setSelectedCarId}
+              />
             </div>
 
             {selectedCar && (
@@ -522,59 +588,74 @@ export function SellRecoveryView({
                 <form onSubmit={handleItemSaleSubmit} className="space-y-4">
                   {/* Item Selector */}
                   <div className="space-y-1.5">
-                    <Label htmlFor="item-type-select">Item *</Label>
-                    {selectedCar && selectedCar.pendingItems.length > 0 ? (
-                      <select
-                        id="item-type-select"
-                        value={selectedItemId || selectedItemType}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const matchingPending = selectedCar.pendingItems.find((p) => p.id === val);
-                          if (matchingPending) {
-                            setSelectedItemId(matchingPending.id);
-                            setSelectedItemType(matchingPending.type);
-                            setItemLabel(matchingPending.label || "");
-                          } else {
-                            setSelectedItemId("");
-                            setSelectedItemType(val as RecoveryItemType);
-                          }
-                        }}
-                        className={selectClassName}
-                        required
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="item-type-select">Item *</Label>
+                      <button
+                        type="button"
+                        data-testid="quick-add-item-btn"
+                        onClick={() => setIsItemDialogOpen(true)}
+                        className="text-primary hover:text-primary/80 hover:underline text-xs flex items-center gap-1 font-semibold cursor-pointer"
                       >
-                        <optgroup label="Pending Dismantle Items">
+                        <Plus className="size-3" />
+                        + Add Item
+                      </button>
+                    </div>
+                    <select
+                      id="item-type-select"
+                      value={currentSelectValue}
+                      onChange={(e) => handleChangeItemSelect(e.target.value)}
+                      className={selectClassName}
+                      required
+                    >
+                      <option value="__CREATE_NEW__">✨ + Create New Item...</option>
+                      {selectedCar && selectedCar.pendingItems.length > 0 && (
+                        <optgroup label="Pending Dismantle Items (This Car)">
                           {selectedCar.pendingItems.map((p) => (
                             <option key={p.id} value={p.id}>
                               {recoveryItemTypeLabels[p.type] || p.type} {p.label ? `(${p.label})` : ""} · Pending
                             </option>
                           ))}
                         </optgroup>
-                        <optgroup label="Other Standard Items">
-                          {Object.entries(recoveryItemTypeLabels).map(([key, label]) => (
-                            <option key={key} value={key}>
-                              {label}
+                      )}
+                      {customItems.length > 0 && (
+                        <optgroup label="Custom Created Items">
+                          {customItems.map((item) => (
+                            <option key={`custom-${item.name}`} value={`custom:${item.name}`}>
+                              {item.name} ({recoveryItemTypeLabels[item.type] || item.type})
                             </option>
                           ))}
                         </optgroup>
-                      </select>
-                    ) : (
-                      <select
-                        id="item-type-select"
-                        value={selectedItemType}
-                        onChange={(e) => setSelectedItemType(e.target.value as RecoveryItemType)}
-                        className={selectClassName}
-                        required
-                      >
+                      )}
+                      <optgroup label="Common Vehicle Parts">
+                        {commonDismantleParts.map((part) => (
+                          <option key={`part-${part.name}`} value={`part:${part.name}`}>
+                            {part.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Major Standard Assemblies">
                         {Object.entries(recoveryItemTypeLabels).map(([key, label]) => (
-                          <option key={key} value={key}>
+                          <option key={`standard-${key}`} value={`standard:${key}`}>
                             {label}
                           </option>
                         ))}
-                      </select>
-                    )}
+                      </optgroup>
+                    </select>
                     {fieldErrors.itemType && (
                       <p className="text-destructive text-xs">{fieldErrors.itemType[0]}</p>
                     )}
+                    <div className="space-y-1 pt-0.5">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Item / Part Description</span>
+                        {itemLabel && <span className="text-emerald-600 font-medium">Custom Part</span>}
+                      </div>
+                      <Input
+                        id="item-label-input"
+                        placeholder="Specific part details, e.g. AC Compressor (Denso) or Left Fender"
+                        value={itemLabel}
+                        onChange={(e) => setItemLabel(e.target.value)}
+                      />
+                    </div>
                   </div>
 
                   {/* Buyer & Date */}
@@ -860,6 +941,24 @@ export function SellRecoveryView({
         onBuyerCreated={handleBuyerCreated}
       />
 
+      {/* Quick Add Dismantle Item Dialog */}
+      <AddItemDialog
+        open={isItemDialogOpen}
+        onOpenChange={setIsItemDialogOpen}
+        onCreated={(newItem) => {
+          setCustomItems((prev) => {
+            const exists = prev.some(
+              (p) => p.name.toLowerCase() === newItem.name.toLowerCase(),
+            );
+            return exists ? prev : [newItem, ...prev];
+          });
+          setSelectedItemId("");
+          setSelectedItemType(newItem.type);
+          setItemLabel(newItem.name);
+          toast.success(`Item "${newItem.name}" added and selected.`);
+        }}
+      />
+
       {/* Section 8.4 Completion Warning Dialog */}
       <Dialog open={isCompleteWarningOpen} onOpenChange={setIsCompleteWarningOpen}>
         <DialogContent className="sm:max-w-[420px]">
@@ -898,5 +997,99 @@ export function SellRecoveryView({
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function AddItemDialog({
+  open,
+  onOpenChange,
+  onCreated,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreated: (item: { name: string; type: RecoveryItemType }) => void;
+}) {
+  const [name, setName] = useState("");
+  const [type, setType] = useState<RecoveryItemType>("PARTS");
+  const [error, setError] = useState<string>();
+
+  function handleSave() {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setError("Please enter an item or part name");
+      return;
+    }
+    onCreated({ name: trimmed, type });
+    setName("");
+    setType("PARTS");
+    setError(undefined);
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add New Dismantle Item</DialogTitle>
+          <DialogDescription>
+            Create a specific dismantled part or component to record its sale.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="new-item-name">Item / Part Name *</Label>
+            <Input
+              id="new-item-name"
+              placeholder="e.g. AC Compressor, Radiator, Alternator, Sunroof"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (error) setError(undefined);
+              }}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+            />
+            {error && <p className="text-destructive text-xs">{error}</p>}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="new-item-category">Category</Label>
+            <select
+              id="new-item-category"
+              value={type}
+              onChange={(e) => setType(e.target.value as RecoveryItemType)}
+              className={selectClassName}
+            >
+              <option value="PARTS">Parts & Accessories</option>
+              <option value="ENGINE">Engine & Powertrain</option>
+              <option value="GEARBOX">Gearbox & Transmission</option>
+              <option value="BODY">Body & Panels</option>
+              <option value="COPPER">Copper / Electrical</option>
+              <option value="OTHER">Other Component</option>
+            </select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={!name.trim()}
+          >
+            Add Item
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

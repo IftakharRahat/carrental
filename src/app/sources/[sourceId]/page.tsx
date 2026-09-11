@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getSessionActor } from "@/lib/auth/actor";
 import { SourceProfileView } from "@/features/sources/components/source-profile-view";
 import {
   getCarsForSourceCommission,
@@ -27,6 +28,11 @@ export default async function SourceDetailPage({
 }: {
   params: Promise<{ sourceId: string }>;
 }) {
+  const actor = await getSessionActor();
+  if (actor?.role === "VIEWER") {
+    redirect("/dashboard");
+  }
+
   const { sourceId } = await params;
   const source = await getSourceProfileData(sourceId);
 

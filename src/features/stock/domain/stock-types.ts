@@ -39,6 +39,11 @@ export type StockSummary = {
   activeCarsCount: number;
   stockValue: number;
   recoveredFromActiveStock: number;
+  avgCarBuyPrice: number;
+  avgCarExpenses: number;
+  avgDaysToComplete: number;
+  avgNetProfit: number;
+  completedCarsCount?: number;
 };
 
 export type StockFilterCriteria = {

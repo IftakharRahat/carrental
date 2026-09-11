@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getSessionActor } from "@/lib/auth/actor";
 
 import { BuyerProfileView } from "@/features/buyers/components/buyer-profile-view";
 import {
@@ -31,6 +32,11 @@ export default async function BuyerProfilePage({
 }: {
   params: Promise<{ buyerId: string }>;
 }) {
+  const actor = await getSessionActor();
+  if (actor?.role === "VIEWER") {
+    redirect("/dashboard");
+  }
+
   const { buyerId } = await params;
 
   if (!isDatabaseConfigured()) notFound();

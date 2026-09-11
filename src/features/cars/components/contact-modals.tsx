@@ -281,6 +281,7 @@ const sourceTypeLabels: Record<SourceType, string> = {
   GARAGE_OWNER: "Garage Owner",
   MIDDLEMAN: "Middleman",
   REFERRAL: "Referral",
+  AUCTION: "Auction",
   FACEBOOK: "Facebook",
   TIKTOK: "TikTok",
   INSTAGRAM: "Instagram",

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import {
   createSellerSchema,
   updateSellerSchema,
+  type ExpiredSellersCleanupResult,
 } from "../domain/seller-types";
 import { checkDuplicateSellerPhone } from "./seller-service";
 
@@ -206,6 +207,147 @@ export async function toggleSellerActiveAction(
     revalidatePath(`/sellers/${sellerId}`);
 
     return { ok: true, data: { id: sellerId, isActive } };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function cleanExpiredSellersAction(
+  days = 45,
+): Promise<ActionResult<ExpiredSellersCleanupResult>> {
+  try {
+    const actor = await requireActor("cars:write");
+    const thresholdDays = Math.max(1, Number(days) || 45);
+    const thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
+    const cutoffDate = new Date(Date.now() - thresholdMs);
+
+    // Fetch active sellers with their cars
+    const activeSellers = await db.seller.findMany({
+      where: { isActive: true },
+      include: {
+        cars: {
+          select: { id: true, purchaseDate: true },
+        },
+      },
+    });
+
+    const idsToDelete: string[] = [];
+    const idsToArchive: string[] = [];
+
+    for (const seller of activeSellers) {
+      if (seller.cars.length === 0) {
+        if (seller.createdAt <= cutoffDate) {
+          idsToDelete.push(seller.id);
+        }
+      } else {
+        // Find latest purchaseDate
+        const latestPurchaseTime = Math.max(
+          ...seller.cars.map((c) => new Date(c.purchaseDate).getTime()),
+        );
+        if (latestPurchaseTime <= cutoffDate.getTime()) {
+          idsToArchive.push(seller.id);
+        }
+      }
+    }
+
+    if (idsToDelete.length === 0 && idsToArchive.length === 0) {
+      return {
+        ok: true,
+        data: { deletedCount: 0, archivedCount: 0, totalCleaned: 0 },
+      };
+    }
+
+    await db.$transaction(async (tx) => {
+      // Safely delete unused sellers (0 cars)
+      if (idsToDelete.length > 0) {
+        await tx.seller.deleteMany({
+          where: { id: { in: idsToDelete } },
+        });
+      }
+
+      // Safely archive sellers with car history (preserves all cars, expenses, and cash transactions)
+      if (idsToArchive.length > 0) {
+        await tx.seller.updateMany({
+          where: { id: { in: idsToArchive } },
+          data: { isActive: false },
+        });
+      }
+
+      await tx.auditLog.create({
+        data: {
+          actorId: actor.profileId,
+          action: "UPDATE",
+          entityType: "SELLER",
+          entityId: "BATCH_CLEANUP",
+          reason: `Cleaned expired sellers older than ${thresholdDays} days. Deleted: ${idsToDelete.length} (0 cars), Archived: ${idsToArchive.length} (cars preserved).`,
+          after: {
+            thresholdDays,
+            deletedIds: idsToDelete,
+            archivedIds: idsToArchive,
+          },
+        },
+      });
+    });
+
+    revalidatePath("/sellers");
+    revalidatePath("/cars/new");
+
+    return {
+      ok: true,
+      data: {
+        deletedCount: idsToDelete.length,
+        archivedCount: idsToArchive.length,
+        totalCleaned: idsToDelete.length + idsToArchive.length,
+      },
+    };
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function deleteSingleSellerAction(
+  sellerId: string,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const actor = await requireActor("cars:write");
+    const seller = await db.seller.findUnique({
+      where: { id: sellerId },
+      include: {
+        cars: { select: { id: true } },
+      },
+    });
+
+    if (!seller) {
+      return { ok: false, message: "Seller not found." };
+    }
+
+    if (seller.cars.length > 0) {
+      return {
+        ok: false,
+        message:
+          "This seller has vehicle purchase history. To protect and preserve all car records (# all cars এ রেকর্ড সেভ থাকবে #), please Archive this seller instead.",
+      };
+    }
+
+    await db.$transaction(async (tx) => {
+      await tx.seller.delete({ where: { id: sellerId } });
+
+      await tx.auditLog.create({
+        data: {
+          actorId: actor.profileId,
+          action: "VOID",
+          entityType: "SELLER",
+          entityId: sellerId,
+          reason: `Deleted unused seller "${seller.name}" with 0 cars.`,
+          before: { id: seller.id, name: seller.name },
+        },
+      });
+    });
+
+    revalidatePath("/sellers");
+    revalidatePath("/cars/new");
+
+    return { ok: true, data: { id: sellerId } };
   } catch (error) {
     return handleError(error);
   }

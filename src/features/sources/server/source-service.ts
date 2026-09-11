@@ -25,13 +25,21 @@ export async function getSourcesListPageData(): Promise<{
 }> {
   const [rawSources, commissionTransactions] = await Promise.all([
     db.source.findMany({
-      orderBy: { name: "asc" },
+      orderBy: [{ createdAt: "desc" }],
       include: {
         cars: {
           select: {
             id: true,
             purchasePrice: true,
             purchaseDate: true,
+            expenses: {
+              where: { status: "ACTIVE" },
+              select: { amount: true },
+            },
+            recoveries: {
+              where: { status: "ACTIVE" },
+              select: { amount: true },
+            },
           },
         },
       },

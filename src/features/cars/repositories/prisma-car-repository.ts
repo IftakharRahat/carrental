@@ -45,16 +45,54 @@ export class PrismaCarRepository implements CarRepository {
         if (!seller)
           throw new PurchaseReferenceError("Select an active seller.");
 
-        if (input.sourceId) {
+        let finalSourceId = input.sourceId;
+        if (finalSourceId) {
           const source = await tx.source.findFirst({
-            where: { id: input.sourceId, isActive: true },
-            select: { type: true },
+            where: { id: finalSourceId, isActive: true },
+            select: { id: true, type: true },
           });
           if (!source || source.type !== input.sourceType) {
             throw new PurchaseReferenceError(
               "The selected source does not match the source type.",
             );
           }
+        } else {
+          const defaultNames: Record<string, string> = {
+            WALK_IN: "Direct Walk-In",
+            FACEBOOK: "Facebook",
+            TIKTOK: "TikTok",
+            INSTAGRAM: "Instagram",
+            GARAGE_OWNER: "Garage Owner",
+            MIDDLEMAN: "Middleman",
+            REFERRAL: "Referral",
+            AUCTION: "Auction",
+          };
+          const defaultName = defaultNames[input.sourceType] ?? input.sourceType;
+          let source = await tx.source.findFirst({
+            where: {
+              type: input.sourceType,
+              name: defaultName,
+              isActive: true,
+            },
+            select: { id: true },
+          });
+          if (!source) {
+            source = await tx.source.findFirst({
+              where: { type: input.sourceType, isActive: true },
+              select: { id: true },
+            });
+          }
+          if (!source) {
+            source = await tx.source.create({
+              data: {
+                name: defaultName,
+                type: input.sourceType,
+                isActive: true,
+              },
+              select: { id: true },
+            });
+          }
+          finalSourceId = source.id;
         }
 
         const mainPhoto = attachments.find((attachment) => attachment.isMain);
@@ -63,7 +101,7 @@ export class PrismaCarRepository implements CarRepository {
             idempotencyKey: input.idempotencyKey,
             purchaseDate: new Date(`${input.purchaseDate}T00:00:00.000Z`),
             sellerId: input.sellerId,
-            sourceId: input.sourceId,
+            sourceId: finalSourceId,
             brand: input.brand,
             model: input.model,
             year: input.year,
@@ -119,7 +157,7 @@ export class PrismaCarRepository implements CarRepository {
               carNumber: formatCarNumber(car.carNumber),
               purchaseDate: input.purchaseDate,
               sellerId: input.sellerId,
-              sourceId: input.sourceId ?? null,
+              sourceId: finalSourceId,
               brand: input.brand,
               model: input.model,
               year: input.year ?? null,

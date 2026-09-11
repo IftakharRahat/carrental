@@ -14,6 +14,7 @@ import {
   Phone,
   Power,
   Search,
+  Trash2,
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -34,8 +35,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { formatAed } from "@/lib/currency";
 import type { OverallSellersKpis, SellerRowData } from "../domain/seller-types";
-import { toggleSellerActiveAction } from "../server/seller-actions";
+import {
+  deleteSingleSellerAction,
+  toggleSellerActiveAction,
+} from "../server/seller-actions";
 import { AddSellerDialog } from "./add-seller-dialog";
+import { CleanExpiredSellersDialog } from "./clean-expired-sellers-dialog";
 import { EditSellerDialog } from "./edit-seller-dialog";
 
 export function SellersView({
@@ -46,22 +51,35 @@ export function SellersView({
   initialOverallKpis: OverallSellersKpis;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ACTIVE" | "ARCHIVED" | "ALL">("ACTIVE");
   const [editingSeller, setEditingSeller] = useState<SellerRowData | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
+  const activeCount = useMemo(
+    () => initialSellers.filter((s) => s.isActive).length,
+    [initialSellers],
+  );
+  const archivedCount = initialSellers.length - activeCount;
+
   const filteredSellers = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return initialSellers;
-    }
-    const query = searchQuery.toLowerCase().trim();
     return initialSellers.filter((s) => {
-      const matchesName = s.name.toLowerCase().includes(query);
-      const matchesPhone = s.phone?.toLowerCase().includes(query);
-      const matchesLocation = s.location?.toLowerCase().includes(query);
-      return matchesName || matchesPhone || matchesLocation;
+      // Status filter
+      if (statusFilter === "ACTIVE" && !s.isActive) return false;
+      if (statusFilter === "ARCHIVED" && s.isActive) return false;
+
+      // Search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const matchesName = s.name.toLowerCase().includes(query);
+        const matchesPhone = s.phone?.toLowerCase().includes(query);
+        const matchesLocation = s.location?.toLowerCase().includes(query);
+        return matchesName || matchesPhone || matchesLocation;
+      }
+
+      return true;
     });
-  }, [initialSellers, searchQuery]);
+  }, [initialSellers, statusFilter, searchQuery]);
 
   function handleToggleActive(seller: SellerRowData) {
     const actionText = seller.isActive ? "archive" : "activate";
@@ -74,6 +92,21 @@ export function SellersView({
       toast.success(
         `Seller "${seller.name}" ${seller.isActive ? "archived" : "activated"}`,
       );
+      router.refresh();
+    });
+  }
+
+  function handleDeleteSeller(seller: SellerRowData) {
+    if (!confirm(`Are you sure you want to permanently delete unused seller "${seller.name}"?`)) {
+      return;
+    }
+    startTransition(async () => {
+      const res = await deleteSingleSellerAction(seller.id);
+      if (!res.ok) {
+        toast.error(res.message || "Failed to delete seller");
+        return;
+      }
+      toast.success(`Seller "${seller.name}" deleted`);
       router.refresh();
     });
   }
@@ -100,6 +133,7 @@ export function SellersView({
         </div>
 
         <div className="flex items-center gap-2">
+          <CleanExpiredSellersDialog sellers={initialSellers} />
           <AddSellerDialog />
         </div>
       </div>
@@ -187,8 +221,9 @@ export function SellersView({
         </Card>
       </div>
 
-      {/* Search Bar */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Search Bar */}
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <Input
@@ -197,6 +232,43 @@ export function SellersView({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-8 h-9 text-xs"
           />
+        </div>
+
+        {/* Status Segmented Control */}
+        <div className="flex items-center rounded-lg border bg-muted/40 p-1 text-xs font-medium self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setStatusFilter("ACTIVE")}
+            className={`px-2.5 py-1 rounded-md transition-all ${
+              statusFilter === "ACTIVE"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Active ({activeCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter("ALL")}
+            className={`px-2.5 py-1 rounded-md transition-all ${
+              statusFilter === "ALL"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            All ({initialSellers.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter("ARCHIVED")}
+            className={`px-2.5 py-1 rounded-md transition-all ${
+              statusFilter === "ARCHIVED"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Archived ({archivedCount})
+          </button>
         </div>
       </div>
 
@@ -347,6 +419,17 @@ export function SellersView({
                             <Power className="size-4" />
                             {seller.isActive ? "Archive Seller" : "Activate Seller"}
                           </DropdownMenuItem>
+
+                          {seller.kpis.carsSoldToYou === 0 && (
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteSeller(seller)}
+                              disabled={isPending}
+                              className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="size-4" />
+                              Delete Seller
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>

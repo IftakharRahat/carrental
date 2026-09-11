@@ -66,6 +66,11 @@ describe("stock domain calculations", () => {
       expect(summary.activeCarsCount).toBe(2);
       expect(summary.stockValue).toBe(32000); // 12000 + 20000
       expect(summary.recoveredFromActiveStock).toBe(9000); // 1000 + 8000
+      expect(summary.avgCarBuyPrice).toBe(11000); // (10000 + 15000 + 8000) / 3
+      expect(summary.avgCarExpenses).toBe(2666.67); // (2000 + 5000 + 1000) / 3
+      expect(summary.avgDaysToComplete).toBe(4);
+      expect(summary.avgNetProfit).toBe(3000); // 12000 - 9000 for completed car
+      expect(summary.completedCarsCount).toBe(1);
     });
 
     it("handles empty items array gracefully", () => {
@@ -74,6 +79,11 @@ describe("stock domain calculations", () => {
         activeCarsCount: 0,
         stockValue: 0,
         recoveredFromActiveStock: 0,
+        avgCarBuyPrice: 0,
+        avgCarExpenses: 0,
+        avgDaysToComplete: 0,
+        avgNetProfit: 0,
+        completedCarsCount: 0,
       });
     });
   });

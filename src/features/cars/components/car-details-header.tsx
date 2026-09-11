@@ -6,6 +6,7 @@ import {
   CarFront,
   ChevronDown,
   Edit,
+  FileText,
   Plus,
   Wrench,
 } from "lucide-react";
@@ -21,6 +22,7 @@ import {
 import { conditionLabels } from "@/features/stock/domain/stock-types";
 import type { CarDetailsFull } from "../domain/car-details-types";
 import { AddExpenseDialog } from "./add-expense-dialog";
+import { PurchaseReceiptDialog } from "./purchase-receipt-dialog";
 
 const statusVariants: Record<string, { label: string; className: string }> = {
   IN_STOCK: {
@@ -42,9 +44,10 @@ const statusVariants: Record<string, { label: string; className: string }> = {
 
 type CarDetailsHeaderProps = {
   car: CarDetailsFull;
+  isViewer?: boolean;
 };
 
-export function CarDetailsHeader({ car }: CarDetailsHeaderProps) {
+export function CarDetailsHeader({ car, isViewer = false }: CarDetailsHeaderProps) {
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
 
   const statusConfig = statusVariants[car.status] ?? {
@@ -84,33 +87,44 @@ export function CarDetailsHeader({ car }: CarDetailsHeaderProps) {
               timeZone: "UTC",
             })}{" "}
             from <span className="font-medium text-foreground">{car.seller.name}</span>
-            {car.source ? ` via ${car.source.name}` : ""}
+            {car.source && !isViewer ? ` via ${car.source.name}` : ""}
           </p>
         </div>
 
         {/* Header Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            onClick={() => setExpenseDialogOpen(true)}
-            size="sm"
-            className="gap-1.5 shadow-xs"
-            data-testid="add-expense-header-btn"
-          >
-            <Plus className="size-4" />
-            Add Expense
-          </Button>
+          {!isViewer && (
+            <>
+              <Button
+                onClick={() => setExpenseDialogOpen(true)}
+                size="sm"
+                className="gap-1.5 shadow-xs"
+                data-testid="add-expense-header-btn"
+              >
+                <Plus className="size-4" />
+                Add Expense
+              </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={`/sell?carId=${car.carNumber}`} />}
-            className="gap-1.5 shadow-xs"
-            data-testid="sell-recovery-header-btn"
-          >
-            <Wrench className="size-4" />
-            Sell / Recovery
-          </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                nativeButton={false}
+                render={<Link href={`/sell?carId=${car.carNumber}`} />}
+                className="gap-1.5 shadow-xs"
+                data-testid="sell-recovery-header-btn"
+              >
+                <Wrench className="size-4" />
+                Sell / Recovery
+              </Button>
+            </>
+          )}
+
+          <PurchaseReceiptDialog
+            car={car}
+            isViewer={isViewer}
+            triggerText="Receipt / Voucher"
+            triggerVariant="outline"
+          />
 
           <DropdownMenu>
             <DropdownMenuTrigger

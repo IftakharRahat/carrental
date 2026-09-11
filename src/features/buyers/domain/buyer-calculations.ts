@@ -80,10 +80,56 @@ export function calculateOverallBuyersKpis(
       ? totalRecoveredAmount / buyersWithPurchases.length
       : 0;
 
+  const repeatBuyers = buyers.filter((b) => b.kpis.totalPurchasesCount > 1);
+  const repeatBuyersCount = repeatBuyers.length;
+  const repeatBuyerRate =
+    buyersWithPurchases.length > 0
+      ? Math.round((repeatBuyersCount / buyersWithPurchases.length) * 100)
+      : 0;
+
+  // Top Category determination
+  const categoryTotals = new Map<string, number>();
+  for (const b of buyers) {
+    if (b.kpis.totalAmountPaid > 0) {
+      for (const t of b.types) {
+        categoryTotals.set(t.name, (categoryTotals.get(t.name) || 0) + b.kpis.totalAmountPaid);
+      }
+    }
+  }
+
+  let topCategory = "N/A";
+  let maxAmount = 0;
+  for (const [name, amount] of categoryTotals.entries()) {
+    if (amount > maxAmount) {
+      maxAmount = amount;
+      topCategory = name;
+    }
+  }
+
+  if (topCategory === "N/A") {
+    // Fallback: category assigned to the most buyers
+    const categoryCounts = new Map<string, number>();
+    for (const b of buyers) {
+      for (const t of b.types) {
+        categoryCounts.set(t.name, (categoryCounts.get(t.name) || 0) + 1);
+      }
+    }
+    let maxCount = 0;
+    for (const [name, count] of categoryCounts.entries()) {
+      if (count > maxCount) {
+        maxCount = count;
+        topCategory = name;
+      }
+    }
+  }
+
   return {
     totalBuyers,
     activeBuyers,
     totalRecoveredAmount,
     averagePurchasePerBuyer,
+    topCategory,
+    repeatBuyerRate,
+    repeatBuyersCount,
   };
 }

@@ -37,10 +37,58 @@ export function calculateStockSummary(
     0,
   );
 
+  const totalCars = items.length;
+
+  // 1. Average Car Buy Price
+  const totalPurchasePrice = items.reduce(
+    (total, item) => total + item.purchasePrice,
+    0,
+  );
+  const avgCarBuyPrice =
+    totalCars > 0 ? Math.round((totalPurchasePrice / totalCars) * 100) / 100 : 0;
+
+  // 2. Average Car Expenses
+  const totalExpenses = items.reduce(
+    (total, item) => total + item.totalExpenses,
+    0,
+  );
+  const avgCarExpenses =
+    totalCars > 0 ? Math.round((totalExpenses / totalCars) * 100) / 100 : 0;
+
+  // 3. Average Days to Complete
+  const completedCars = items.filter(
+    (item) => item.status === "COMPLETED" || Boolean(item.completionDate),
+  );
+  const targetCompleted = completedCars.length > 0 ? completedCars : items;
+  const avgDaysToComplete =
+    targetCompleted.length > 0
+      ? Math.round(
+          targetCompleted.reduce((total, item) => total + item.daysInStock, 0) /
+            targetCompleted.length,
+        )
+      : 0;
+
+  // 4. Average Net Profit
+  // Net profit = recovery - totalInvestment
+  const targetProfitCars = completedCars.length > 0 ? completedCars : items;
+  const totalNetProfit = targetProfitCars.reduce(
+    (total, item) => total + (item.recovery - item.totalInvestment),
+    0,
+  );
+  const avgNetProfit =
+    targetProfitCars.length > 0
+      ? Math.round((totalNetProfit / targetProfitCars.length) * 100) / 100
+      : 0;
+
   return {
     activeCarsCount,
     stockValue,
     recoveredFromActiveStock,
+    avgCarBuyPrice,
+    avgCarExpenses,
+    avgDaysToComplete,
+    avgNetProfit,
+    completedCarsCount: completedCars.length,
   };
 }
 

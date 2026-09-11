@@ -21,7 +21,7 @@ export async function getSellersListPageData(): Promise<{
   overallKpis: OverallSellersKpis;
 }> {
   const rawSellers = await db.seller.findMany({
-    orderBy: { name: "asc" },
+    orderBy: [{ createdAt: "desc" }],
     include: {
       cars: {
         select: {

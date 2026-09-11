@@ -84,3 +84,9 @@ export type SellerProfileData = {
   kpis: SellerKpis;
   linkedCars: SellerCarItem[];
 };
+
+export type ExpiredSellersCleanupResult = {
+  deletedCount: number;
+  archivedCount: number;
+  totalCleaned: number;
+};

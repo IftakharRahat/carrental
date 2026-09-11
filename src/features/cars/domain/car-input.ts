@@ -4,6 +4,7 @@ export const sourceTypeValues = [
   "GARAGE_OWNER",
   "MIDDLEMAN",
   "REFERRAL",
+  "AUCTION",
   "FACEBOOK",
   "TIKTOK",
   "INSTAGRAM",
@@ -16,6 +17,7 @@ export const peopleSourceTypes: ReadonlySet<SourceType> = new Set([
   "GARAGE_OWNER",
   "MIDDLEMAN",
   "REFERRAL",
+  "AUCTION",
 ]);
 
 const positiveAedAmount = z

@@ -199,6 +199,28 @@ model BuyerTypeAssignment {
   @@map("buyer_type_assignments")
 }
 
+model BusinessContact {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  businessName String?  @map("business_name")
+  category     String
+  purpose      String?
+  phone        String?
+  whatsapp     String?
+  email        String?
+  location     String?
+  notes        String?
+  isImportant  Boolean  @default(false) @map("is_important")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([name])
+  @@index([category])
+  @@index([isImportant])
+  @@map("business_contacts")
+}
+
 model Car {
   id               String                @id @default(uuid()) @db.Uuid
   carNumber        Int                   @unique @default(autoincrement()) @map("car_number")
@@ -270,6 +292,14 @@ model CustomExpenseCategory {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   @@map("custom_expense_categories")
+}
+
+model CustomBrand {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("custom_brands")
 }
 
 model RecoveryItem {

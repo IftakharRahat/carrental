@@ -111,13 +111,65 @@ describe("Expense Calculations & Presets", () => {
       },
     ];
 
-    const kpis = calculateBusinessExpensesKpis(expenses, fixedDate);
+    const kpis = calculateBusinessExpensesKpis(expenses, {
+      referenceDate: fixedDate, // 26th of August 2026
+      carsPurchasedCount: 4,
+      monthlyRevenue: 50000,
+    });
 
     // Active in August: 8000 + 1500 + 2000 = 11500
     expect(kpis.currentMonthTotal).toBe(11500);
     expect(kpis.currentMonthCount).toBe(3);
     expect(kpis.topCategoryThisMonth).toBe("Shop Rent");
     expect(kpis.topCategoryAmount).toBe(10000);
+
+    // 1. Avg Daily Overhead: 11500 / 26 days = 442.31
+    expect(kpis.daysElapsedInMonth).toBe(26);
+    expect(kpis.avgDailyOverhead).toBe(442.31);
+
+    // 2. Overhead Cost Per Car Purchased: 11500 / 4 cars = 2875
+    expect(kpis.carsPurchasedThisMonthCount).toBe(4);
+    expect(kpis.overheadCostPerCarPurchased).toBe(2875);
+
+    // 3. Expense-to-Revenue Ratio: (11500 / 50000) * 100 = 23%
+    expect(kpis.monthlyRevenue).toBe(50000);
+    expect(kpis.expenseToRevenueRatio).toBe(23);
+
+    // 4. MoM Expense Growth: (11500 - 900) / 900 * 100 = 1177.8%
+    expect(kpis.lastMonthTotal).toBe(900);
+    expect(kpis.momExpenseGrowth).toBe(1177.8);
+  });
+
+  it("handles zero cars purchased, zero revenue, and zero last month expenses gracefully", () => {
+    const expenses: BusinessExpenseItem[] = [
+      {
+        id: "1",
+        expenseDate: "2026-08-01",
+        category: "Electricity",
+        group: "Fixed / Regular",
+        amount: 3000,
+        paymentMethod: "CASH",
+        description: "Power bill",
+        notes: null,
+        status: "ACTIVE",
+        voidReason: null,
+        voidedAt: null,
+        createdAt: "2026-08-01T00:00:00.000Z",
+      },
+    ];
+
+    const kpis = calculateBusinessExpensesKpis(expenses, {
+      referenceDate: new Date("2026-08-10T12:00:00.000Z"),
+      carsPurchasedCount: 0,
+      monthlyRevenue: 0,
+      lastMonthTotal: 0,
+    });
+
+    expect(kpis.currentMonthTotal).toBe(3000);
+    expect(kpis.avgDailyOverhead).toBe(300); // 3000 / 10 days
+    expect(kpis.overheadCostPerCarPurchased).toBe(0); // 0 cars
+    expect(kpis.expenseToRevenueRatio).toBe(0); // 0 revenue
+    expect(kpis.momExpenseGrowth).toBe(100); // 100% growth from 0 baseline
   });
 
   it("calculates Section 14.1 Combined Expense Summary correctly", () => {

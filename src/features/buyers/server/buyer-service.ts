@@ -67,6 +67,9 @@ export async function getBuyersListPageData(): Promise<BuyersListPageData> {
         activeBuyers: 0,
         totalRecoveredAmount: 0,
         averagePurchasePerBuyer: 0,
+        topCategory: "N/A",
+        repeatBuyerRate: 0,
+        repeatBuyersCount: 0,
       },
       availableTypes: [],
     };
@@ -87,7 +90,7 @@ export async function getBuyersListPageData(): Promise<BuyersListPageData> {
           },
         },
       },
-      orderBy: [{ isActive: "desc" }, { name: "asc" }],
+      orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
     }),
   ]);
 

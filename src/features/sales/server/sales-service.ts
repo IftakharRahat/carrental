@@ -3,22 +3,28 @@ import "server-only";
 import { formatCarNumber, parseCarNumber } from "@/features/cars/domain/car-number";
 import { isDatabaseConfigured } from "@/lib/config-state";
 import { db } from "@/lib/db";
-import type { BuyerOption, SellCarSummary } from "../domain/sales-types";
+import type { BuyerOption, RecoveryItemType, SellCarSummary } from "../domain/sales-types";
+
+export type CustomItemOption = {
+  name: string;
+  type: RecoveryItemType;
+};
 
 export type SellPageData = {
   cars: SellCarSummary[];
   buyers: BuyerOption[];
   selectedCarId: string | null;
+  customItems: CustomItemOption[];
 };
 
 export async function getSellPageData(
   preselectedCarIdentifier?: string,
 ): Promise<SellPageData> {
   if (!isDatabaseConfigured()) {
-    return { cars: [], buyers: [], selectedCarId: null };
+    return { cars: [], buyers: [], selectedCarId: null, customItems: [] };
   }
 
-  const [carsFromDb, buyersFromDb] = await Promise.all([
+  const [carsFromDb, buyersFromDb, distinctLabels] = await Promise.all([
     db.car.findMany({
       where: {
         status: { not: "VOIDED" },
@@ -47,6 +53,11 @@ export async function getSellPageData(
         },
       },
       orderBy: { name: "asc" },
+    }),
+    db.recoveryTransaction.findMany({
+      where: { itemLabel: { not: null }, status: "ACTIVE" },
+      select: { itemLabel: true, itemType: true },
+      distinct: ["itemLabel"],
     }),
   ]);
 
@@ -141,9 +152,19 @@ export async function getSellPageData(
     selectedCarId = activeCar ? activeCar.id : cars[0].id;
   }
 
+  const customItems: CustomItemOption[] = distinctLabels
+    .filter((d): d is { itemLabel: string; itemType: RecoveryItemType } =>
+      Boolean(d.itemLabel && d.itemType),
+    )
+    .map((d) => ({
+      name: d.itemLabel,
+      type: d.itemType,
+    }));
+
   return {
     cars,
     buyers,
     selectedCarId,
+    customItems,
   };
 }

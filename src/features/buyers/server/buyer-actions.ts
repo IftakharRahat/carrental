@@ -323,3 +323,68 @@ export async function deleteBuyerAction(
     };
   }
 }
+
+/**
+ * Creates a new Buyer Type / Category.
+ */
+export async function createBuyerTypeAction(
+  name: string,
+): Promise<ActionResult<{ id: string; name: string }>> {
+  if (!isDatabaseConfigured()) {
+    return { ok: false, message: "Database is not configured." };
+  }
+
+  const trimmed = (name || "").trim();
+  if (trimmed.length < 2) {
+    return { ok: false, message: "Category name must be at least 2 characters." };
+  }
+  if (trimmed.length > 60) {
+    return { ok: false, message: "Category name must not exceed 60 characters." };
+  }
+
+  try {
+    const actor = await requireActor();
+
+    const existing = await db.buyerType.findFirst({
+      where: {
+        name: {
+          equals: trimmed,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    if (existing) {
+      return { ok: false, message: `Category "${existing.name}" already exists.` };
+    }
+
+    const created = await db.buyerType.create({
+      data: {
+        name: trimmed,
+      },
+    });
+
+    await db.auditLog.create({
+      data: {
+        actorId: actor.profileId,
+        action: "CREATE",
+        entityType: "BUYER_TYPE",
+        entityId: created.id,
+        after: { name: created.name },
+      },
+    });
+
+    revalidatePath("/buyers");
+    revalidatePath("/sell");
+
+    return { ok: true, data: { id: created.id, name: created.name } };
+  } catch (error) {
+    console.error("Failed to create buyer type:", error);
+    return {
+      ok: false,
+      message:
+        error instanceof Error ? error.message : "Failed to create category.",
+    };
+  }
+}
+

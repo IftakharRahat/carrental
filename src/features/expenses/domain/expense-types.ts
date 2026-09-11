@@ -27,6 +27,7 @@ export const FINANCIAL_EXPENSE_CATEGORIES = [
 ] as const;
 
 export const OTHER_EXPENSE_CATEGORIES = [
+  "Partner Field Expense",
   "Other Business Expense",
 ] as const;
 
@@ -90,6 +91,9 @@ export function mapToPrismaBusinessCategory(subcategory: string):
     case "Insurance":
     case "License/Renewal":
       return "PROFESSIONAL_FEES";
+    case "Partner Field Expense":
+    case "Other Business Expense":
+      return "OTHER";
     default:
       return "OTHER";
   }
@@ -158,9 +162,17 @@ export type BusinessExpenseItem = {
 
 export type BusinessExpensesPageKpis = {
   currentMonthTotal: number;
-  currentMonthCount: number;
+  currentMonthCount?: number;
   topCategoryThisMonth: string | null;
   topCategoryAmount: number;
+  expenseToRevenueRatio: number;
+  avgDailyOverhead: number;
+  daysElapsedInMonth: number;
+  overheadCostPerCarPurchased: number;
+  carsPurchasedThisMonthCount: number;
+  momExpenseGrowth: number;
+  lastMonthTotal: number;
+  monthlyRevenue: number;
 };
 
 // Section 14: Combined Expense Details Types

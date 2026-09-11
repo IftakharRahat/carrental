@@ -9,6 +9,8 @@ export const permissions = [
   "finance:void",
   "reports:read",
   "users:manage",
+  "contacts:read",
+  "contacts:manage",
 ] as const;
 
 export type Permission = (typeof permissions)[number];
@@ -21,6 +23,8 @@ const rolePermissions: Record<AppRole, ReadonlySet<Permission>> = {
     "finance:read",
     "finance:write",
     "reports:read",
+    "contacts:read",
+    "contacts:manage",
   ]),
   VIEWER: new Set(["cars:read", "finance:read", "reports:read"]),
 };

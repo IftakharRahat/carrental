@@ -63,3 +63,23 @@ export function calculateOverallSellersKpis(
     avgCarsPerSeller,
   };
 }
+
+export function isSellerExpired(
+  seller: {
+    createdAt: string | Date;
+    kpis: { lastDeal: string | null; carsSoldToYou: number };
+  },
+  thresholdDays = 45,
+  referenceDate = new Date(),
+): boolean {
+  const thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
+  const cutoffTime = referenceDate.getTime() - thresholdMs;
+
+  if (seller.kpis.carsSoldToYou > 0 && seller.kpis.lastDeal) {
+    const lastDealTime = new Date(seller.kpis.lastDeal).getTime();
+    return lastDealTime <= cutoffTime;
+  }
+
+  const createdTime = new Date(seller.createdAt).getTime();
+  return createdTime <= cutoffTime;
+}

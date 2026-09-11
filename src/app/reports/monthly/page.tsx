@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { getSessionActor } from "@/lib/auth/actor";
 import { MonthlyReportView } from "@/features/reports/components/monthly-report-view";
 import { getMonthlyReportData } from "@/features/reports/server/monthly-report-service";
 
@@ -19,11 +20,21 @@ type MonthlyReportPageProps = {
 export default async function MonthlyReportPage({
   searchParams,
 }: MonthlyReportPageProps) {
+  const actor = await getSessionActor();
+  const isViewer = actor?.role === "VIEWER";
+
   const resolvedParams = searchParams ? await searchParams : undefined;
   const year = resolvedParams?.year ? parseInt(resolvedParams.year, 10) : undefined;
   const month = resolvedParams?.month ? parseInt(resolvedParams.month, 10) : undefined;
 
   const data = await getMonthlyReportData(year, month);
 
-  return <MonthlyReportView data={data} />;
+  if (isViewer) {
+    data.purchasedCars = data.purchasedCars.map((p) => ({
+      ...p,
+      sourceName: null,
+    }));
+  }
+
+  return <MonthlyReportView data={data} isViewer={isViewer} />;
 }

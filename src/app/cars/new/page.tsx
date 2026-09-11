@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getSessionActor } from "@/lib/auth/actor";
 
 import { BuyCarForm } from "@/features/cars/components/buy-car-form";
 import { getBusinessDate } from "@/features/cars/domain/car-input";
@@ -8,6 +10,11 @@ export const metadata: Metadata = { title: "Buy Car" };
 export const dynamic = "force-dynamic";
 
 export default async function BuyCarPage() {
+  const actor = await getSessionActor();
+  if (actor?.role === "VIEWER") {
+    redirect("/dashboard");
+  }
+
   const references = await getBuyCarReferenceData();
   const timeZone = process.env.APP_TIMEZONE ?? "Asia/Dubai";
 
@@ -23,6 +30,7 @@ export default async function BuyCarPage() {
       <BuyCarForm
         initialSellers={references.sellers}
         initialSources={references.sources}
+        initialBrands={references.brands}
         purchaseDate={getBusinessDate(new Date(), timeZone)}
         idempotencyKey={crypto.randomUUID()}
       />

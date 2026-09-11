@@ -19,6 +19,12 @@ describe("security-calculations", () => {
 
     const viewer = ROLE_DEFINITIONS.find((r) => r.role === "VIEWER");
     expect(viewer?.restrictedFrom).toContain("Creating or editing any car records");
+    expect(viewer?.restrictedFrom).toContain(
+      "Viewing source or buyer contact info (profiles, phone numbers, locations)",
+    );
+    expect(viewer?.permissions).toContain(
+      "Export reports to CSV (Sanitized without source or buyer details)",
+    );
   });
 
   it("summarizes user roles correctly", () => {

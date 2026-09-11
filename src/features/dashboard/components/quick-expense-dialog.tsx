@@ -14,6 +14,12 @@ import { toast } from "sonner";
 
 import { createBusinessExpenseAction } from "@/features/expenses/server/business-expense-actions";
 import { createCarExpenseAction } from "@/features/cars/server/car-expense-actions";
+import {
+  FINANCIAL_EXPENSE_CATEGORIES,
+  FIXED_EXPENSE_CATEGORIES,
+  OPERATING_EXPENSE_CATEGORIES,
+  OTHER_EXPENSE_CATEGORIES,
+} from "@/features/expenses/domain/expense-types";
 import type { ActiveCarOption } from "../domain/dashboard-types";
 
 type QuickExpenseDialogProps = {
@@ -21,18 +27,6 @@ type QuickExpenseDialogProps = {
   onOpenChange: (open: boolean) => void;
   activeCars: ActiveCarOption[];
 };
-
-const BIZ_CATEGORIES = [
-  "RENT",
-  "UTILITIES",
-  "TRANSPORT",
-  "TOOLS",
-  "SALARY",
-  "MARKETING",
-  "LEGAL",
-  "OFFICE",
-  "OTHER",
-];
 
 const CAR_CATEGORIES = [
   "TOWING",
@@ -60,7 +54,7 @@ export function QuickExpenseDialog({
   const [expenseDate, setExpenseDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd"),
   );
-  const [category, setCategory] = useState<string>("RENT");
+  const [category, setCategory] = useState<string>("Shop Rent");
   const [paymentMethod, setPaymentMethod] = useState<string>("CASH");
   const [description, setDescription] = useState<string>("");
 
@@ -68,7 +62,7 @@ export function QuickExpenseDialog({
 
   const handleTypeChange = (type: "BUSINESS" | "CAR") => {
     setExpenseType(type);
-    setCategory(type === "BUSINESS" ? "RENT" : "TOWING");
+    setCategory(type === "BUSINESS" ? "Shop Rent" : "TOWING");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -232,20 +226,67 @@ export function QuickExpenseDialog({
           {/* Category & Payment Method */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-muted-foreground mb-1 block text-xs font-medium">
-                Category
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-muted-foreground block text-xs font-medium">
+                  Category
+                </label>
+                {expenseType === "BUSINESS" && (
+                  <button
+                    type="button"
+                    onClick={() => setCategory("Partner Field Expense")}
+                    className="text-[11px] text-primary hover:text-primary/80 font-medium hover:underline flex items-center gap-0.5 cursor-pointer"
+                  >
+                    ⚡ Partner Field
+                  </button>
+                )}
+              </div>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="bg-background w-full rounded-lg border px-3 py-2 text-sm capitalize"
+                className="bg-background w-full rounded-lg border px-3 py-2 text-sm"
               >
-                {(expenseType === "BUSINESS" ? BIZ_CATEGORIES : CAR_CATEGORIES).map(
-                  (cat) => (
+                {expenseType === "BUSINESS" ? (
+                  <>
+                    <optgroup label="⭐ Quick / Field Operations">
+                      <option value="Partner Field Expense">
+                        Partner Field Expense (⚡ Quick)
+                      </option>
+                    </optgroup>
+                    <optgroup label="Fixed / Regular">
+                      {FIXED_EXPENSE_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Operating">
+                      {OPERATING_EXPENSE_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Financial">
+                      {FINANCIAL_EXPENSE_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Other">
+                      {OTHER_EXPENSE_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </>
+                ) : (
+                  CAR_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat.replace("_", " ")}
                     </option>
-                  ),
+                  ))
                 )}
               </select>
             </div>

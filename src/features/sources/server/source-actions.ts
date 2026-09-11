@@ -20,7 +20,7 @@ function handleError(error: unknown) {
 
 export async function createSourceAction(
   input: unknown,
-): Promise<ActionResult<{ id: string; name: string }>> {
+): Promise<ActionResult<{ id: string; name: string; type: string; detail: string | null }>> {
   const parsed = createSourceSchema.safeParse(input);
   if (!parsed.success) {
     return {
@@ -62,7 +62,12 @@ export async function createSourceAction(
 
     return {
       ok: true,
-      data: { id: source.id, name: source.name },
+      data: {
+        id: source.id,
+        name: source.name,
+        type: source.type,
+        detail: source.phone,
+      },
     };
   } catch (error) {
     return handleError(error);

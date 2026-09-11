@@ -2,12 +2,16 @@
 
 import { useMemo, useState } from "react";
 import {
+  Calendar,
+  Car,
   Edit2,
   Filter,
+  Percent,
   Receipt,
   Search,
   Tag,
   TrendingDown,
+  TrendingUp,
   Trash2,
   X,
 } from "lucide-react";
@@ -161,9 +165,9 @@ export function BusinessExpensesView({
         </div>
       </div>
 
-      {/* Section 13.3 Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        {/* Total This Month */}
+      {/* Section 13.3 Summary Cards (6-card responsive grid) */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {/* 1. Total This Month */}
         <Card className="border-border/80 shadow-xs" data-testid="kpi-biz-month-total">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -174,53 +178,146 @@ export function BusinessExpensesView({
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-rose-700 dark:text-rose-400">
+            <div className="text-xl font-bold tracking-tight text-rose-700 dark:text-rose-400">
               {formatAed(initialPageKpis.currentMonthTotal)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Active expenses this calendar month
+              Active expenses this month
             </p>
           </CardContent>
         </Card>
 
-        {/* Expense Count */}
-        <Card className="border-border/80 shadow-xs" data-testid="kpi-biz-month-count">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Monthly Transactions
-            </CardTitle>
-            <div className="rounded-md bg-blue-500/10 p-1.5 text-blue-600 dark:text-blue-400">
-              <Receipt className="size-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight">
-              {initialPageKpis.currentMonthCount}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Recorded overhead payments
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Top Category */}
+        {/* 2. Top Expense Category */}
         <Card className="border-border/80 shadow-xs" data-testid="kpi-biz-top-category">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Top Expense Category
+              Top Category
             </CardTitle>
             <div className="rounded-md bg-primary/10 p-1.5 text-primary">
               <Tag className="size-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold tracking-tight truncate">
+            <div
+              className="text-lg font-bold tracking-tight truncate"
+              title={initialPageKpis.topCategoryThisMonth || "None yet"}
+            >
               {initialPageKpis.topCategoryThisMonth || "None yet"}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {initialPageKpis.topCategoryAmount > 0
                 ? formatAed(initialPageKpis.topCategoryAmount)
-                : "No data"}
+                : "No expenses"}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 3. Expense-to-Revenue Ratio (%) */}
+        <Card className="border-border/80 shadow-xs" data-testid="kpi-biz-expense-to-revenue">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Expense-to-Revenue
+            </CardTitle>
+            <div className="rounded-md bg-purple-500/10 p-1.5 text-purple-600 dark:text-purple-400">
+              <Percent className="size-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold tracking-tight text-foreground">
+              {initialPageKpis.expenseToRevenueRatio.toFixed(1)}%
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 truncate">
+              {initialPageKpis.monthlyRevenue > 0
+                ? `of ${formatAed(initialPageKpis.monthlyRevenue)} rev`
+                : "No revenue recorded"}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 4. Avg Daily Overhead */}
+        <Card className="border-border/80 shadow-xs" data-testid="kpi-biz-avg-daily">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Avg Daily Overhead
+            </CardTitle>
+            <div className="rounded-md bg-amber-500/10 p-1.5 text-amber-600 dark:text-amber-400">
+              <Calendar className="size-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold tracking-tight text-foreground">
+              {formatAed(initialPageKpis.avgDailyOverhead)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Day {initialPageKpis.daysElapsedInMonth} of month
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 5. Overhead Cost Per Car Purchased */}
+        <Card className="border-border/80 shadow-xs" data-testid="kpi-biz-overhead-per-car">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Overhead / Car Bought
+            </CardTitle>
+            <div className="rounded-md bg-blue-500/10 p-1.5 text-blue-600 dark:text-blue-400">
+              <Car className="size-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold tracking-tight text-foreground">
+              {initialPageKpis.carsPurchasedThisMonthCount > 0
+                ? formatAed(initialPageKpis.overheadCostPerCarPurchased)
+                : "N/A"}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {initialPageKpis.carsPurchasedThisMonthCount > 0
+                ? `${initialPageKpis.carsPurchasedThisMonthCount} car${
+                    initialPageKpis.carsPurchasedThisMonthCount === 1 ? "" : "s"
+                  } bought`
+                : "0 cars purchased"}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 6. MoM Expense Growth (% Change) */}
+        <Card className="border-border/80 shadow-xs" data-testid="kpi-biz-mom-growth">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              MoM Expense Growth
+            </CardTitle>
+            <div
+              className={`rounded-md p-1.5 ${
+                initialPageKpis.momExpenseGrowth > 0
+                  ? "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                  : initialPageKpis.momExpenseGrowth < 0
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {initialPageKpis.momExpenseGrowth > 0 ? (
+                <TrendingUp className="size-4" />
+              ) : (
+                <TrendingDown className="size-4" />
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold tracking-tight flex items-center gap-1">
+              {initialPageKpis.momExpenseGrowth > 0 ? (
+                <span className="text-rose-600 dark:text-rose-400">
+                  ↗️ +{initialPageKpis.momExpenseGrowth.toFixed(1)}%
+                </span>
+              ) : initialPageKpis.momExpenseGrowth < 0 ? (
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  ↘️ {initialPageKpis.momExpenseGrowth.toFixed(1)}%
+                </span>
+              ) : (
+                <span className="text-muted-foreground">0.0%</span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 truncate">
+              vs {formatAed(initialPageKpis.lastMonthTotal)} last mo.
             </p>
           </CardContent>
         </Card>

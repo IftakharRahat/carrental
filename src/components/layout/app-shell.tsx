@@ -28,7 +28,7 @@ export async function AppShell({ children }: AppShellProps) {
     <div className="bg-muted/35 min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
       <aside className="bg-sidebar sticky top-0 hidden h-screen border-r lg:flex lg:flex-col">
         <Brand />
-        <SidebarNav />
+        <SidebarNav userRole={actor?.role} />
         <SidebarFooter user={actor} />
       </aside>
 

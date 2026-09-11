@@ -52,14 +52,16 @@ export const ROLE_DEFINITIONS: RolePermissionItem[] = [
       "View Dashboard metrics and summary KPIs",
       "View Stock inventory and vehicle profiles",
       "View Monthly Reports and financial ledger",
-      "View Business Analytics across brands and sources",
-      "Export reports to CSV",
+      "View Business Analytics across brands and conditions",
+      "Export reports to CSV (Sanitized without source or buyer details)",
     ],
     restrictedFrom: [
       "Creating or editing any car records",
       "Recording any expense or recovery transactions",
       "Managing contacts or finance ledger entries",
       "Accessing security configuration or backups",
+      "Viewing source or buyer contact info (profiles, phone numbers, locations)",
+      "Exporting reports with sensitive source or buyer details",
     ],
   },
 ];

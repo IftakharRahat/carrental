@@ -31,9 +31,10 @@ import type {
 
 type AnalyticsViewProps = {
   initialData: BusinessAnalyticsData;
+  isViewer?: boolean;
 };
 
-export function AnalyticsView({ initialData }: AnalyticsViewProps) {
+export function AnalyticsView({ initialData, isViewer = false }: AnalyticsViewProps) {
   const [activeTab, setActiveTab] = useState<
     "BRANDS" | "CONDITIONS" | "SOURCES" | "BUYERS"
   >("BRANDS");
@@ -111,28 +112,30 @@ export function AnalyticsView({ initialData }: AnalyticsViewProps) {
     }
     lines.push("");
 
-    lines.push("--- 16.3 SOURCE-WISE ANALYTICS ---");
-    lines.push("Source Name,Source Type,Cars Bought,Cars Completed,Purchase Value (AED),Commission Paid (AED),Recovery (AED),Realized Profit (AED),Avg Profit (AED)");
-    for (const s of sourceAnalytics) {
-      lines.push(
-        `"${s.sourceName}","${s.sourceType}",${s.carsBought},${s.carsCompleted},${s.purchaseValue},${s.commissionPaid},${s.totalRecovery},${s.realizedCarProfit},${s.averageRealizedCarProfit}`,
-      );
-    }
-    lines.push("");
+    if (!isViewer) {
+      lines.push("--- 16.3 SOURCE-WISE ANALYTICS ---");
+      lines.push("Source Name,Source Type,Cars Bought,Cars Completed,Purchase Value (AED),Commission Paid (AED),Recovery (AED),Realized Profit (AED),Avg Profit (AED)");
+      for (const s of sourceAnalytics) {
+        lines.push(
+          `"${s.sourceName}","${s.sourceType}",${s.carsBought},${s.carsCompleted},${s.purchaseValue},${s.commissionPaid},${s.totalRecovery},${s.realizedCarProfit},${s.averageRealizedCarProfit}`,
+        );
+      }
+      lines.push("");
 
-    lines.push("--- 16.4 BUYER CATEGORIES ---");
-    lines.push("Category,Transactions Count,Total Amount (AED),Average Transaction (AED)");
-    for (const bc of buyerCategoryAnalytics) {
-      lines.push(`"${bc.category}",${bc.transactionCount},${bc.totalAmount},${bc.averageTransaction}`);
-    }
-    lines.push("");
+      lines.push("--- 16.4 BUYER CATEGORIES ---");
+      lines.push("Category,Transactions Count,Total Amount (AED),Average Transaction (AED)");
+      for (const bc of buyerCategoryAnalytics) {
+        lines.push(`"${bc.category}",${bc.transactionCount},${bc.totalAmount},${bc.averageTransaction}`);
+      }
+      lines.push("");
 
-    lines.push("--- 16.4 TOP BUYERS ---");
-    lines.push("Buyer Name,Company,Categories,Total Purchases,Total Amount (AED),Avg Transaction (AED),Last Purchase");
-    for (const b of topBuyers) {
-      lines.push(
-        `"${b.buyerName}","${b.companyName || "N/A"}","${b.buyerTypes.join("; ")}",${b.totalPurchases},${b.totalAmount},${b.averageTransaction},${b.lastPurchaseDate || "N/A"}`,
-      );
+      lines.push("--- 16.4 TOP BUYERS ---");
+      lines.push("Buyer Name,Company,Categories,Total Purchases,Total Amount (AED),Avg Transaction (AED),Last Purchase");
+      for (const b of topBuyers) {
+        lines.push(
+          `"${b.buyerName}","${b.companyName || "N/A"}","${b.buyerTypes.join("; ")}",${b.totalPurchases},${b.totalAmount},${b.averageTransaction},${b.lastPurchaseDate || "N/A"}`,
+        );
+      }
     }
 
     const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
@@ -315,29 +318,33 @@ export function AnalyticsView({ initialData }: AnalyticsViewProps) {
               16.2 Conditions ({conditionAnalytics.length})
             </Button>
 
-            <Button
-              type="button"
-              variant={activeTab === "SOURCES" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveTab("SOURCES")}
-              className="text-xs gap-1.5"
-              data-testid="tab-sources"
-            >
-              <GitFork className="size-3.5" />
-              16.3 Sources ({sourceAnalytics.length})
-            </Button>
+            {!isViewer && (
+              <>
+                <Button
+                  type="button"
+                  variant={activeTab === "SOURCES" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveTab("SOURCES")}
+                  className="text-xs gap-1.5"
+                  data-testid="tab-sources"
+                >
+                  <GitFork className="size-3.5" />
+                  16.3 Sources ({sourceAnalytics.length})
+                </Button>
 
-            <Button
-              type="button"
-              variant={activeTab === "BUYERS" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveTab("BUYERS")}
-              className="text-xs gap-1.5"
-              data-testid="tab-buyers"
-            >
-              <ShoppingBag className="size-3.5" />
-              16.4 Buyers ({topBuyers.length})
-            </Button>
+                <Button
+                  type="button"
+                  variant={activeTab === "BUYERS" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveTab("BUYERS")}
+                  className="text-xs gap-1.5"
+                  data-testid="tab-buyers"
+                >
+                  <ShoppingBag className="size-3.5" />
+                  16.4 Buyers ({topBuyers.length})
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Quick Search filter */}

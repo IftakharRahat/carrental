@@ -18,6 +18,7 @@ type StockViewProps = {
   initialSummary: StockSummary;
   brands: string[];
   defaultIncludeCompleted?: boolean;
+  isAllCarsPage?: boolean;
 };
 
 export function StockView({
@@ -25,10 +26,12 @@ export function StockView({
   initialSummary,
   brands,
   defaultIncludeCompleted = false,
+  isAllCarsPage = false,
 }: StockViewProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isAllCars = isAllCarsPage || pathname === "/cars";
 
   const [criteria, setCriteria] = useState<StockFilterCriteria>(() => {
     const initial: StockFilterCriteria = {};
@@ -134,7 +137,10 @@ export function StockView({
   return (
     <div className="space-y-5">
       {/* 6.1 Summary Cards */}
-      <StockSummaryCards summary={summary} />
+      <StockSummaryCards
+        summary={summary}
+        variant={isAllCars ? "all-cars" : "stock"}
+      />
 
       {/* 6.2 Filter Toolbar */}
       <StockFilters
