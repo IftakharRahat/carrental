@@ -206,49 +206,53 @@ export function BusinessContactsView({
       </div>
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
         <Card className="border-border/60 shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+          <CardHeader className="flex flex-row items-center justify-between px-3.5 pt-3 pb-1.5 space-y-0">
+            <CardTitle className="text-muted-foreground text-[11px] font-medium uppercase tracking-wider">
               Total Business Contacts
             </CardTitle>
-            <Users className="text-muted-foreground size-4" />
+            <Users className="text-muted-foreground size-3.5 shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalContactsCount}</div>
-            <p className="text-muted-foreground mt-1 text-xs">
+          <CardContent className="px-3.5 pb-3 pt-0">
+            <div className="text-base sm:text-lg font-bold text-foreground">
+              {totalContactsCount}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
               Active service providers & contacts
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-amber-500/30 bg-amber-500/[0.03] shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-amber-700 dark:text-amber-300 text-xs font-medium uppercase tracking-wider">
+          <CardHeader className="flex flex-row items-center justify-between px-3.5 pt-3 pb-1.5 space-y-0">
+            <CardTitle className="text-amber-700 dark:text-amber-300 text-[11px] font-medium uppercase tracking-wider">
               Important / Favorites
             </CardTitle>
-            <Star className="size-4 fill-amber-500 text-amber-500" />
+            <Star className="size-3.5 fill-amber-500 text-amber-500 shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+          <CardContent className="px-3.5 pb-3 pt-0">
+            <div className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400">
               {importantContactsCount}
             </div>
-            <p className="text-muted-foreground mt-1 text-xs">
+            <p className="text-[10px] text-muted-foreground mt-0.5">
               Quick-access priority contacts
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-border/60 shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+          <CardHeader className="flex flex-row items-center justify-between px-3.5 pt-3 pb-1.5 space-y-0">
+            <CardTitle className="text-muted-foreground text-[11px] font-medium uppercase tracking-wider">
               Service Categories
             </CardTitle>
-            <Tag className="text-muted-foreground size-4" />
+            <Tag className="text-muted-foreground size-3.5 shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{availableCategories.length || 1}</div>
-            <p className="text-muted-foreground mt-1 text-xs">
+          <CardContent className="px-3.5 pb-3 pt-0">
+            <div className="text-base sm:text-lg font-bold text-foreground">
+              {availableCategories.length || 1}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
               IT, Legal, Transport, Repair & more
             </p>
           </CardContent>
@@ -407,43 +411,51 @@ export function BusinessContactsView({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filteredContacts.map((contact) => (
             <Card
               key={contact.id}
-              className={`relative flex flex-col justify-between overflow-hidden border transition-all hover:shadow-md ${
+              className={`relative flex flex-col justify-between overflow-hidden rounded-xl border transition-all hover:shadow-md ${
                 contact.isImportant
                   ? "border-amber-500/40 bg-card shadow-xs ring-1 ring-amber-500/20"
                   : "border-border/60 bg-card shadow-xs hover:border-border"
               }`}
             >
               {/* Card Header */}
-              <div className="p-5 pb-3">
-                <div className="flex items-start justify-between gap-2">
+              <div className="p-3 pb-2">
+                <div className="flex items-start justify-between gap-1.5">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="truncate text-base font-bold text-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <h3
+                        className="truncate text-sm font-bold text-foreground"
+                        title={contact.name}
+                      >
                         {contact.name}
                       </h3>
                       {contact.isImportant && (
-                        <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-full px-2 py-0.2 text-[10px] font-bold">
+                        <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-full px-1.5 py-0.2 text-[9px] font-bold shrink-0">
                           IMPORTANT
                         </span>
                       )}
                     </div>
 
                     {contact.businessName ? (
-                      <p className="flex items-center gap-1.5 truncate text-xs font-semibold text-primary mt-0.5">
-                        <Building2 className="size-3.5 shrink-0" />
-                        {contact.businessName}
+                      <p
+                        className="flex items-center gap-1 truncate text-[11px] font-medium text-primary mt-0.5"
+                        title={contact.businessName}
+                      >
+                        <Building2 className="size-3 shrink-0" />
+                        <span className="truncate">{contact.businessName}</span>
                       </p>
                     ) : (
-                      <p className="text-muted-foreground text-xs mt-0.5">Individual Professional</p>
+                      <p className="text-muted-foreground text-[11px] mt-0.5 truncate">
+                        Individual Professional
+                      </p>
                     )}
                   </div>
 
                   {/* Star Toggle & More Menu */}
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-0.5 shrink-0">
                     <button
                       type="button"
                       title={contact.isImportant ? "Remove from Important" : "Mark as Important"}
@@ -451,14 +463,14 @@ export function BusinessContactsView({
                         handleToggleImportant(contact.id, contact.isImportant, contact.name)
                       }
                       disabled={isPending}
-                      className={`flex size-8 items-center justify-center rounded-lg transition-transform active:scale-95 ${
+                      className={`flex size-7 items-center justify-center rounded-md transition-transform active:scale-95 ${
                         contact.isImportant
                           ? "bg-amber-500/15 text-amber-500 hover:bg-amber-500/25"
                           : "text-muted-foreground/50 hover:text-amber-500 hover:bg-amber-500/10"
                       }`}
                     >
                       <Star
-                        className={`size-4.5 transition-all ${
+                        className={`size-3.5 transition-all ${
                           contact.isImportant ? "fill-amber-500 text-amber-500" : ""
                         }`}
                       />
@@ -466,17 +478,17 @@ export function BusinessContactsView({
 
                     <DropdownMenu>
                       <DropdownMenuTrigger
-                        className="inline-flex size-8 items-center justify-center rounded-md hover:bg-muted focus-visible:outline-hidden cursor-pointer"
+                        className="inline-flex size-7 items-center justify-center rounded-md hover:bg-muted focus-visible:outline-hidden cursor-pointer"
                         aria-label={`Actions for ${contact.name}`}
                       >
-                        <MoreVertical className="size-4 text-muted-foreground" />
+                        <MoreVertical className="size-3.5 text-muted-foreground" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           onClick={() => setEditingContact(contact)}
-                          className="gap-2"
+                          className="gap-2 text-xs"
                         >
-                          <Briefcase className="size-4" /> Edit Contact
+                          <Briefcase className="size-3.5" /> Edit Contact
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
@@ -486,83 +498,83 @@ export function BusinessContactsView({
                               contact.name,
                             )
                           }
-                          className="gap-2"
+                          className="gap-2 text-xs"
                         >
-                          <Star className="size-4 text-amber-500" />
+                          <Star className="size-3.5 text-amber-500" />
                           {contact.isImportant ? "Remove Important" : "Mark as Important"}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleDeleteContact(contact)}
-                          className="gap-2 text-destructive focus:text-destructive"
+                          className="gap-2 text-xs text-destructive focus:text-destructive"
                         >
-                          <Trash2 className="size-4" /> Delete Contact
+                          <Trash2 className="size-3.5" /> Delete Contact
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </div>
 
-                {/* Category Badge */}
-                <div className="mt-2.5 flex items-center gap-1.5">
-                  <Badge variant="secondary" className="text-[11px] font-medium">
+                {/* Category Badge & Location */}
+                <div className="mt-2 flex flex-wrap items-center gap-1">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-medium">
                     {contact.category}
                   </Badge>
                   {contact.location && (
-                    <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                      <MapPin className="size-3 text-muted-foreground/70" />
-                      {contact.location}
+                    <span className="text-muted-foreground flex items-center gap-0.5 text-[10px]">
+                      <MapPin className="size-2.5 text-muted-foreground/70 shrink-0" />
+                      <span className="truncate max-w-[110px]">{contact.location}</span>
                     </span>
                   )}
                 </div>
 
-                {/* Purpose Highlight (Requested: "Purpose: webpage handling website development") */}
+                {/* Purpose Highlight */}
                 {contact.purpose && (
-                  <div className="bg-muted/50 border-border/60 mt-3 rounded-lg border p-2.5 text-xs">
-                    <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-semibold">
-                      <Target className="size-3 text-emerald-600" /> Purpose:
+                  <div className="bg-muted/50 border-border/60 mt-2 rounded-md border p-2 text-[11px]">
+                    <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold">
+                      <Target className="size-2.5 text-emerald-600 shrink-0" /> Purpose:
                     </span>
-                    <p className="text-foreground/90 font-medium mt-0.5 leading-relaxed">
+                    <p className="text-foreground/90 font-medium mt-0.5 leading-snug line-clamp-2">
                       {contact.purpose}
                     </p>
                   </div>
                 )}
 
-                {/* Notes (Requested: "Notes: Website developer from Dhaka") */}
+                {/* Notes */}
                 {contact.notes && (
-                  <p className="text-muted-foreground mt-2 line-clamp-2 text-xs italic">
+                  <p className="text-muted-foreground mt-1.5 line-clamp-2 text-[10px] italic">
                     &ldquo;{contact.notes}&rdquo;
                   </p>
                 )}
               </div>
 
               {/* Card Footer: Quick Actions */}
-              <div className="bg-muted/20 border-border/50 flex items-center justify-between border-t p-3 text-xs">
-                <div className="flex items-center gap-2">
+              <div className="bg-muted/20 border-border/50 flex items-center justify-between border-t p-2 px-2.5 text-[11px]">
+                <div className="flex items-center gap-1 min-w-0">
                   {contact.phone ? (
                     <a
                       href={`tel:${contact.phone}`}
-                      className="hover:bg-primary/10 hover:text-primary flex items-center gap-1 rounded-md px-2 py-1 font-mono font-medium text-foreground transition-colors"
+                      className="hover:bg-primary/10 hover:text-primary flex items-center gap-1 rounded-md px-1.5 py-0.5 font-mono text-[11px] font-medium text-foreground transition-colors truncate"
                       title="Click to call"
                     >
-                      <Phone className="size-3.5 text-emerald-600" />
-                      {contact.phone}
+                      <Phone className="size-3 text-emerald-600 shrink-0" />
+                      <span className="truncate">{contact.phone}</span>
                     </a>
                   ) : (
-                    <span className="text-muted-foreground/60 text-[11px]">No phone</span>
+                    <span className="text-muted-foreground/60 text-[10px]">No phone</span>
                   )}
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1 shrink-0">
                   {contact.whatsapp && (
                     <a
                       href={`https://wa.me/${contact.whatsapp.replace(/[^0-9]/g, "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold transition-colors"
+                      className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold transition-colors"
                       title="Open WhatsApp chat"
                     >
-                      <MessageSquare className="size-3.5" />
+                      <MessageSquare className="size-3 shrink-0" />
                       WhatsApp
                     </a>
                   )}
@@ -570,10 +582,10 @@ export function BusinessContactsView({
                   {contact.email && (
                     <a
                       href={`mailto:${contact.email}`}
-                      className="hover:bg-muted text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md p-1.5 transition-colors"
+                      className="hover:bg-muted text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md p-1 transition-colors"
                       title={`Send email to ${contact.email}`}
                     >
-                      <Mail className="size-3.5" />
+                      <Mail className="size-3" />
                     </a>
                   )}
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Edit2 } from "lucide-react";
+import { Copy, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -134,7 +134,21 @@ function EditBuyerForm({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="edit-buyer-whatsapp">WhatsApp (Optional)</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="edit-buyer-whatsapp">WhatsApp (Optional)</Label>
+              {phone && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWhatsapp(phone);
+                    toast.info("Copied Phone Number to WhatsApp");
+                  }}
+                  className="text-primary hover:text-primary/80 flex items-center gap-1 text-[11px] font-medium transition-colors"
+                >
+                  <Copy className="size-3" /> Same as phone
+                </button>
+              )}
+            </div>
             <Input
               id="edit-buyer-whatsapp"
               type="tel"

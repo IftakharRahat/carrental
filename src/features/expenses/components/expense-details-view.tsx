@@ -35,9 +35,23 @@ import {
   calculateExpenseDetailsSummary,
   getDatePresetRange,
 } from "../domain/expense-calculations";
-import type {
-  UnifiedExpenseRow,
+import {
+  FIXED_EXPENSE_CATEGORIES,
+  OPERATING_EXPENSE_CATEGORIES,
+  FINANCIAL_EXPENSE_CATEGORIES,
+  OTHER_EXPENSE_CATEGORIES,
+  ALL_BUSINESS_EXPENSE_CATEGORIES,
+  type UnifiedExpenseRow,
 } from "../domain/expense-types";
+
+const CAR_EXPENSE_CATEGORIES = [
+  "TRANSPORT",
+  "LABOUR",
+  "PARTS",
+  "REPAIR",
+  "RTA_DOCUMENTATION",
+  "OTHER",
+] as const;
 
 type ExpenseDetailsViewProps = {
   initialRows: UnifiedExpenseRow[];
@@ -61,6 +75,15 @@ export function ExpenseDetailsView({
 
   // Details Modal for business expense or view
   const [selectedRow, setSelectedRow] = useState<UnifiedExpenseRow | null>(null);
+
+  // Extra categories present in availableCategories not covered by standard sets
+  const extraCategories = useMemo(() => {
+    const known = new Set<string>([
+      ...ALL_BUSINESS_EXPENSE_CATEGORIES,
+      ...CAR_EXPENSE_CATEGORIES,
+    ]);
+    return availableCategories.filter((c) => !known.has(c));
+  }, [availableCategories]);
 
   // Compute effective date bounds based on preset
   const { effectiveStart, effectiveEnd } = useMemo(() => {
@@ -390,9 +413,23 @@ export function ExpenseDetailsView({
               <select
                 className="flex h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 value={typeFilter}
-                onChange={(e) =>
-                  setTypeFilter(e.target.value as "ALL" | "CAR" | "BUSINESS")
-                }
+                onChange={(e) => {
+                  const newType = e.target.value as "ALL" | "CAR" | "BUSINESS";
+                  setTypeFilter(newType);
+                  if (
+                    newType === "CAR" &&
+                    (ALL_BUSINESS_EXPENSE_CATEGORIES as readonly string[]).includes(categoryFilter)
+                  ) {
+                    setCategoryFilter("ALL");
+                  } else if (
+                    newType === "BUSINESS" &&
+                    (CAR_EXPENSE_CATEGORIES as readonly string[]).includes(
+                      categoryFilter as (typeof CAR_EXPENSE_CATEGORIES)[number],
+                    )
+                  ) {
+                    setCategoryFilter("ALL");
+                  }
+                }}
                 data-testid="details-type-filter"
               >
                 <option value="ALL">All Expense Types</option>
@@ -409,11 +446,59 @@ export function ExpenseDetailsView({
                 data-testid="details-category-filter"
               >
                 <option value="ALL">All Categories</option>
-                {availableCategories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
+
+                {typeFilter !== "CAR" && (
+                  <>
+                    <optgroup label="Fixed / Regular">
+                      {FIXED_EXPENSE_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Operating">
+                      {OPERATING_EXPENSE_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Financial">
+                      {FINANCIAL_EXPENSE_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Other Business Expenses">
+                      {OTHER_EXPENSE_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </>
+                )}
+
+                {typeFilter !== "BUSINESS" && (
+                  <optgroup label="Car / Vehicle Expenses">
+                    {CAR_EXPENSE_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+
+                {extraCategories.length > 0 && (
+                  <optgroup label="Other Categories">
+                    {extraCategories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
 

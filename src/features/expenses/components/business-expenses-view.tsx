@@ -28,6 +28,10 @@ import { Input } from "@/components/ui/input";
 import { formatAed } from "@/lib/currency";
 import { getDatePresetRange } from "../domain/expense-calculations";
 import {
+  FIXED_EXPENSE_CATEGORIES,
+  OPERATING_EXPENSE_CATEGORIES,
+  FINANCIAL_EXPENSE_CATEGORIES,
+  OTHER_EXPENSE_CATEGORIES,
   ALL_BUSINESS_EXPENSE_CATEGORIES,
   type BusinessExpenseItem,
   type BusinessExpensesPageKpis,
@@ -84,6 +88,19 @@ export function BusinessExpensesView({
     }
     return { effectiveStart: null, effectiveEnd: null };
   }, [datePreset, customStartDate, customEndDate]);
+
+  // Extra categories present in initialExpenses not in standard sets
+  const extraBusinessCategories = useMemo(() => {
+    const known = new Set<string>(ALL_BUSINESS_EXPENSE_CATEGORIES);
+    const extras = new Set<string>();
+    initialExpenses.forEach((e) => {
+      const cat = e.category;
+      if (cat && !known.has(cat)) {
+        extras.add(cat);
+      }
+    });
+    return Array.from(extras).sort();
+  }, [initialExpenses]);
 
   // Filtered expenses
   const filteredExpenses = useMemo(() => {
@@ -429,11 +446,43 @@ export function BusinessExpensesView({
                 data-testid="biz-exp-category-filter"
               >
                 <option value="ALL">All Categories</option>
-                {ALL_BUSINESS_EXPENSE_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
+                <optgroup label="Fixed / Regular">
+                  {FIXED_EXPENSE_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Operating">
+                  {OPERATING_EXPENSE_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Financial">
+                  {FINANCIAL_EXPENSE_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Other">
+                  {OTHER_EXPENSE_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </optgroup>
+                {extraBusinessCategories.length > 0 && (
+                  <optgroup label="Other Recorded">
+                    {extraBusinessCategories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
 

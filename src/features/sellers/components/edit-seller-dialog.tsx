@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Edit3 } from "lucide-react";
+import { AlertTriangle, Copy, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -199,7 +199,21 @@ function EditSellerForm({
       {/* WhatsApp & Emirates ID */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="editSellerWhatsapp">WhatsApp</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="editSellerWhatsapp">WhatsApp</Label>
+            {phone && (
+              <button
+                type="button"
+                onClick={() => {
+                  setWhatsapp(phone);
+                  toast.info("Copied Phone Number to WhatsApp");
+                }}
+                className="text-primary hover:text-primary/80 flex items-center gap-1 text-[11px] font-medium transition-colors"
+              >
+                <Copy className="size-3" /> Same as phone
+              </button>
+            )}
+          </div>
           <Input
             id="editSellerWhatsapp"
             value={whatsapp}

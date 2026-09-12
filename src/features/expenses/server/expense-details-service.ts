@@ -5,9 +5,10 @@ import {
   calculateExpenseDetailsSummary,
   getDatePresetRange,
 } from "../domain/expense-calculations";
-import type {
-  ExpenseDetailsSummary,
-  UnifiedExpenseRow,
+import {
+  ALL_BUSINESS_EXPENSE_CATEGORIES,
+  type ExpenseDetailsSummary,
+  type UnifiedExpenseRow,
 } from "../domain/expense-types";
 
 export async function getExpenseDetailsPageData(): Promise<{
@@ -85,8 +86,18 @@ export async function getExpenseDetailsPageData(): Promise<{
     },
   );
 
-  // Derive all unique categories
+  // Derive all unique categories (including all standard business categories, car categories, and recorded ones)
   const categoriesSet = new Set<string>();
+  ALL_BUSINESS_EXPENSE_CATEGORIES.forEach((c) => categoriesSet.add(c));
+  const KNOWN_CAR_CATEGORIES = [
+    "TRANSPORT",
+    "LABOUR",
+    "PARTS",
+    "REPAIR",
+    "RTA_DOCUMENTATION",
+    "OTHER",
+  ];
+  KNOWN_CAR_CATEGORIES.forEach((c) => categoriesSet.add(c));
   allRows.forEach((r) => categoriesSet.add(r.category));
   const availableCategories = Array.from(categoriesSet).sort();
 

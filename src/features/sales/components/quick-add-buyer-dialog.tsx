@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, UserPlus } from "lucide-react";
+import { Copy, Plus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ export function QuickAddBuyerDialog({
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
@@ -45,6 +46,7 @@ export function QuickAddBuyerDialog({
     const formData = new FormData();
     formData.append("name", name);
     if (phone) formData.append("phone", phone);
+    if (whatsapp) formData.append("whatsapp", whatsapp);
     if (companyName) formData.append("companyName", companyName);
     if (location) formData.append("location", location);
     if (notes) formData.append("notes", notes);
@@ -56,6 +58,7 @@ export function QuickAddBuyerDialog({
         onBuyerCreated(res.data);
         setName("");
         setPhone("");
+        setWhatsapp("");
         setCompanyName("");
         setLocation("");
         setNotes("");
@@ -110,14 +113,38 @@ export function QuickAddBuyerDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="buyer-company">Company</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="buyer-whatsapp">WhatsApp</Label>
+                  {phone && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWhatsapp(phone);
+                        toast.info("Copied Phone Number to WhatsApp");
+                      }}
+                      className="text-primary hover:text-primary/80 flex items-center gap-1 text-[11px] font-medium transition-colors"
+                    >
+                      <Copy className="size-3" /> Same as phone
+                    </button>
+                  )}
+                </div>
                 <Input
-                  id="buyer-company"
-                  placeholder="Optional company"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                  id="buyer-whatsapp"
+                  placeholder="+971 50 123 4567"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="buyer-company">Company</Label>
+              <Input
+                id="buyer-company"
+                placeholder="Optional company"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+              />
             </div>
 
             <div className="space-y-1.5">

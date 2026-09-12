@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Copy } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -208,14 +210,29 @@ function ContactDialog<TFields extends ContactFields>({
               onChange={(event) => onUpdate("phone", event.target.value)}
             />
           </Field>
-          <Field label="WhatsApp" htmlFor={`${title}-whatsapp`}>
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`${title}-whatsapp`}>WhatsApp</Label>
+              {fields.phone && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdate("whatsapp", fields.phone);
+                    toast.info("Copied Phone Number to WhatsApp");
+                  }}
+                  className="text-primary hover:text-primary/80 flex items-center gap-1 text-[11px] font-medium transition-colors"
+                >
+                  <Copy className="size-3" /> Same as phone
+                </button>
+              )}
+            </div>
             <Input
               id={`${title}-whatsapp`}
               inputMode="tel"
               value={fields.whatsapp}
               onChange={(event) => onUpdate("whatsapp", event.target.value)}
             />
-          </Field>
+          </div>
           {extraField}
           <Field label="Location" htmlFor={`${title}-location`}>
             <Input
