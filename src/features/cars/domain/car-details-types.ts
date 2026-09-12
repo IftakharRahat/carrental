@@ -115,6 +115,7 @@ export type CarDetailsFull = {
     id: string;
     name: string;
     phone: string | null;
+    whatsapp?: string | null;
     emiratesId?: string | null;
   };
   source: {
