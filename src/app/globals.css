@@ -171,11 +171,14 @@
   }
 
   #printable-quotation-offer,
-  #printable-quotation-offer * {
+  #printable-quotation-offer *,
+  #printable-purchase-receipt,
+  #printable-purchase-receipt * {
     visibility: visible;
   }
 
-  #printable-quotation-offer {
+  #printable-quotation-offer,
+  #printable-purchase-receipt {
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;

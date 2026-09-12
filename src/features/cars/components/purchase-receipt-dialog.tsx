@@ -46,7 +46,94 @@ export function PurchaseReceiptDialog({
   };
 
   const handlePrint = () => {
-    window.print();
+    const element = document.getElementById("printable-purchase-receipt");
+    if (!element) {
+      window.print();
+      return;
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "none";
+    iframe.style.zIndex = "-9999";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    const styleTags = Array.from(document.querySelectorAll("link[rel='stylesheet'], style"))
+      .map((tag) => tag.outerHTML)
+      .join("\n");
+
+    const cleanTitle = `Payment_Voucher_${car.carNumber}_${car.seller.name.replace(/[^a-zA-Z0-9]/g, "_")}`;
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>${cleanTitle}</title>
+          ${styleTags}
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 10mm 12mm;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              box-sizing: border-box !important;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              color: #0f172a !important;
+            }
+            #printable-purchase-receipt {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 auto !important;
+              padding: 0 !important;
+              border: none !important;
+              box-shadow: none !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+          </style>
+        </head>
+        <body>
+          <div style="width: 100%; display: flex; justify-content: center; padding: 0;">
+            ${element.outerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    iframe.contentWindow?.focus();
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.print();
+      } catch (err) {
+        console.error("Print fallback:", err);
+        window.print();
+      } finally {
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }, 1500);
+      }
+    }, 350);
   };
 
   const formattedDate = new Date(car.purchaseDate).toLocaleDateString("en-AE", {
@@ -206,20 +293,29 @@ export function PurchaseReceiptDialog({
           </div>
 
           {/* Legal / Transfer Acknowledgement */}
-          <div className="border-t pt-3 text-[11px] text-muted-foreground space-y-1 print:text-gray-600">
-            <p>
+          <div className="border-t pt-3 text-[11px] text-muted-foreground space-y-2.5 print:text-gray-700">
+            <p className="leading-relaxed">
               <strong>Acknowledgement:</strong> The seller acknowledges receipt of
               full payment of {formatAed(car.purchasePrice)} as stated above and
               hereby surrenders and transfers all vehicle rights, title, and
               possession to the buyer free from any legal claims or encumbrances.
             </p>
+
+            <div className="rounded-lg border border-slate-200 bg-muted/40 p-3 text-foreground dark:text-slate-200 print:bg-gray-50 print:border-gray-300 print:text-black">
+              <p className="font-semibold text-[11px] text-foreground mb-1">
+                The Seller acknowledges and confirms that:
+              </p>
+              <p className="italic text-[11px] leading-relaxed text-muted-foreground print:text-gray-800">
+                &ldquo;I confirm that, to the best of my knowledge, there are no outstanding traffic fines, police cases, legal claims, or liabilities arising before the sale date. Any such pre-existing issue discovered later shall be the Seller’s responsibility.&rdquo;
+              </p>
+            </div>
           </div>
 
           {/* Signatures */}
-          <div className="grid grid-cols-2 gap-8 pt-8 border-t text-xs">
-            <div className="space-y-12">
-              <p className="font-semibold text-muted-foreground text-[11px] uppercase tracking-wider">
-                Seller (Customer) Signature:
+          <div className="grid grid-cols-2 gap-8 pt-6 border-t text-xs">
+            <div className="space-y-10">
+              <p className="font-bold text-foreground text-[11px] uppercase tracking-wider">
+                Seller sign:
               </p>
               <div className="border-t border-dashed pt-1.5 text-muted-foreground">
                 <p className="font-medium text-foreground">{car.seller.name}</p>
@@ -227,9 +323,9 @@ export function PurchaseReceiptDialog({
               </div>
             </div>
 
-            <div className="space-y-12 text-right">
-              <p className="font-semibold text-muted-foreground text-[11px] uppercase tracking-wider">
-                Authorized Yard Stamp & Sign:
+            <div className="space-y-10 text-right">
+              <p className="font-bold text-foreground text-[11px] uppercase tracking-wider">
+                Buyer / Yard Sign:
               </p>
               <div className="border-t border-dashed pt-1.5 text-muted-foreground">
                 <p className="font-medium text-foreground">Car Scrap Business</p>
