@@ -214,11 +214,15 @@ export function PurchaseReceiptDialog({
                   Phone: {car.seller.phone}
                 </p>
               )}
-              {car.source && !isViewer && (
-                <p className="text-muted-foreground print:text-gray-700">
-                  Channel: {car.source.name} ({car.source.type})
-                </p>
-              )}
+              <p className="text-muted-foreground print:text-gray-700">
+                Emirates ID: {car.seller.emiratesId ? (
+                  <strong className="text-foreground font-mono print:text-black font-semibold">
+                    {car.seller.emiratesId}
+                  </strong>
+                ) : (
+                  <span className="font-mono text-muted-foreground/60">____________________</span>
+                )}
+              </p>
             </div>
 
             <div className="text-right">

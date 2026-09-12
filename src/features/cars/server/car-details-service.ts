@@ -215,6 +215,7 @@ export async function getCarDetails(
       id: car.seller.id,
       name: car.seller.name,
       phone: car.seller.phone,
+      emiratesId: car.seller.emiratesId,
     },
     source: car.source
       ? {

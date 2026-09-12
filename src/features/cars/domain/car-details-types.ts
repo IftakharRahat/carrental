@@ -115,6 +115,7 @@ export type CarDetailsFull = {
     id: string;
     name: string;
     phone: string | null;
+    emiratesId?: string | null;
   };
   source: {
     id: string;
