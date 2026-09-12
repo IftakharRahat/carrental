@@ -16,6 +16,7 @@ import {
   CircleDollarSign,
   Coins,
   DollarSign,
+  FileText,
   Flame,
   Layers,
   PiggyBank,
@@ -35,6 +36,7 @@ import { formatCurrency } from "@/lib/currency";
 import type { DashboardViewData } from "../domain/dashboard-types";
 import { QuickExpenseDialog } from "./quick-expense-dialog";
 import { QuickSellDialog } from "./quick-sell-dialog";
+import { QuotationModal } from "@/features/quotations/components/quotation-modal";
 
 type DashboardViewProps = {
   data: DashboardViewData;
@@ -47,6 +49,7 @@ export function DashboardView({ data }: DashboardViewProps) {
   // Quick Action Dialogs State
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
   const [sellDialogOpen, setSellDialogOpen] = useState(false);
+  const [quotationDialogOpen, setQuotationDialogOpen] = useState(false);
 
   const {
     overall,
@@ -138,6 +141,15 @@ export function DashboardView({ data }: DashboardViewProps) {
         >
           <Wrench className="text-emerald-500 size-4" />
           <span>+ Sell / Recovery</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setQuotationDialogOpen(true)}
+          className="hover:bg-muted border-blue-500/20 hover:border-blue-500/40 flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
+        >
+          <FileText className="text-blue-500 size-4" />
+          <span>+ Create Quotation</span>
         </button>
       </div>
 
@@ -436,6 +448,11 @@ export function DashboardView({ data }: DashboardViewProps) {
         open={sellDialogOpen}
         onOpenChange={setSellDialogOpen}
         activeCars={activeCars}
+      />
+
+      <QuotationModal
+        open={quotationDialogOpen}
+        onOpenChange={setQuotationDialogOpen}
       />
     </div>
   );

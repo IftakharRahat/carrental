@@ -10,6 +10,7 @@ import {
   CircleDollarSign,
   ContactRound,
   FileSpreadsheet,
+  FileText,
   GitFork,
   Layers,
   LayoutDashboard,
@@ -49,7 +50,10 @@ export const navGroups: NavGroup[] = [
   },
   {
     title: "SALES",
-    items: [{ label: "Sell / Recovery", icon: Wrench, href: "/sell" }],
+    items: [
+      { label: "Sell / Recovery", icon: Wrench, href: "/sell" },
+      { label: "Quotations", icon: FileText, href: "/quotations" },
+    ],
   },
   {
     title: "CONTACTS",
@@ -100,6 +104,7 @@ export function SidebarNav({ userRole }: { userRole?: string | null }) {
         if (isViewer) {
           if (item.href === "/cars/new") return false;
           if (item.href === "/sell") return false;
+          if (item.href === "/quotations") return false;
           if (item.href === "/sources") return false;
           if (item.href === "/buyers") return false;
           if (item.href === "/business-contacts") return false;

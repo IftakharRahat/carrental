@@ -221,6 +221,32 @@ model BusinessContact {
   @@map("business_contacts")
 }
 
+model Quotation {
+  id               String   @id @default(uuid()) @db.Uuid
+  quotationNumber  Int      @unique @default(autoincrement()) @map("quotation_number")
+  businessName     String   @default("USED GARAGE UAE") @map("business_name")
+  businessPhone    String   @default("+971 56 270 9960") @map("business_phone")
+  businessAddress  String   @default("Sharjah 10 Industrial Area") @map("business_address")
+  quotationDate    DateTime @default(now()) @map("quotation_date") @db.Date
+  customerName     String   @map("customer_name")
+  customerWhatsapp String?  @map("customer_whatsapp")
+  customerLocation String?  @map("customer_location")
+  vehicleModel     String   @map("vehicle_model")
+  modelYear        Int?     @map("model_year")
+  condition        String
+  customerNotes    String?  @map("customer_notes")
+  askingPrice      Decimal? @map("asking_price") @db.Decimal(12, 2)
+  offerPrice       Decimal  @map("offer_price") @db.Decimal(12, 2)
+  terms            String?
+  status           String   @default("OFFERED")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([customerName])
+  @@index([vehicleModel])
+  @@map("quotations")
+}
+
 model Car {
   id               String                @id @default(uuid()) @db.Uuid
   carNumber        Int                   @unique @default(autoincrement()) @map("car_number")
