@@ -135,99 +135,102 @@ export function SourceProfileView({
       </div>
 
       {/* Section 9.3 Performance Summary Cards (5 KPIs) */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {/* Total Leads */}
-        <Card className="shadow-xs border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <Card className="shadow-xs border" size="sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Total Leads
             </CardTitle>
-            <Users className="size-4 text-primary" />
+            <Users className="size-3.5 text-primary shrink-0" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className="text-2xl font-bold text-foreground"
+              className="text-base sm:text-lg font-bold text-foreground"
               data-testid="kpi-total-leads"
             >
               {source.kpis.totalLeads}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">Opportunities</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Opportunities</p>
           </CardContent>
         </Card>
 
         {/* Cars Bought */}
-        <Card className="shadow-xs border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <Card className="shadow-xs border" size="sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Cars Bought
             </CardTitle>
-            <Car className="size-4 text-emerald-600 dark:text-emerald-400" />
+            <Car className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className="text-2xl font-bold text-foreground"
+              className="text-base sm:text-lg font-bold text-foreground"
               data-testid="kpi-cars-bought"
             >
               {source.kpis.carsBought}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">Acquired cars</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Acquired cars</p>
           </CardContent>
         </Card>
 
         {/* Total Purchase Value */}
-        <Card className="shadow-xs border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <Card className="shadow-xs border" size="sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Purchase Value
             </CardTitle>
-            <DollarSign className="size-4 text-blue-600 dark:text-blue-400" />
+            <DollarSign className="size-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className="text-2xl font-bold text-foreground"
+              className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate"
+              title={formatAed(source.kpis.totalPurchaseValue)}
               data-testid="kpi-purchase-value"
             >
               {formatAed(source.kpis.totalPurchaseValue)}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">Inventory spend</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Inventory spend</p>
           </CardContent>
         </Card>
 
         {/* Commission Paid */}
-        <Card className="shadow-xs border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <Card className="shadow-xs border" size="sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Commission Paid
             </CardTitle>
-            <Coins className="size-4 text-amber-500" />
+            <Coins className="size-3.5 text-amber-500 shrink-0" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className="text-2xl font-bold text-foreground"
+              className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate"
+              title={formatAed(source.kpis.commissionPaid)}
               data-testid="kpi-commission-paid"
             >
               {formatAed(source.kpis.commissionPaid)}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">Payouts to source</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Payouts to source</p>
           </CardContent>
         </Card>
 
         {/* Last Deal */}
-        <Card className="shadow-xs border col-span-2 sm:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <Card className="shadow-xs border col-span-2 sm:col-span-1" size="sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Last Deal
             </CardTitle>
-            <Calendar className="size-4 text-purple-600 dark:text-purple-400" />
+            <Calendar className="size-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className="text-xl font-bold text-foreground truncate"
+              className="text-sm sm:text-base font-bold text-foreground truncate"
+              title={source.kpis.lastDeal || "None"}
               data-testid="kpi-last-deal"
             >
               {source.kpis.lastDeal || "None"}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">Latest purchase</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Latest purchase</p>
           </CardContent>
         </Card>
       </div>

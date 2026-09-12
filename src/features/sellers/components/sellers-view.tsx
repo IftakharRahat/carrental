@@ -139,82 +139,84 @@ export function SellersView({
       </div>
 
       {/* KPI Cards Strip */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="shadow-xs border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      {/* KPI Cards Strip */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card className="shadow-xs border" size="sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Active Sellers
             </CardTitle>
-            <Users className="size-4 text-primary" />
+            <Users className="size-3.5 text-primary shrink-0" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className="text-2xl font-bold text-foreground"
+              className="text-base sm:text-lg font-bold text-foreground"
               data-testid="kpi-active-sellers"
             >
               {initialOverallKpis.activeSellers}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] text-muted-foreground mt-0.5">
               Out of {initialOverallKpis.totalSellers} total contacts
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-xs border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <Card className="shadow-xs border" size="sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Cars Purchased
             </CardTitle>
-            <Car className="size-4 text-emerald-600 dark:text-emerald-400" />
+            <Car className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className="text-2xl font-bold text-foreground"
+              className="text-base sm:text-lg font-bold text-foreground"
               data-testid="kpi-cars-purchased"
             >
               {initialOverallKpis.totalCarsPurchased}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] text-muted-foreground mt-0.5">
               Vehicles bought from sellers
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-xs border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <Card className="shadow-xs border" size="sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Total Purchase Spend
             </CardTitle>
-            <DollarSign className="size-4 text-blue-600 dark:text-blue-400" />
+            <DollarSign className="size-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className="text-2xl font-bold text-foreground"
+              className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate"
+              title={formatAed(initialOverallKpis.totalSpend)}
               data-testid="kpi-total-spend"
             >
               {formatAed(initialOverallKpis.totalSpend)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Total capital paid to vehicle owners
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+              Total capital paid to sellers
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-xs border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <Card className="shadow-xs border" size="sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Avg Cars / Seller
             </CardTitle>
-            <ContactRound className="size-4 text-purple-600 dark:text-purple-400" />
+            <ContactRound className="size-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className="text-2xl font-bold text-foreground"
+              className="text-base sm:text-lg font-bold text-foreground"
               data-testid="kpi-avg-cars"
             >
               {initialOverallKpis.avgCarsPerSeller}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] text-muted-foreground mt-0.5">
               Repeat deal frequency
             </p>
           </CardContent>

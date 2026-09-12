@@ -178,112 +178,119 @@ export function AnalyticsView({ initialData, isViewer = false }: AnalyticsViewPr
       </div>
 
       {/* Top Overview KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {/* Total Bought */}
-        <Card className="border-border/80 shadow-xs" data-testid="kpi-analytics-bought">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Total Cars Sourced
+        <Card className="border-border/80 shadow-xs" size="sm" data-testid="kpi-analytics-bought">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Total Sourced
             </CardTitle>
-            <div className="rounded-md bg-blue-500/10 p-1.5 text-blue-600 dark:text-blue-400">
-              <Car className="size-4" />
+            <div className="rounded-md bg-blue-500/10 p-1 text-blue-600 dark:text-blue-400">
+              <Car className="size-3.5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight">
+          <CardContent className="px-3.5 pb-3 pt-0">
+            <div className="text-base sm:text-lg font-bold tracking-tight">
               {overview.totalCarsBought}{" "}
-              <span className="text-xs font-normal text-muted-foreground">cars</span>
+              <span className="text-[11px] font-normal text-muted-foreground">cars</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
               {overview.totalCarsCompleted} completed ({overview.totalCarsBought > 0 ? Math.round((overview.totalCarsCompleted / overview.totalCarsBought) * 100) : 0}%)
             </p>
           </CardContent>
         </Card>
 
         {/* Total Investment */}
-        <Card className="border-border/80 shadow-xs" data-testid="kpi-analytics-investment">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <Card className="border-border/80 shadow-xs" size="sm" data-testid="kpi-analytics-investment">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Capital Invested
             </CardTitle>
-            <div className="rounded-md bg-indigo-500/10 p-1.5 text-indigo-600 dark:text-indigo-400">
-              <Building2 className="size-4" />
+            <div className="rounded-md bg-indigo-500/10 p-1 text-indigo-600 dark:text-indigo-400">
+              <Building2 className="size-3.5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-indigo-700 dark:text-indigo-400">
+          <CardContent className="px-3.5 pb-3 pt-0">
+            <div
+              className="text-sm sm:text-base font-bold tracking-tight text-indigo-700 dark:text-indigo-400 truncate"
+              title={formatAed(overview.totalInvestment)}
+            >
               {formatAed(overview.totalInvestment)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Purchase prices + vehicle expenses
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+              Purchases + expenses
             </p>
           </CardContent>
         </Card>
 
         {/* Total Realized Profit */}
-        <Card className="border-border/80 shadow-xs" data-testid="kpi-analytics-profit">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <Card className="border-border/80 shadow-xs" size="sm" data-testid="kpi-analytics-profit">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Realized Profit
             </CardTitle>
-            <div className="rounded-md bg-emerald-500/10 p-1.5 text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="size-4" />
+            <div className="rounded-md bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-400">
+              <TrendingUp className="size-3.5" />
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3.5 pb-3 pt-0">
             <div
-              className={`text-2xl font-bold tracking-tight ${
+              className={`text-sm sm:text-base font-bold tracking-tight truncate ${
                 overview.totalRealizedProfit >= 0
                   ? "text-emerald-700 dark:text-emerald-400"
                   : "text-rose-700 dark:text-rose-400"
               }`}
+              title={formatAed(overview.totalRealizedProfit)}
             >
               {overview.totalRealizedProfit >= 0 ? "+" : ""}
               {formatAed(overview.totalRealizedProfit)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Completed cars only (active excluded)
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+              Completed cars only
             </p>
           </CardContent>
         </Card>
 
         {/* Avg Profit Per Car */}
-        <Card className="border-border/80 shadow-xs" data-testid="kpi-analytics-avg-profit">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <Card className="border-border/80 shadow-xs" size="sm" data-testid="kpi-analytics-avg-profit">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Avg Profit / Car
             </CardTitle>
-            <div className="rounded-md bg-amber-500/10 p-1.5 text-amber-600 dark:text-amber-400">
-              <Flame className="size-4" />
+            <div className="rounded-md bg-amber-500/10 p-1 text-amber-600 dark:text-amber-400">
+              <Flame className="size-3.5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-amber-700 dark:text-amber-400">
+          <CardContent className="px-3.5 pb-3 pt-0">
+            <div
+              className="text-sm sm:text-base font-bold tracking-tight text-amber-700 dark:text-amber-400 truncate"
+              title={formatAed(overview.avgProfitPerCompletedCar)}
+            >
               {formatAed(overview.avgProfitPerCompletedCar)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Per completed vehicle
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+              Per completed car
             </p>
           </CardContent>
         </Card>
 
         {/* Turnaround Days */}
-        <Card className="border-border/80 shadow-xs" data-testid="kpi-analytics-turnaround">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Avg Turnaround
+        <Card className="border-border/80 shadow-xs" size="sm" data-testid="kpi-analytics-turnaround">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3.5 space-y-0">
+            <CardTitle className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Turnaround
             </CardTitle>
-            <div className="rounded-md bg-purple-500/10 p-1.5 text-purple-600 dark:text-purple-400">
-              <Clock className="size-4" />
+            <div className="rounded-md bg-purple-500/10 p-1 text-purple-600 dark:text-purple-400">
+              <Clock className="size-3.5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight">
+          <CardContent className="px-3.5 pb-3 pt-0">
+            <div className="text-base sm:text-lg font-bold tracking-tight">
               {overview.avgDaysInStock}{" "}
-              <span className="text-xs font-normal text-muted-foreground">days</span>
+              <span className="text-[11px] font-normal text-muted-foreground">days</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Purchase to final completion
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+              Purchase to completed
             </p>
           </CardContent>
         </Card>

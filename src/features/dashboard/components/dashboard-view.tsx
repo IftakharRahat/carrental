@@ -504,9 +504,9 @@ function KpiCard({
           </div>
         </div>
 
-        <div className="mt-3">
+        <div className="mt-2.5">
           <p
-            className={`text-xl font-bold tracking-tight sm:text-2xl ${
+            className={`text-lg font-bold tracking-tight sm:text-xl ${
               highlight === "emerald"
                 ? "text-emerald-600 dark:text-emerald-400"
                 : highlight === "rose"
@@ -598,9 +598,9 @@ function ProfitLossCard({
           </div>
         </div>
 
-        <div className="mt-3">
+        <div className="mt-2.5">
           <p
-            className={`text-xl font-extrabold tracking-tight sm:text-2xl ${
+            className={`text-lg font-extrabold tracking-tight sm:text-xl ${
               isLoss
                 ? "text-rose-600 dark:text-rose-400"
                 : isZero

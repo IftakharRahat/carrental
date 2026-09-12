@@ -180,7 +180,7 @@ export function QuotationModal({
   async function handleGeneratePdf() {
     setIsGeneratingPdf(true);
     try {
-      const html2canvas = (await import("html2canvas")).default;
+      const { toPng } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
 
       const element = document.getElementById("printable-quotation-offer");
@@ -190,14 +190,13 @@ export function QuotationModal({
 
       toast.info("Generating professional PDF...");
 
-      const canvas = await html2canvas(element, {
-        scale: 2.5,
-        useCORS: true,
-        logging: false,
+      // Convert HTML element to high-res PNG using browser native SVG engine
+      const dataUrl = await toPng(element, {
+        quality: 0.98,
+        pixelRatio: 2,
         backgroundColor: "#ffffff",
       });
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -205,9 +204,34 @@ export function QuotationModal({
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdfPageHeight = pdf.internal.pageSize.getHeight();
 
-      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+      // Get natural dimensions of generated image
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+
+      // Fit neatly within A4 with balanced margins
+      const marginMm = 8;
+      const targetWidth = pdfWidth - marginMm * 2;
+      const maxHeight = pdfPageHeight - marginMm * 2;
+
+      let renderWidth = targetWidth;
+      let renderHeight = (img.height * targetWidth) / img.width;
+
+      // If document is taller than available height, scale proportionally to fit 1 page
+      if (renderHeight > maxHeight) {
+        renderWidth = (renderWidth * maxHeight) / renderHeight;
+        renderHeight = maxHeight;
+      }
+
+      // Center horizontally and vertically on page
+      const xPos = (pdfWidth - renderWidth) / 2;
+      const yPos = Math.max(marginMm, (pdfPageHeight - renderHeight) / 2);
+
+      pdf.addImage(dataUrl, "PNG", xPos, yPos, renderWidth, renderHeight);
 
       const cleanCustomer = customerName.replace(/[^a-zA-Z0-9]/g, "_") || "Customer";
       const cleanVehicle = vehicleModel.replace(/[^a-zA-Z0-9]/g, "_") || "Vehicle";
@@ -234,9 +258,100 @@ export function QuotationModal({
     toast.success("Opening WhatsApp with formatted Vehicle Purchase Offer...");
   }
 
-  // 3. Print Action
+  // 3. Print Action (Isolated clean 1-page print)
   function handlePrint() {
-    window.print();
+    const element = document.getElementById("printable-quotation-offer");
+    if (!element) {
+      window.print();
+      return;
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "none";
+    iframe.style.zIndex = "-9999";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    const styleTags = Array.from(document.querySelectorAll("link[rel='stylesheet'], style"))
+      .map((tag) => tag.outerHTML)
+      .join("\n");
+
+    const cleanTitle = `${businessName || "Quotation"} - ${customerName || "Customer"} Offer`;
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>${cleanTitle}</title>
+          ${styleTags}
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 8mm 10mm;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              box-sizing: border-box !important;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              color: #0f172a !important;
+              width: 100% !important;
+              height: auto !important;
+            }
+            #printable-quotation-offer {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 auto !important;
+              padding: 0 !important;
+              border: none !important;
+              box-shadow: none !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              page-break-after: avoid !important;
+              break-after: avoid !important;
+            }
+          </style>
+        </head>
+        <body>
+          <div style="width: 100%; display: flex; justify-content: center; padding: 0;">
+            ${element.outerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    iframe.contentWindow?.focus();
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.print();
+      } catch (err) {
+        console.error("Iframe print error:", err);
+        window.print();
+      } finally {
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }, 1500);
+      }
+    }, 400);
   }
 
   // 4. Save to Database Action
