@@ -180,7 +180,7 @@ export function QuotationModal({
   async function handleGeneratePdf() {
     setIsGeneratingPdf(true);
     try {
-      const { toPng } = await import("html-to-image");
+      const { toJpeg } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
 
       const element = document.getElementById("printable-quotation-offer");
@@ -190,17 +190,29 @@ export function QuotationModal({
 
       toast.info("Generating professional PDF...");
 
-      // Convert HTML element to high-res PNG using browser native SVG engine
-      const dataUrl = await toPng(element, {
-        quality: 0.98,
+      // Standard fixed document width (760px) ensures right side is NEVER truncated regardless of screen or modal width
+      const TARGET_WIDTH = 760;
+
+      // Convert HTML element to crisp high-res JPEG with native compression (~200KB vs 7MB raw PNG)
+      const dataUrl = await toJpeg(element, {
+        quality: 0.90,
         pixelRatio: 2,
         backgroundColor: "#ffffff",
+        width: TARGET_WIDTH,
+        style: {
+          width: `${TARGET_WIDTH}px`,
+          maxWidth: `${TARGET_WIDTH}px`,
+          minWidth: `${TARGET_WIDTH}px`,
+          margin: "0",
+          boxShadow: "none",
+        },
       });
 
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
+        compress: true,
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -231,7 +243,7 @@ export function QuotationModal({
       const xPos = (pdfWidth - renderWidth) / 2;
       const yPos = Math.max(marginMm, (pdfPageHeight - renderHeight) / 2);
 
-      pdf.addImage(dataUrl, "PNG", xPos, yPos, renderWidth, renderHeight);
+      pdf.addImage(dataUrl, "JPEG", xPos, yPos, renderWidth, renderHeight, undefined, "FAST");
 
       const cleanCustomer = customerName.replace(/[^a-zA-Z0-9]/g, "_") || "Customer";
       const cleanVehicle = vehicleModel.replace(/[^a-zA-Z0-9]/g, "_") || "Vehicle";

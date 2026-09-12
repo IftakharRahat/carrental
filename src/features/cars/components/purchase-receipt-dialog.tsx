@@ -196,24 +196,36 @@ export function PurchaseReceiptDialog({
 
     setIsGeneratingPdf(true);
     try {
-      const { toPng } = await import("html-to-image");
+      const { toJpeg } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
 
-      const imgData = await toPng(element, {
-        quality: 0.95,
+      // Fixed 760px width ensures receipt layout is never clipped regardless of screen size
+      const TARGET_WIDTH = 760;
+
+      const imgData = await toJpeg(element, {
+        quality: 0.90,
         pixelRatio: 2,
         backgroundColor: "#ffffff",
+        width: TARGET_WIDTH,
+        style: {
+          width: `${TARGET_WIDTH}px`,
+          maxWidth: `${TARGET_WIDTH}px`,
+          minWidth: `${TARGET_WIDTH}px`,
+          margin: "0",
+          boxShadow: "none",
+        },
       });
 
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
+        compress: true,
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
+      const margin = 8;
       const printWidth = pdfWidth - margin * 2;
 
       const img = new Image();
@@ -225,7 +237,7 @@ export function PurchaseReceiptDialog({
       const imgHeight = (img.height * printWidth) / img.width;
       const finalHeight = Math.min(imgHeight, pdfHeight - margin * 2);
 
-      pdf.addImage(imgData, "PNG", margin, margin, printWidth, finalHeight);
+      pdf.addImage(imgData, "JPEG", margin, margin, printWidth, finalHeight, undefined, "FAST");
 
       const filename = `Payment_Voucher_${car.carNumber}_${sellerName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
       pdf.save(filename);
@@ -858,7 +870,8 @@ export function PurchaseReceiptDialog({
               {/* Printable Receipt Container */}
               <div
                 id="printable-purchase-receipt"
-                className="bg-background text-foreground rounded-xl border p-6 space-y-6 shadow-xs print:border-none print:p-8 print:text-black"
+                className="bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-xl border border-slate-200 p-6 space-y-6 shadow-xs print:border-none print:p-8 print:text-black font-sans box-border overflow-hidden"
+                style={{ colorScheme: "light" }}
               >
                 {/* Header */}
                 <div className="flex justify-between items-start border-b pb-4">

@@ -133,52 +133,53 @@ export function ReferencePicker({
           </div>
         </div>
       ) : (
-        <div className="relative">
-          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            ref={inputRef}
-            role="combobox"
-            aria-expanded={open}
-            aria-autocomplete="list"
-            autoComplete="off"
-            disabled={disabled}
-            placeholder={placeholder}
-            value={query}
-            onFocus={() => setOpen(true)}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                setOpen(false);
-              }
-            }}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setOpen(true);
-            }}
-            className="pr-20 pl-9"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-14 -translate-y-1/2 p-1"
-              title="Clear search"
-            >
-              <X className="size-3.5" />
-            </button>
-          )}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              ref={inputRef}
+              role="combobox"
+              aria-expanded={open}
+              aria-autocomplete="list"
+              autoComplete="off"
+              disabled={disabled}
+              placeholder={placeholder}
+              value={query}
+              onFocus={() => setOpen(true)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  setOpen(false);
+                }
+              }}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setOpen(true);
+              }}
+              className={cn("pl-9", query ? "pr-8" : "pr-3")}
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 p-1"
+                title="Clear search"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            variant="outline"
             disabled={disabled}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => {
               setOpen(false);
               onAdd();
             }}
-            className="absolute top-1/2 right-1 -translate-y-1/2"
+            className="h-8 shrink-0 gap-1.5 px-3 text-xs font-medium"
           >
-            <Plus className="size-4" />
+            <Plus className="size-3.5" />
             Add
           </Button>
         </div>
