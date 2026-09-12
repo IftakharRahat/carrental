@@ -13,13 +13,15 @@ import type {
   MonthlyReportViewData,
 } from "../domain/monthly-report-types";
 
+import { getDubaiCurrentYearMonth } from "@/lib/date-utils";
+
 export async function getMonthlyReportData(
   selectedYear?: number,
   selectedMonth?: number,
 ): Promise<MonthlyReportViewData> {
-  const now = new Date();
-  const year = selectedYear || now.getFullYear();
-  const month = selectedMonth || now.getMonth() + 1;
+  const { year: dubaiYear, month: dubaiMonth } = getDubaiCurrentYearMonth();
+  const year = selectedYear || dubaiYear;
+  const month = selectedMonth || dubaiMonth;
 
   const { startDate, endDate, monthLabel } = getMonthDateRange(year, month);
 
@@ -202,8 +204,8 @@ export async function getMonthlyReportData(
 
   // Generate list of available months (current year down to 2025)
   const availableMonths: { year: number; month: number; label: string }[] = [];
-  const currentY = now.getFullYear();
-  const currentM = now.getMonth() + 1;
+  const currentY = dubaiYear;
+  const currentM = dubaiMonth;
 
   for (let y = currentY; y >= currentY - 1; y--) {
     const maxM = y === currentY ? currentM : 12;

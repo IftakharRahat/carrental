@@ -90,12 +90,18 @@ export function DashboardView({ data }: DashboardViewProps) {
 
         {/* Header Right: Live Refresh Status & Action */}
         <div className="flex items-center gap-3">
-          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+          <div
+            className="text-muted-foreground flex items-center gap-1.5 text-xs"
+            title="Refreshed in Dubai Time (GST - UTC+4)"
+          >
             <span className="relative flex size-2">
               <span className="bg-emerald-400 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
               <span className="bg-emerald-500 relative inline-flex size-2 rounded-full" />
             </span>
             <span>Refreshed: {lastRefreshedAt}</span>
+            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+              Dubai
+            </span>
           </div>
 
           <button

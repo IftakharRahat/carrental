@@ -15,6 +15,7 @@ import type {
   ActiveCarOption,
   DashboardViewData,
 } from "../domain/dashboard-types";
+import { formatDubaiTime, getDubaiCurrentYearMonth } from "@/lib/date-utils";
 
 export async function getDashboardData(
   selectedYear?: number,
@@ -23,9 +24,9 @@ export async function getDashboardData(
   // Enforce session authentication
   await requireActor();
 
-  const now = new Date();
-  const year = selectedYear || now.getFullYear();
-  const month = selectedMonth || now.getMonth() + 1;
+  const { year: dubaiYear, month: dubaiMonth } = getDubaiCurrentYearMonth();
+  const year = selectedYear || dubaiYear;
+  const month = selectedMonth || dubaiMonth;
 
   const { startDate, endDate, monthLabel } = getDashboardMonthRange(year, month);
 
@@ -169,12 +170,7 @@ export async function getDashboardData(
     currentMonthLabel: monthLabel,
     currentYear: year,
     currentMonth: month,
-    lastRefreshedAt: new Date().toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    }),
+    lastRefreshedAt: formatDubaiTime(new Date()),
     activeCars,
     hasAnyData: cars.length > 0,
   };
