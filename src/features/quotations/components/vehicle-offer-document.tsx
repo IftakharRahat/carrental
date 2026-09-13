@@ -28,7 +28,7 @@ export const VehicleOfferDocument = React.forwardRef<HTMLDivElement, Props>(
       <div
         ref={ref}
         id="printable-quotation-offer"
-        className={`bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-2xl border border-slate-200 p-6 sm:p-7 shadow-lg print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full print:m-0 font-sans box-border overflow-hidden ${className}`}
+        className={`bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-2xl border border-slate-200 p-4 sm:p-7 shadow-lg print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full print:m-0 font-sans box-border overflow-hidden ${className}`}
         style={{ colorScheme: "light" }}
       >
         {/* Document Header */}
@@ -205,7 +205,7 @@ export const VehicleOfferDocument = React.forwardRef<HTMLDivElement, Props>(
         {/* Footer */}
         <div className="mt-4 border-t border-slate-200 pt-3 text-center space-y-0.5">
           <p className="text-xs font-bold text-slate-800">
-            Thank you for contacting {data.businessName || "USED GARAGE UAE"}.
+            {data.thankYouNote?.trim() || `Thank you for contacting ${data.businessName || "USED GARAGE UAE"}.`}
           </p>
           <p className="text-xs font-semibold text-emerald-700">
             📞 {data.businessPhone}

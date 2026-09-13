@@ -26,100 +26,100 @@ export function StockSummaryCards({
     const isProfitable = summary.avgNetProfit >= 0;
 
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {/* 1. Average Car Buy Price */}
-        <Card className="shadow-xs border">
-          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
-            <div className="bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex size-11 shrink-0 items-center justify-center rounded-xl">
-              <ShoppingCart className="size-5" />
+        <Card className="border bg-card shadow-2xs hover:border-primary/30 transition-colors">
+          <CardContent className="p-3 sm:p-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase truncate">
+                Avg Buy Price
+              </span>
+              <div className="bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex size-7 shrink-0 items-center justify-center rounded-lg">
+                <ShoppingCart className="size-3.5" />
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                Average Car Buy Price
-              </p>
-              <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
-                {formatAed(summary.avgCarBuyPrice)}
-              </p>
-              <p className="text-muted-foreground mt-0.5 text-xs truncate">
-                Average capital per acquired car
-              </p>
-            </div>
+            <p className="text-foreground mt-1 text-base sm:text-lg lg:text-xl font-bold tracking-tight whitespace-nowrap leading-none">
+              {formatAed(summary.avgCarBuyPrice)}
+            </p>
+            <p className="text-muted-foreground mt-1.5 text-[11px] truncate leading-none">
+              Capital per acquired car
+            </p>
           </CardContent>
         </Card>
 
         {/* 2. Average Car Expenses */}
-        <Card className="shadow-xs border">
-          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
-            <div className="bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 flex size-11 shrink-0 items-center justify-center rounded-xl">
-              <Receipt className="size-5" />
+        <Card className="border bg-card shadow-2xs hover:border-primary/30 transition-colors">
+          <CardContent className="p-3 sm:p-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase truncate">
+                Avg Expenses
+              </span>
+              <div className="bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 flex size-7 shrink-0 items-center justify-center rounded-lg">
+                <Receipt className="size-3.5" />
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                Average Car Expenses
-              </p>
-              <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
-                {formatAed(summary.avgCarExpenses)}
-              </p>
-              <p className="text-muted-foreground mt-0.5 text-xs truncate">
-                Repairs, parts & logistics per car
-              </p>
-            </div>
+            <p className="text-foreground mt-1 text-base sm:text-lg lg:text-xl font-bold tracking-tight whitespace-nowrap leading-none">
+              {formatAed(summary.avgCarExpenses)}
+            </p>
+            <p className="text-muted-foreground mt-1.5 text-[11px] truncate leading-none">
+              Parts & repairs per car
+            </p>
           </CardContent>
         </Card>
 
         {/* 3. Average Days to Complete */}
-        <Card className="shadow-xs border">
-          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
-            <div className="bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 flex size-11 shrink-0 items-center justify-center rounded-xl">
-              <CalendarDays className="size-5" />
+        <Card className="border bg-card shadow-2xs hover:border-primary/30 transition-colors">
+          <CardContent className="p-3 sm:p-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase truncate">
+                Days to Complete
+              </span>
+              <div className="bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 flex size-7 shrink-0 items-center justify-center rounded-lg">
+                <CalendarDays className="size-3.5" />
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                Average Days to Complete
-              </p>
-              <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
-                {summary.avgDaysToComplete} Days
-              </p>
-              <p className="text-muted-foreground mt-0.5 text-xs truncate">
-                {summary.completedCarsCount
-                  ? `Across ${summary.completedCarsCount} completed cars`
-                  : "Turnaround lifecycle"}
-              </p>
-            </div>
+            <p className="text-foreground mt-1 text-base sm:text-lg lg:text-xl font-bold tracking-tight whitespace-nowrap leading-none">
+              {summary.avgDaysToComplete} Days
+            </p>
+            <p className="text-muted-foreground mt-1.5 text-[11px] truncate leading-none">
+              {summary.completedCarsCount
+                ? `Across ${summary.completedCarsCount} completed`
+                : "Turnaround cycle"}
+            </p>
           </CardContent>
         </Card>
 
         {/* 4. Average Net Profit */}
-        <Card className="shadow-xs border">
-          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
-            <div
-              className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
-                isProfitable
-                  ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
-                  : "bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400"
-              }`}
-            >
-              <TrendingUp className="size-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                Average Net Profit
-              </p>
-              <p
-                className={`mt-0.5 text-2xl font-bold tracking-tight ${
+        <Card className="border bg-card shadow-2xs hover:border-primary/30 transition-colors">
+          <CardContent className="p-3 sm:p-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase truncate">
+                Avg Net Profit
+              </span>
+              <div
+                className={`flex size-7 shrink-0 items-center justify-center rounded-lg ${
                   isProfitable
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-rose-600 dark:text-rose-400"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
+                    : "bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400"
                 }`}
               >
-                {formatAed(summary.avgNetProfit)}
-              </p>
-              <p className="text-muted-foreground mt-0.5 text-xs truncate">
-                {summary.completedCarsCount
-                  ? "Realized profit per completed car"
-                  : "Net recovery vs investment"}
-              </p>
+                <TrendingUp className="size-3.5" />
+              </div>
             </div>
+            <p
+              className={`mt-1 text-base sm:text-lg lg:text-xl font-bold tracking-tight whitespace-nowrap leading-none ${
+                isProfitable
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-rose-600 dark:text-rose-400"
+              }`}
+            >
+              {formatAed(summary.avgNetProfit)}
+            </p>
+            <p className="text-muted-foreground mt-1.5 text-[11px] truncate leading-none">
+              {summary.completedCarsCount
+                ? "Profit per completed car"
+                : "Net recovery balance"}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -128,61 +128,61 @@ export function StockSummaryCards({
 
   // Stock page default: 3 cards
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
-      <Card className="shadow-xs">
-        <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
-          <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-xl">
-            <CarFront className="size-5" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+    <div className="grid gap-2.5 sm:gap-3 sm:grid-cols-3">
+      <Card className="border bg-card shadow-2xs hover:border-primary/30 transition-colors">
+        <CardContent className="p-3 sm:p-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase truncate">
               Active Cars
-            </p>
-            <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
-              {summary.activeCarsCount}
-            </p>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Non-completed inventory
-            </p>
+            </span>
+            <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-lg">
+              <CarFront className="size-3.5" />
+            </div>
           </div>
+          <p className="text-foreground mt-1 text-base sm:text-lg lg:text-xl font-bold tracking-tight whitespace-nowrap leading-none">
+            {summary.activeCarsCount}
+          </p>
+          <p className="text-muted-foreground mt-1.5 text-[11px] truncate leading-none">
+            Non-completed inventory
+          </p>
         </CardContent>
       </Card>
 
-      <Card className="border-primary/20 bg-primary/2 shadow-xs">
-        <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
-          <div className="bg-primary text-primary-foreground flex size-11 shrink-0 items-center justify-center rounded-xl shadow-xs">
-            <CircleDollarSign className="size-5" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+      <Card className="border border-primary/20 bg-primary/2 shadow-2xs hover:border-primary/40 transition-colors">
+        <CardContent className="p-3 sm:p-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase truncate">
               Stock Value
-            </p>
-            <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
-              {formatAed(summary.stockValue)}
-            </p>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Purchase + active car expenses
-            </p>
+            </span>
+            <div className="bg-primary text-primary-foreground flex size-7 shrink-0 items-center justify-center rounded-lg shadow-2xs">
+              <CircleDollarSign className="size-3.5" />
+            </div>
           </div>
+          <p className="text-foreground mt-1 text-base sm:text-lg lg:text-xl font-bold tracking-tight whitespace-nowrap leading-none">
+            {formatAed(summary.stockValue)}
+          </p>
+          <p className="text-muted-foreground mt-1.5 text-[11px] truncate leading-none">
+            Purchase + active expenses
+          </p>
         </CardContent>
       </Card>
 
-      <Card className="shadow-xs">
-        <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-            <TrendingUp className="size-5" />
+      <Card className="border bg-card shadow-2xs hover:border-primary/30 transition-colors">
+        <CardContent className="p-3 sm:p-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase truncate">
+              Recovered from Stock
+            </span>
+            <div className="bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 flex size-7 shrink-0 items-center justify-center rounded-lg">
+              <TrendingUp className="size-3.5" />
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-              Recovered from Active Stock
-            </p>
-            <p className="text-foreground mt-0.5 text-2xl font-bold tracking-tight">
-              {formatAed(summary.recoveredFromActiveStock)}
-            </p>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Realized from active inventory
-            </p>
-          </div>
+          <p className="text-foreground mt-1 text-base sm:text-lg lg:text-xl font-bold tracking-tight whitespace-nowrap leading-none">
+            {formatAed(summary.recoveredFromActiveStock)}
+          </p>
+          <p className="text-muted-foreground mt-1.5 text-[11px] truncate leading-none">
+            Realized from active inventory
+          </p>
         </CardContent>
       </Card>
     </div>

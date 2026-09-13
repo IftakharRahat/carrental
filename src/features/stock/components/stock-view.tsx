@@ -135,7 +135,7 @@ export function StockView({
   }, [filteredItems, initialSummary, criteria]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* 6.1 Summary Cards */}
       <StockSummaryCards
         summary={summary}

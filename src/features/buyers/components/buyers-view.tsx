@@ -114,7 +114,7 @@ export function BuyersView({
         </div>
 
         {/* 11. Primary Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <AddBuyerTypeDialog
             onSuccess={handleCategoryCreated}
             triggerLabel="+ Add Category"
@@ -239,7 +239,7 @@ export function BuyersView({
             </div>
 
             {/* Status Segmented Control */}
-            <div className="flex items-center rounded-lg border bg-muted/40 p-1 text-xs font-medium self-start sm:self-auto">
+            <div className="flex items-center rounded-lg border bg-muted/40 p-1 text-xs font-medium self-start sm:self-auto overflow-x-auto max-w-full">
               <button
                 type="button"
                 onClick={() => setStatusFilter("ACTIVE")}

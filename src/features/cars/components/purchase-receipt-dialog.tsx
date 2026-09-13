@@ -115,6 +115,9 @@ export function PurchaseReceiptDialog({
   );
   const [sellerSignerName, setSellerSignerName] = useState(car.seller.name);
   const [buyerSignerName, setBuyerSignerName] = useState(DEFAULT_BUSINESS_NAME);
+  const [thankYouNote, setThankYouNote] = useState(
+    `Thank you for doing business with ${DEFAULT_BUSINESS_NAME}.`,
+  );
 
   // Re-sync with car when opened or car changes
   useEffect(() => {
@@ -142,6 +145,9 @@ export function PurchaseReceiptDialog({
       );
       setSellerSignerName(car.seller.name);
       setBuyerSignerName(businessName || DEFAULT_BUSINESS_NAME);
+      setThankYouNote(
+        `Thank you for doing business with ${businessName || DEFAULT_BUSINESS_NAME}.`,
+      );
     }
   }, [open, car]);
 
@@ -183,6 +189,7 @@ export function PurchaseReceiptDialog({
     );
     setSellerSignerName(car.seller.name);
     setBuyerSignerName(DEFAULT_BUSINESS_NAME);
+    setThankYouNote(`Thank you for doing business with ${DEFAULT_BUSINESS_NAME}.`);
     toast.info("Receipt fields reset to original car record");
   };
 
@@ -268,6 +275,7 @@ export function PurchaseReceiptDialog({
       condition,
       purchasePrice: numPrice,
       paymentMethod,
+      thankYouNote,
     });
 
     const targetPhone = sellerWhatsapp || sellerPhone;
@@ -294,6 +302,7 @@ export function PurchaseReceiptDialog({
       condition,
       purchasePrice: numPrice,
       paymentMethod,
+      thankYouNote,
     });
 
     navigator.clipboard.writeText(message);
@@ -432,15 +441,15 @@ export function PurchaseReceiptDialog({
         />
       )}
 
-      <DialogContent className="w-[95vw] sm:max-w-4xl md:max-w-5xl max-h-[92vh] overflow-y-auto p-0 print:p-0 print:border-none print:shadow-none print:max-w-none">
+      <DialogContent className="w-[96vw] sm:max-w-4xl md:max-w-5xl max-h-[92vh] overflow-y-auto p-0 print:p-0 print:border-none print:shadow-none print:max-w-none">
         {/* Top Header Bar */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b px-6 py-4 sm:px-8 bg-muted/40 print:hidden">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b px-4 py-3 sm:px-6 sm:py-4 bg-muted/40 print:hidden">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
               <FileText className="size-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold">
+              <DialogTitle className="text-base sm:text-lg font-bold">
                 Customer / Seller Purchase Receipt
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
@@ -479,7 +488,7 @@ export function PurchaseReceiptDialog({
         </div>
 
         {/* Content Area */}
-        <div className="p-6 sm:p-8">
+        <div className="p-3.5 sm:p-6 lg:p-8">
           {mode === "EDIT" ? (
             /* ================= CUSTOMIZE / EDIT MODE ================= */
             <div className="space-y-6">
@@ -759,6 +768,15 @@ export function PurchaseReceiptDialog({
                     />
                   </div>
                 </div>
+                <div className="space-y-1.5 pt-1">
+                  <Label className="text-xs font-medium">Footer Thank You Message</Label>
+                  <Input
+                    value={thankYouNote}
+                    onChange={(e) => setThankYouNote(e.target.value)}
+                    placeholder={`Thank you for doing business with ${businessName || DEFAULT_BUSINESS_NAME}.`}
+                    className="text-xs"
+                  />
+                </div>
               </div>
 
               {/* Bottom Buttons in Edit Mode */}
@@ -868,11 +886,12 @@ export function PurchaseReceiptDialog({
               </div>
 
               {/* Printable Receipt Container */}
-              <div
-                id="printable-purchase-receipt"
-                className="bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-xl border border-slate-200 p-6 space-y-6 shadow-xs print:border-none print:p-8 print:text-black font-sans box-border overflow-hidden"
-                style={{ colorScheme: "light" }}
-              >
+              <div className="w-full overflow-x-auto p-1 sm:p-4 rounded-xl flex justify-center bg-slate-100 dark:bg-slate-900/60 border">
+                <div
+                  id="printable-purchase-receipt"
+                  className="bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-xl border border-slate-200 p-4 sm:p-6 space-y-5 sm:space-y-6 shadow-xs print:border-none print:p-8 print:text-black font-sans box-border overflow-hidden"
+                  style={{ colorScheme: "light" }}
+                >
                 {/* Header */}
                 <div className="flex justify-between items-start border-b pb-4">
                   <div>
@@ -1033,9 +1052,23 @@ export function PurchaseReceiptDialog({
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Bottom Actions Footer */}
+                {/* Footer Closing / Thank You Note */}
+                <div className="border-t border-slate-200 pt-3 text-center space-y-0.5 print:pt-4">
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 print:text-black">
+                    {thankYouNote?.trim() || `Thank you for doing business with ${businessName || DEFAULT_BUSINESS_NAME}.`}
+                  </p>
+                  <p className="text-xs font-semibold text-emerald-700 print:text-emerald-800">
+                    📞 {businessPhone}
+                  </p>
+                  <p className="text-[10px] text-slate-400 print:text-gray-500 pt-0.5">
+                    Generated via Car Scrap Business Management System &bull; Official Payment Voucher
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions Footer */}
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t print:hidden">
                 <Button
                   type="button"

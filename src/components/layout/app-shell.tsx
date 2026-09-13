@@ -1,10 +1,8 @@
 import { headers } from "next/headers";
-import {
-  CarFront,
-  Menu,
-} from "lucide-react";
+import { CarFront } from "lucide-react";
 
 import { getSessionActor } from "@/lib/auth/actor";
+import { MobileNav } from "./mobile-nav";
 import { SidebarFooter } from "./sidebar-footer";
 import { SidebarNav } from "./sidebar-nav";
 
@@ -33,17 +31,8 @@ export async function AppShell({ children }: AppShellProps) {
       </aside>
 
       <div className="min-w-0 overflow-y-auto">
-        <header className="bg-background/95 sticky top-0 z-20 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
-          <Brand compact />
-          <button
-            type="button"
-            aria-label="Navigation menu"
-            className="text-muted-foreground rounded-md border p-2 lg:hidden"
-          >
-            <Menu className="size-4" />
-          </button>
-        </header>
-        <main className="mx-auto w-full max-w-[1500px] p-3 sm:p-4 lg:p-5">
+        <MobileNav userRole={actor?.role} user={actor} />
+        <main className="mx-auto w-full max-w-[1500px] p-3 sm:p-4 lg:p-5 pb-20 sm:pb-5">
           {children}
         </main>
       </div>

@@ -23,6 +23,7 @@ export type ReceiptCustomData = {
   sellerConfirmationClause: string;
   sellerSignerName: string;
   buyerSignerName: string;
+  thankYouNote?: string;
 };
 
 export function generateReceiptWhatsAppMessage(receipt: {
@@ -40,10 +41,12 @@ export function generateReceiptWhatsAppMessage(receipt: {
   condition?: string | null;
   purchasePrice: number;
   paymentMethod: string;
+  thankYouNote?: string;
 }): string {
   const bName = receipt.businessName || "Car Scrap Business";
   const bPhone = receipt.businessPhone || "+971 56 270 9960";
   const bAddress = receipt.businessAddress || "Sharjah 10 Industrial Area, UAE";
+  const thankYou = receipt.thankYouNote?.trim() || `Thank you for doing business with ${bName}.`;
 
   const lines: string[] = [
     `🧾 *VEHICLE PURCHASE PAYMENT VOUCHER*`,
@@ -72,7 +75,7 @@ export function generateReceiptWhatsAppMessage(receipt: {
     `⚖️ *Transfer & Legal Acknowledgement*`,
     `_The seller acknowledges receipt of full payment of AED ${receipt.purchasePrice.toLocaleString("en-US")} as stated above and confirms transfer of full title & possession to ${bName} free from all prior traffic fines, liabilities, or legal claims._`,
     ``,
-    `Thank you for doing business with ${bName}.`,
+    thankYou,
     `📞 ${bPhone}`,
   ];
 

@@ -34,7 +34,7 @@ export function StockFilters({
     <div className="bg-card border-border/70 rounded-xl border p-3.5 shadow-xs">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         {/* Search input */}
-        <div className="relative min-w-[240px] flex-1">
+        <div className="relative min-w-0 flex-1">
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             placeholder="Search Car ID, Brand, Model, VIN…"

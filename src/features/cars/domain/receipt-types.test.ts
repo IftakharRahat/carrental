@@ -28,5 +28,21 @@ describe("generateReceiptWhatsAppMessage", () => {
     expect(message).toContain("Toyota Camry");
     expect(message).toContain("AED 12,500");
     expect(message).toContain("Cash");
+    expect(message).toContain("Thank you for doing business with Car Scrap Business.");
+  });
+
+  it("uses custom thank-you note when provided", () => {
+    const message = generateReceiptWhatsAppMessage({
+      voucherNumber: "PV-CAR-0011",
+      receiptDate: "2026-09-12",
+      sellerName: "Ahmed Al Mansoori",
+      carNumber: "CAR-0011",
+      carTitle: "CAR-0011 · Toyota Camry",
+      purchasePrice: 12500,
+      paymentMethod: "Cash",
+      thankYouNote: "We appreciate your partnership with our Sharjah team.",
+    });
+
+    expect(message).toContain("We appreciate your partnership with our Sharjah team.");
   });
 });

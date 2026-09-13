@@ -91,7 +91,13 @@ export const navGroups: NavGroup[] = [
   },
 ];
 
-export function SidebarNav({ userRole }: { userRole?: string | null }) {
+export function SidebarNav({
+  userRole,
+  onNavigate,
+}: {
+  userRole?: string | null;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
 
   const isViewer = userRole === "VIEWER";
@@ -171,7 +177,12 @@ export function SidebarNav({ userRole }: { userRole?: string | null }) {
             }`;
 
             return href ? (
-              <Link key={label} href={href} className={className}>
+              <Link
+                key={label}
+                href={href}
+                className={className}
+                onClick={() => onNavigate?.()}
+              >
                 {content}
               </Link>
             ) : (

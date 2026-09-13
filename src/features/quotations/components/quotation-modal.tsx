@@ -40,6 +40,7 @@ import {
   DEFAULT_BUSINESS_NAME,
   DEFAULT_BUSINESS_PHONE,
   DEFAULT_TERMS,
+  DEFAULT_THANK_YOU,
   generateQuotationWhatsAppMessage,
   generateWhatsAppUrl,
   type QuotationInput,
@@ -107,6 +108,9 @@ export function QuotationModal({
     initialData?.offerPrice ?? "",
   );
   const [terms, setTerms] = useState(initialData?.terms ?? DEFAULT_TERMS);
+  const [thankYouNote, setThankYouNote] = useState(
+    initialData?.thankYouNote ?? DEFAULT_THANK_YOU,
+  );
 
   const documentRef = useRef<HTMLDivElement>(null);
 
@@ -136,6 +140,7 @@ export function QuotationModal({
     setAskingPrice(18000);
     setOfferPrice(12500);
     setTerms(DEFAULT_TERMS);
+    setThankYouNote("Thank you for contacting USED GARAGE UAE.");
     toast.success("Loaded Ahmed Mohammed's Nissan Patrol sample data");
   }
 
@@ -155,6 +160,7 @@ export function QuotationModal({
     askingPrice: askingPrice ? Number(askingPrice) : null,
     offerPrice: offerPrice ? Number(offerPrice) : 0,
     terms: terms.trim() || DEFAULT_TERMS,
+    thankYouNote: thankYouNote.trim() || DEFAULT_THANK_YOU,
     status: "OFFERED",
   };
 
@@ -394,15 +400,15 @@ export function QuotationModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-[95vw] sm:max-w-4xl md:max-w-5xl max-h-[92vh] overflow-y-auto p-0 print:p-0 print:border-none print:shadow-none print:max-w-none">
+      <DialogContent className="w-[98vw] max-w-6xl max-h-[94vh] overflow-y-auto p-0 print:p-0 print:border-none print:shadow-none">
         {/* Top Header Bar */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b px-6 py-4 sm:px-8 bg-muted/40 print:hidden">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b px-4 py-3 sm:px-6 sm:py-4 bg-muted/40 print:hidden">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-              <FileText className="size-5" />
+              <Sparkles className="size-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold">
+              <DialogTitle className="text-base sm:text-lg font-bold">
                 Vehicle Purchase Offer Generator
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
@@ -416,7 +422,7 @@ export function QuotationModal({
             <button
               type="button"
               onClick={() => setMode("FORM")}
-              className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 mode === "FORM"
                   ? "bg-primary text-primary-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -428,7 +434,7 @@ export function QuotationModal({
             <button
               type="button"
               onClick={() => handleGoToPreview()}
-              className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 mode === "PREVIEW"
                   ? "bg-primary text-primary-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -441,14 +447,14 @@ export function QuotationModal({
         </div>
 
         {/* Content Area */}
-        <div className="p-6 sm:p-8">
+        <div className="p-3.5 sm:p-6 lg:p-8">
           {mode === "FORM" ? (
             /* ================= FORM INPUT MODE ================= */
             <form onSubmit={handleGoToPreview} className="space-y-6">
               {/* Quick Fill Helper */}
-              <div className="flex items-center justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs">
                 <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
-                  <Sparkles className="size-4 text-emerald-600" />
+                  <Sparkles className="size-4 text-emerald-600 shrink-0" />
                   <span>
                     Want to test quickly? Load the Ahmed Mohammed (Nissan Patrol) sample offer.
                   </span>
@@ -605,10 +611,10 @@ export function QuotationModal({
                 </div>
               </div>
 
-              {/* Collapsible/Accordion: Business Header & Terms Customization */}
+              {/* Collapsible/Accordion: Business Header, Terms & Footer Customization */}
               <details className="rounded-xl border p-3 text-xs">
                 <summary className="cursor-pointer font-semibold text-muted-foreground hover:text-foreground">
-                  ⚙️ Customize Business Header & Terms & Conditions
+                  ⚙️ Customize Business Header, Terms & Conditions & Footer Message
                 </summary>
                 <div className="mt-3 space-y-3 pt-2">
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -643,6 +649,16 @@ export function QuotationModal({
                       value={terms}
                       onChange={(e) => setTerms(e.target.value)}
                       rows={2}
+                      className="text-xs"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px]">Footer Thank You Message</Label>
+                    <Input
+                      id="q-thank-you-note"
+                      value={thankYouNote}
+                      onChange={(e) => setThankYouNote(e.target.value)}
+                      placeholder="Thank you for contacting USED GARAGE UAE."
                       className="text-xs"
                     />
                   </div>
@@ -763,7 +779,7 @@ export function QuotationModal({
               </div>
 
               {/* Exact Paper-Style A4 Document Preview */}
-              <div className="bg-slate-100 dark:bg-slate-900/60 p-4 sm:p-8 rounded-2xl border flex justify-center">
+              <div className="bg-slate-100 dark:bg-slate-900/60 p-2 sm:p-6 rounded-2xl border flex justify-center overflow-x-auto w-full">
                 <VehicleOfferDocument
                   ref={documentRef}
                   data={currentQuotationData}

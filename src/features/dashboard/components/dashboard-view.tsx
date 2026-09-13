@@ -118,45 +118,47 @@ export function DashboardView({ data }: DashboardViewProps) {
       </div>
 
       {/* 4.4 Quick Actions Bar */}
-      <div className="bg-card/50 flex flex-wrap items-center gap-3 rounded-2xl border p-3 shadow-sm backdrop-blur-sm sm:p-4">
-        <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wider pl-1">
+      <div className="bg-card/50 rounded-2xl border p-3 shadow-sm backdrop-blur-sm sm:p-4 space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+        <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wider pl-1 block sm:inline">
           Quick Actions:
         </span>
 
-        <Link
-          href="/cars/new"
-          className="bg-primary text-primary-foreground hover:brightness-110 flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] cursor-pointer"
-        >
-          <PlusCircle className="size-4" />
-          <span>+ Buy Car</span>
-        </Link>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3 w-full sm:w-auto">
+          <Link
+            href="/cars/new"
+            className="bg-primary text-primary-foreground hover:brightness-110 flex items-center justify-center sm:justify-start gap-2 rounded-xl px-3 sm:px-4 py-2.5 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <PlusCircle className="size-4 shrink-0" />
+            <span>+ Buy Car</span>
+          </Link>
 
-        <button
-          type="button"
-          onClick={() => setExpenseDialogOpen(true)}
-          className="hover:bg-muted border-primary/20 hover:border-primary/40 flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
-        >
-          <Receipt className="text-amber-500 size-4" />
-          <span>+ Add Expense</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setExpenseDialogOpen(true)}
+            className="hover:bg-muted border-primary/20 hover:border-primary/40 flex items-center justify-center sm:justify-start gap-2 rounded-xl border bg-card px-3 sm:px-4 py-2.5 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <Receipt className="text-amber-500 size-4 shrink-0" />
+            <span>+ Add Expense</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setSellDialogOpen(true)}
-          className="hover:bg-muted border-emerald-500/20 hover:border-emerald-500/40 flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
-        >
-          <Wrench className="text-emerald-500 size-4" />
-          <span>+ Sell / Recovery</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setSellDialogOpen(true)}
+            className="hover:bg-muted border-emerald-500/20 hover:border-emerald-500/40 flex items-center justify-center sm:justify-start gap-2 rounded-xl border bg-card px-3 sm:px-4 py-2.5 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <Wrench className="text-emerald-500 size-4 shrink-0" />
+            <span>+ Sell / Recovery</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setQuotationDialogOpen(true)}
-          className="hover:bg-muted border-blue-500/20 hover:border-blue-500/40 flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
-        >
-          <FileText className="text-blue-500 size-4" />
-          <span>+ Create Quotation</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setQuotationDialogOpen(true)}
+            className="hover:bg-muted border-blue-500/20 hover:border-blue-500/40 flex items-center justify-center sm:justify-start gap-2 rounded-xl border bg-card px-3 sm:px-4 py-2.5 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <FileText className="text-blue-500 size-4 shrink-0" />
+            <span>+ Create Quotation</span>
+          </button>
+        </div>
       </div>
 
       {/* 4.5 Empty / Onboarding State if no purchase data exists */}

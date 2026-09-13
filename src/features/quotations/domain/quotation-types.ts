@@ -29,6 +29,7 @@ export const quotationInputSchema = z.object({
   askingPrice: z.number().nonnegative().optional().nullable(),
   offerPrice: z.number().positive("Offer price must be greater than 0"),
   terms: z.string().trim().default(DEFAULT_TERMS),
+  thankYouNote: z.string().trim().default(DEFAULT_THANK_YOU).optional(),
   status: z.enum(["OFFERED", "ACCEPTED", "REJECTED", "EXPIRED"]).default("OFFERED"),
 });
 
@@ -88,12 +89,14 @@ export function generateQuotationWhatsAppMessage(quotation: {
   askingPrice?: number | null;
   offerPrice: number;
   terms?: string;
+  thankYouNote?: string;
   quotationNumberFormatted?: string;
 }): string {
   const bName = quotation.businessName || DEFAULT_BUSINESS_NAME;
   const bPhone = quotation.businessPhone || DEFAULT_BUSINESS_PHONE;
   const bAddress = quotation.businessAddress || DEFAULT_BUSINESS_ADDRESS;
   const terms = quotation.terms || DEFAULT_TERMS;
+  const thankYou = quotation.thankYouNote || `Thank you for contacting ${bName}.`;
 
   const lines: string[] = [
     `🚗 *VEHICLE PURCHASE OFFER*`,
@@ -134,7 +137,7 @@ export function generateQuotationWhatsAppMessage(quotation: {
     ``,
   );
 
-  lines.push(`⚖️ *Terms & Conditions*`, `_${terms}_`, ``, `Thank you for contacting ${bName}.`, `📞 ${bPhone}`);
+  lines.push(`⚖️ *Terms & Conditions*`, `_${terms}_`, ``, thankYou, `📞 ${bPhone}`);
 
   return lines.filter(Boolean).join("\n");
 }

@@ -85,6 +85,19 @@ describe("Quotation Domain Logic & Formatting", () => {
     expect(msg).toContain("+971 56 270 9960");
   });
 
+  it("supports customized thank-you footer message in WhatsApp message", () => {
+    const msg = generateQuotationWhatsAppMessage({
+      quotationDate: "11 September 2026",
+      customerName: "Ahmed Mohammed",
+      vehicleModel: "Nissan Patrol",
+      condition: "Accident / Damaged",
+      offerPrice: 12500,
+      thankYouNote: "Special thanks from our Sharjah recovery crew!",
+    });
+
+    expect(msg).toContain("Special thanks from our Sharjah recovery crew!");
+  });
+
   it("generates WhatsApp share URL with clean numbers", () => {
     const url = generateWhatsAppUrl("+971 50 123 4567", "Hello Ahmed");
     expect(url).toContain("https://api.whatsapp.com/send?phone=971501234567");
