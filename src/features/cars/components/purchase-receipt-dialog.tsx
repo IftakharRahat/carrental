@@ -35,7 +35,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { formatAed } from "@/lib/currency";
+import { formatAed, numberToAedWords } from "@/lib/currency";
 import { exportElementToPdf, shareElementAsPdf } from "@/lib/pdf-export";
 import type { CarDetailsFull } from "../domain/car-details-types";
 import {
@@ -889,184 +889,292 @@ export function PurchaseReceiptDialog({
               <div className="w-full overflow-x-auto p-1 sm:p-4 rounded-xl flex justify-center bg-slate-100 dark:bg-slate-900/60 border">
                 <div
                   id="printable-purchase-receipt"
-                  className="bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-xl border border-slate-200 p-6 space-y-6 shadow-xs print:border-none print:p-8 print:text-black font-sans box-border overflow-hidden"
+                  className="bg-white text-slate-900 mx-auto w-full max-w-[760px] min-h-[1060px] flex flex-col justify-between rounded-xl border border-slate-200 p-7 shadow-xs print:border-none print:p-6 print:text-black font-sans box-border"
                   style={{ colorScheme: "light" }}
                 >
-                {/* Header */}
-                <div className="flex justify-between items-start border-b border-slate-200 pb-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <div className="size-8 rounded-lg bg-emerald-600/10 text-emerald-700 flex items-center justify-center font-bold text-sm">
-                        CS
+                  {/* Top & Main Body Sections */}
+                  <div className="space-y-4 flex-1">
+                    {/* Header */}
+                    <div className="flex justify-between items-start border-b-2 border-slate-300 pb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="size-11 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-xs shrink-0">
+                          CS
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-xl font-black tracking-tight text-slate-900 uppercase">
+                              {businessName}
+                            </h2>
+                            <span className="rounded bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-1.5 py-0.5 tracking-wider uppercase border border-emerald-300">
+                              Verified Yard
+                            </span>
+                          </div>
+                          <p className="text-xs font-semibold text-emerald-700 tracking-wide uppercase mt-0.5">
+                            Automotive Salvage, Scrap & Vehicle Recovery Division
+                          </p>
+                          <p className="text-[11px] text-slate-600 print:text-gray-600 mt-0.5">
+                            {businessAddress} &bull; Hotline: {businessPhone}
+                          </p>
+                        </div>
                       </div>
+
+                      <div className="text-right flex flex-col items-end shrink-0">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                          <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />
+                          Official Payment Voucher
+                        </div>
+                        <div className="mt-2 text-right">
+                          <p className="text-xs font-mono font-bold text-slate-800">
+                            REF: <span className="text-emerald-700">{voucherNumber}</span>
+                          </p>
+                          <p className="text-[11px] text-slate-500 font-medium">{formattedDisplayDate}</p>
+                          <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
+                            Original Finance Copy
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Document Status Banner */}
+                    <div className="rounded-lg bg-slate-100 border border-slate-200 py-1.5 px-3 flex items-center justify-between text-xs">
+                      <span className="font-bold uppercase tracking-wider text-slate-700 text-[11px]">
+                        Vehicle Acquisition & Title Transfer Settlement
+                      </span>
+                      <span className="font-mono text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        Status: Disbursed & Verified
+                      </span>
+                    </div>
+
+                    {/* Seller / Supplier & Acquisition Vehicle Details Grid */}
+                    <div className="grid grid-cols-2 gap-3.5 text-xs">
+                      {/* Seller Card */}
+                      <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 space-y-1.5">
+                        <div className="border-b border-slate-200 pb-1 flex items-center justify-between">
+                          <span className="font-bold text-slate-800 uppercase text-[10px] tracking-wider">
+                            Seller (Registered Transferor)
+                          </span>
+                          <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                            Verified ID
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Full Name:</span>
+                            <span className="font-bold text-slate-900 text-right">{sellerName}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Contact / Phone:</span>
+                            <span className="font-semibold text-slate-800 text-right">{sellerPhone || "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Emirates ID / Pass:</span>
+                            <span className="font-mono font-bold text-slate-900 text-right">
+                              {sellerEmiratesId || "Recorded on Inspection"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Settlement Mode:</span>
+                            <span className="font-semibold uppercase text-emerald-700 text-right">
+                              {paymentMethod} Handover
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Acquisition Vehicle Card */}
+                      <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 space-y-1.5">
+                        <div className="border-b border-slate-200 pb-1 flex items-center justify-between">
+                          <span className="font-bold text-slate-800 uppercase text-[10px] tracking-wider">
+                            Acquisition Vehicle (Salvage Asset)
+                          </span>
+                          <span className="text-[9px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                            {car.carNumber}
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Vehicle:</span>
+                            <span className="font-bold text-slate-900 text-right">
+                              {carBrand} {carModel} {carYear ? `(${carYear})` : ""}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Declared Condition:</span>
+                            <span className="font-bold text-rose-700 text-right capitalize">
+                              {condition}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">VIN / Chassis No:</span>
+                            <span className="font-mono text-[11px] font-semibold text-slate-800 text-right">
+                              {vinChassis || "Logged at yard intake"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Intake Classification:</span>
+                            <span className="font-semibold text-slate-800 text-right">
+                              Parts Salvage & Metal Scrap
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payment Breakdown Table */}
+                    <div className="rounded-xl border border-slate-200 overflow-hidden text-xs">
+                      <table className="w-full text-left">
+                        <thead className="bg-slate-100 text-slate-800 border-b border-slate-200 uppercase font-bold text-[10px] tracking-wider">
+                          <tr>
+                            <th className="py-2 px-3 w-10 text-center">No.</th>
+                            <th className="py-2 px-3">Transaction Item & Description</th>
+                            <th className="py-2 px-3">Category</th>
+                            <th className="py-2 px-3">Method</th>
+                            <th className="py-2 px-3 text-right">Amount (AED)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 text-slate-700">
+                          <tr>
+                            <td className="py-2.5 px-3 text-center font-bold text-slate-400">01</td>
+                            <td className="py-2.5 px-3">
+                              <p className="font-bold text-slate-900 text-xs">{itemDescription}</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5">
+                                Full legal and physical possession transfer free of past liabilities
+                              </p>
+                            </td>
+                            <td className="py-2.5 px-3 text-[11px] font-medium text-slate-600">
+                              Automotive Scrap
+                            </td>
+                            <td className="py-2.5 px-3 capitalize font-semibold text-slate-800">
+                              {paymentMethod}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-black text-sm text-slate-900">
+                              {formatAed(numPriceDisplay)}
+                            </td>
+                          </tr>
+                          <tr className="bg-slate-50/50 text-[11px] text-slate-500">
+                            <td className="py-2 px-3 text-center">02</td>
+                            <td className="py-2 px-3 font-medium text-slate-600">
+                              Yard intake inspection, handling & scrap de-registration processing
+                            </td>
+                            <td className="py-2 px-3">Yard Operations</td>
+                            <td className="py-2 px-3">Service</td>
+                            <td className="py-2 px-3 text-right font-semibold text-emerald-700">INCLUDED</td>
+                          </tr>
+                        </tbody>
+                        <tfoot className="border-t-2 border-slate-300 bg-slate-50">
+                          <tr>
+                            <td colSpan={4} className="py-2.5 px-3 text-right font-bold text-slate-700 text-xs">
+                              Total Net Amount Paid to Seller:
+                            </td>
+                            <td className="py-2.5 px-3 text-right text-base font-black text-emerald-700 print:text-black">
+                              {formatAed(numPriceDisplay)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+
+                    {/* Amount in Words Banner */}
+                    <div className="rounded-lg bg-emerald-50/70 border border-emerald-200 p-2.5 flex items-center justify-between text-xs">
                       <div>
-                        <h2 className="text-lg font-bold tracking-tight leading-tight text-slate-900">
-                          {businessName}
-                        </h2>
-                        <p className="text-xs text-slate-600 print:text-gray-600">
-                          {businessAddress} · {businessPhone}
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-800 block">
+                          Amount in Words:
+                        </span>
+                        <span className="font-bold text-slate-900 text-xs italic">
+                          {numberToAedWords(numPriceDisplay)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-emerald-800 text-[11px] font-bold shrink-0">
+                        <CheckCircle2 className="size-4 text-emerald-600" />
+                        <span>Disbursed & Ledger Verified</span>
+                      </div>
+                    </div>
+
+                    {/* Legal Transfer Declarations & Warranty Clauses */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-1.5 text-xs">
+                      <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1">
+                        <ShieldCheck className="size-3.5 text-slate-700" />
+                        <h4 className="font-bold uppercase tracking-wider text-[10px] text-slate-800">
+                          Legal Transfer, Encumbrance Warranty & Scrap Declarations
+                        </h4>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-[11px] leading-relaxed text-slate-600">
+                        <div>
+                          <p className="font-semibold text-slate-800 mb-0.5">1. Title Release & Possession:</p>
+                          <p>{acknowledgementClause}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800 mb-0.5">2. Seller Warranty on Fines & Claims:</p>
+                          <p className="italic">&ldquo;{sellerConfirmationClause}&rdquo;</p>
+                        </div>
+                      </div>
+                      <div className="pt-1 border-t border-slate-200/80 flex items-center justify-between text-[10px] text-slate-500">
+                        <span>Vehicle acquired strictly in &ldquo;AS-IS&rdquo; salvage state for metal recovery & dismantling.</span>
+                        <span className="font-semibold text-slate-600">Free of judicial impounds or undisclosed liens.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom: Signatures and Footer Closing (Anchored at page bottom) */}
+                  <div className="space-y-4 pt-4">
+                    {/* Signatures & Official Stamp Seal Block (3 Columns) */}
+                    <div className="grid grid-cols-3 gap-4 pt-3 border-t border-slate-200 text-xs">
+                      {/* Seller Sign */}
+                      <div className="space-y-10">
+                        <p className="font-bold text-slate-900 text-[10px] uppercase tracking-wider">
+                          Seller (Transferor):
+                        </p>
+                        <div className="border-t border-dashed border-slate-400 pt-1.5 text-slate-600">
+                          <p className="font-bold text-slate-900 text-xs">{sellerSignerName}</p>
+                          <p className="text-[10px] mt-0.5 text-slate-500">Signature: ______________________</p>
+                          <p className="text-[10px] text-slate-500">Date: __________________________</p>
+                        </div>
+                      </div>
+
+                      {/* Official Stamp Box */}
+                      <div className="flex flex-col items-center justify-center p-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50/50 text-center min-h-[85px]">
+                        <div className="size-7 rounded-full border border-slate-300 flex items-center justify-center text-slate-400 mb-1">
+                          <ShieldCheck className="size-3.5 text-emerald-600" />
+                        </div>
+                        <p className="text-[9px] font-black uppercase tracking-wider text-slate-600">
+                          OFFICIAL STAMP / SEAL
+                        </p>
+                        <p className="text-[8px] text-slate-400">
+                          Car Scrap Business UAE
+                        </p>
+                        <p className="text-[8px] text-emerald-700 font-bold mt-0.5">
+                          Verified & Ledger Booked
                         </p>
                       </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 text-xs font-bold uppercase tracking-wider print:border print:border-emerald-600">
-                      Payment Voucher
-                    </div>
-                    <p className="text-xs text-slate-600 mt-1 font-mono font-semibold">
-                      REF: {voucherNumber}
-                    </p>
-                    <p className="text-xs text-slate-600">{formattedDisplayDate}</p>
-                  </div>
-                </div>
 
-                {/* Seller / Supplier & Acquisition Summary */}
-                <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-3.5 rounded-lg border border-slate-200">
-                  <div>
-                    <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">
-                      Seller (Customer / Supplier):
-                    </span>
-                    <p className="font-bold text-sm text-slate-900">{sellerName}</p>
-                    {sellerPhone && (
-                      <p className="text-slate-600 print:text-gray-700">
-                        Phone: {sellerPhone}
+                      {/* Yard Evaluator Sign */}
+                      <div className="space-y-10 text-right">
+                        <p className="font-bold text-slate-900 text-[10px] uppercase tracking-wider">
+                          Yard Evaluator / Cashier:
+                        </p>
+                        <div className="border-t border-dashed border-slate-400 pt-1.5 text-slate-600">
+                          <p className="font-bold text-slate-900 text-xs">{buyerSignerName}</p>
+                          <p className="text-[10px] mt-0.5 text-slate-500">Signature: ______________________</p>
+                          <p className="text-[10px] text-slate-500">Date: __________________________</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer Closing / Thank You Note */}
+                    <div className="border-t border-slate-200 pt-2 text-center space-y-0.5 print:pt-2">
+                      <p className="text-xs font-bold text-slate-800 print:text-black">
+                        {thankYouNote?.trim() || `Thank you for doing business with ${businessName || DEFAULT_BUSINESS_NAME}.`}
                       </p>
-                    )}
-                    <p className="text-slate-600 print:text-gray-700">
-                      Emirates ID:{" "}
-                      {sellerEmiratesId ? (
-                        <strong className="text-slate-900 font-mono print:text-black font-semibold">
-                          {sellerEmiratesId}
-                        </strong>
-                      ) : (
-                        <span className="font-mono text-slate-400">
-                          ____________________
-                        </span>
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">
-                      Acquisition Vehicle:
-                    </span>
-                    <p className="font-bold text-sm text-slate-900">
-                      {car.carNumber} · {carBrand} {carModel}
-                    </p>
-                    {carYear && (
-                      <p className="text-slate-600 print:text-gray-700">
-                        Year: {carYear}
+                      <p className="text-[11px] font-semibold text-emerald-700 print:text-emerald-800">
+                        Hotline & WhatsApp: {businessPhone}
                       </p>
-                    )}
-                    {vinChassis && (
-                      <p className="text-slate-600 font-mono text-[11px] print:text-gray-700">
-                        VIN: {vinChassis}
+                      <p className="text-[9px] text-slate-400 print:text-gray-500">
+                        Generated via Car Scrap Business Management System &bull; Official Acquisition Voucher &bull; Confidential &bull; Valid Document
                       </p>
-                    )}
-                    <p className="text-slate-600 print:text-gray-700">
-                      Condition: {condition}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Payment Breakdown Table */}
-                <div className="space-y-2">
-                  <div className="rounded-lg border border-slate-200 overflow-hidden">
-                    <table className="w-full text-xs text-left">
-                      <thead className="bg-slate-100 text-slate-600 border-b border-slate-200 uppercase font-semibold text-[10px]">
-                        <tr>
-                          <th className="py-2.5 px-3">Item Description</th>
-                          <th className="py-2.5 px-3">Method</th>
-                          <th className="py-2.5 px-3 text-right">Amount (AED)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        <tr>
-                          <td className="py-3 px-3">
-                            <p className="font-semibold text-slate-900">
-                              {itemDescription}
-                            </p>
-                          </td>
-                          <td className="py-3 px-3 capitalize text-slate-600">
-                            {paymentMethod}
-                          </td>
-                          <td className="py-3 px-3 text-right font-bold text-sm text-slate-900">
-                            {formatAed(numPriceDisplay)}
-                          </td>
-                        </tr>
-                      </tbody>
-                      <tfoot className="bg-slate-50 border-t border-slate-200 font-semibold">
-                        <tr>
-                          <td colSpan={2} className="py-2.5 px-3 text-right text-xs text-slate-700">
-                            Total Paid to Seller:
-                          </td>
-                          <td className="py-2.5 px-3 text-right text-base font-bold text-emerald-700 print:text-black">
-                            {formatAed(numPriceDisplay)}
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium pt-1">
-                    <CheckCircle2 className="size-4" />
-                    <span>Full payment disbursed and verified in finance ledger</span>
-                  </div>
-                </div>
-
-                {/* Legal / Transfer Acknowledgement */}
-                <div className="border-t border-slate-200 pt-3 text-[11px] text-slate-600 space-y-2.5 print:text-gray-700">
-                  <p className="leading-relaxed">
-                    <strong>Acknowledgement:</strong> {acknowledgementClause}
-                  </p>
-
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-slate-900 print:bg-gray-50 print:border-gray-300 print:text-black">
-                    <p className="font-semibold text-[11px] text-slate-900 mb-1">
-                      The Seller acknowledges and confirms that:
-                    </p>
-                    <p className="italic text-[11px] leading-relaxed text-slate-700 print:text-gray-800">
-                      &ldquo;{sellerConfirmationClause}&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                {/* Signatures */}
-                <div className="grid grid-cols-2 gap-8 pt-6 border-t border-slate-200 text-xs">
-                  <div className="space-y-10">
-                    <p className="font-bold text-slate-900 text-[11px] uppercase tracking-wider">
-                      Seller sign:
-                    </p>
-                    <div className="border-t border-dashed border-slate-300 pt-1.5 text-slate-600">
-                      <p className="font-medium text-slate-900">{sellerSignerName}</p>
-                      <p className="text-[10px]">Date: ________________________</p>
                     </div>
                   </div>
-
-                  <div className="space-y-10 text-right">
-                    <p className="font-bold text-slate-900 text-[11px] uppercase tracking-wider">
-                      Buyer / Yard Sign:
-                    </p>
-                    <div className="border-t border-dashed border-slate-300 pt-1.5 text-slate-600">
-                      <p className="font-medium text-slate-900">{buyerSignerName}</p>
-                      <p className="text-[10px]">Date: ________________________</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer Closing / Thank You Note */}
-                <div className="border-t border-slate-200 pt-3 text-center space-y-0.5 print:pt-4">
-                  <p className="text-xs font-bold text-slate-800 print:text-black">
-                    {thankYouNote?.trim() || `Thank you for doing business with ${businessName || DEFAULT_BUSINESS_NAME}.`}
-                  </p>
-                  <p className="text-xs font-semibold text-emerald-700 print:text-emerald-800">
-                    📞 {businessPhone}
-                  </p>
-                  <p className="text-[10px] text-slate-500 print:text-gray-500 pt-0.5">
-                    Generated via Car Scrap Business Management System &bull; Official Payment Voucher
-                  </p>
                 </div>
               </div>
-            </div>
 
             {/* Bottom Actions Footer */}
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t print:hidden">

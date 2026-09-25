@@ -70,6 +70,10 @@ export async function exportElementToPdf(
   clone.style.width = `${targetWidth}px`;
   clone.style.minWidth = `${targetWidth}px`;
   clone.style.maxWidth = `${targetWidth}px`;
+  clone.style.minHeight = "1060px";
+  clone.style.display = "flex";
+  clone.style.flexDirection = "column";
+  clone.style.justifyContent = "space-between";
   clone.style.margin = "0";
   clone.style.boxShadow = "none";
   clone.style.border = "none";
@@ -87,7 +91,7 @@ export async function exportElementToPdf(
     await new Promise((resolve) => setTimeout(resolve, 80));
 
     // Measured height of the properly rendered 760px document
-    const cloneHeight = clone.offsetHeight || 1000;
+    const cloneHeight = Math.max(clone.offsetHeight || 1060, 1060);
 
     // 3. Convert desktop-sized clone to crisp high-res image
     const dataUrl = await toJpeg(clone, {
@@ -100,6 +104,7 @@ export async function exportElementToPdf(
         width: `${targetWidth}px`,
         minWidth: `${targetWidth}px`,
         maxWidth: `${targetWidth}px`,
+        minHeight: `${cloneHeight}px`,
         margin: "0",
         boxShadow: "none",
       },
@@ -135,10 +140,7 @@ export async function exportElementToPdf(
     }
 
     const xPos = (pdfWidth - renderWidth) / 2;
-    // For letterheads and official payment vouchers, place at top margin
-    // or with balanced top margin if plenty of height remains
-    const verticalSpare = pdfHeight - renderHeight;
-    const yPos = verticalSpare > 60 ? marginMm : Math.max(marginMm, verticalSpare / 2);
+    const yPos = Math.max(marginMm, (pdfHeight - renderHeight) / 2);
 
     pdf.addImage(dataUrl, "JPEG", xPos, yPos, renderWidth, renderHeight, undefined, "FAST");
     pdf.save(options.filename);
@@ -207,6 +209,10 @@ export async function shareElementAsPdf(
   clone.style.width = `${targetWidth}px`;
   clone.style.minWidth = `${targetWidth}px`;
   clone.style.maxWidth = `${targetWidth}px`;
+  clone.style.minHeight = "1060px";
+  clone.style.display = "flex";
+  clone.style.flexDirection = "column";
+  clone.style.justifyContent = "space-between";
   clone.style.margin = "0";
   clone.style.boxShadow = "none";
   clone.style.border = "none";
@@ -222,7 +228,7 @@ export async function shareElementAsPdf(
   try {
     await new Promise((resolve) => setTimeout(resolve, 80));
 
-    const cloneHeight = clone.offsetHeight || 1000;
+    const cloneHeight = Math.max(clone.offsetHeight || 1060, 1060);
 
     const dataUrl = await toJpeg(clone, {
       quality,
@@ -234,6 +240,7 @@ export async function shareElementAsPdf(
         width: `${targetWidth}px`,
         minWidth: `${targetWidth}px`,
         maxWidth: `${targetWidth}px`,
+        minHeight: `${cloneHeight}px`,
         margin: "0",
         boxShadow: "none",
       },
@@ -267,8 +274,7 @@ export async function shareElementAsPdf(
     }
 
     const xPos = (pdfWidth - renderWidth) / 2;
-    const verticalSpare = pdfHeight - renderHeight;
-    const yPos = verticalSpare > 60 ? marginMm : Math.max(marginMm, verticalSpare / 2);
+    const yPos = Math.max(marginMm, (pdfHeight - renderHeight) / 2);
 
     pdf.addImage(dataUrl, "JPEG", xPos, yPos, renderWidth, renderHeight, undefined, "FAST");
 
