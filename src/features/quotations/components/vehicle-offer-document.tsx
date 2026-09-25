@@ -28,11 +28,11 @@ export const VehicleOfferDocument = React.forwardRef<HTMLDivElement, Props>(
       <div
         ref={ref}
         id="printable-quotation-offer"
-        className={`bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-2xl border border-slate-200 p-4 sm:p-7 shadow-lg print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full print:m-0 font-sans box-border overflow-hidden ${className}`}
+        className={`bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-2xl border border-slate-200 p-6 sm:p-7 shadow-lg print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full print:m-0 font-sans box-border overflow-hidden ${className}`}
         style={{ colorScheme: "light" }}
       >
         {/* Document Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b-2 border-slate-200 pb-4 gap-3">
+        <div className="flex flex-row items-start justify-between border-b-2 border-slate-200 pb-4 gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-600 text-white font-black text-lg shadow-sm shrink-0">
@@ -61,8 +61,8 @@ export const VehicleOfferDocument = React.forwardRef<HTMLDivElement, Props>(
             </div>
           </div>
 
-          <div className="text-left sm:text-right flex flex-col justify-between shrink-0 min-w-[160px]">
-            <div className="inline-flex sm:self-end items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs">
+          <div className="text-right flex flex-col justify-between shrink-0 min-w-[160px]">
+            <div className="inline-flex self-end items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs">
               <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />
               OFFICIAL OFFER
             </div>
@@ -86,7 +86,7 @@ export const VehicleOfferDocument = React.forwardRef<HTMLDivElement, Props>(
         </div>
 
         {/* Customer & Vehicle Details Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-2 gap-3.5">
           {/* Customer Details */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 space-y-2 min-w-0">
             <div className="border-b border-slate-200 pb-1 flex items-center justify-between">

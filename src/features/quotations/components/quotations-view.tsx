@@ -278,19 +278,19 @@ export function QuotationsView({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredQuotations.map((q) => (
             <Card
               key={q.id}
               className="flex flex-col justify-between overflow-hidden border border-border/70 hover:shadow-md transition-all bg-card shadow-xs"
             >
-              <div className="p-5 pb-3">
+              <div className="p-3 pb-2">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="font-mono text-xs font-bold text-primary">
+                  <div className="min-w-0">
+                    <span className="font-mono text-[10px] font-bold text-primary">
                       {q.quotationNumberFormatted}
                     </span>
-                    <h3 className="text-base font-bold text-foreground mt-0.5">
+                    <h3 className="text-sm font-bold text-foreground mt-0.5 truncate">
                       {q.customerName}
                     </h3>
                   </div>
@@ -303,37 +303,37 @@ export function QuotationsView({
                           ? "destructive"
                           : "secondary"
                     }
-                    className="text-[10px] font-bold"
+                    className="text-[9px] font-bold shrink-0"
                   >
                     {q.status}
                   </Badge>
                 </div>
 
                 {/* Vehicle & Condition */}
-                <div className="mt-3 rounded-lg bg-muted/40 p-2.5 space-y-1 text-xs">
-                  <div className="flex items-center gap-1.5 font-bold text-foreground">
-                    <CarFront className="size-3.5 text-primary" />
-                    <span>
+                <div className="mt-2 rounded-md bg-muted/40 p-2 space-y-0.5 text-[11px]">
+                  <div className="flex items-center gap-1 font-bold text-foreground">
+                    <CarFront className="size-3 text-primary shrink-0" />
+                    <span className="truncate">
                       {q.vehicleModel} {q.modelYear ? `(${q.modelYear})` : ""}
                     </span>
                   </div>
-                  <p className="text-rose-700 dark:text-rose-400 font-semibold text-[11px]">
+                  <p className="text-rose-700 dark:text-rose-400 font-semibold text-[10px]">
                     Condition: {q.condition}
                   </p>
                 </div>
 
                 {/* Offer Price Highlight */}
-                <div className="mt-3 flex items-baseline justify-between border-t pt-2.5">
-                  <span className="text-xs text-muted-foreground font-medium">
+                <div className="mt-2 flex items-baseline justify-between border-t pt-2">
+                  <span className="text-[10px] text-muted-foreground font-medium">
                     Our Best Offer:
                   </span>
-                  <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
+                  <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
                     AED {q.offerPrice.toLocaleString("en-US")}
                   </span>
                 </div>
 
                 {q.askingPrice != null && q.askingPrice > 0 && (
-                  <div className="flex items-baseline justify-between text-[11px] text-muted-foreground">
+                  <div className="flex items-baseline justify-between text-[10px] text-muted-foreground">
                     <span>Customer Asking:</span>
                     <span className="line-through">
                       AED {q.askingPrice.toLocaleString("en-US")}
@@ -343,14 +343,14 @@ export function QuotationsView({
 
                 {/* WhatsApp Condition Notes */}
                 {q.customerNotes && (
-                  <p className="mt-2 line-clamp-2 text-xs italic text-muted-foreground border-l-2 border-amber-400 pl-2">
+                  <p className="mt-1.5 line-clamp-2 text-[10px] italic text-muted-foreground border-l-2 border-amber-400 pl-1.5">
                     &ldquo;{q.customerNotes}&rdquo;
                   </p>
                 )}
               </div>
 
               {/* Card Footer: Action Buttons */}
-              <div className="bg-muted/20 border-border/50 flex items-center justify-between border-t p-3 text-xs">
+              <div className="bg-muted/20 border-border/50 flex items-center justify-between border-t px-2.5 py-2 text-xs">
                 <Button
                   variant="outline"
                   size="sm"
@@ -358,9 +358,9 @@ export function QuotationsView({
                     setSelectedQuotation(q);
                     setIsModalOpen(true);
                   }}
-                  className="gap-1.5 text-xs font-semibold h-8"
+                  className="gap-1 text-[11px] font-semibold h-7 px-2"
                 >
-                  <Eye className="size-3.5 text-primary" />
+                  <Eye className="size-3 text-primary" />
                   Preview & PDF
                 </Button>
 
@@ -369,19 +369,19 @@ export function QuotationsView({
                     <Button
                       size="sm"
                       onClick={() => handleQuickWhatsApp(q)}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1 text-xs h-8"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1 text-[11px] h-7 px-2"
                     >
-                      <MessageSquare className="size-3.5" />
+                      <MessageSquare className="size-3" />
                       WhatsApp
                     </Button>
                   )}
 
                   <DropdownMenu>
                     <DropdownMenuTrigger
-                      className="inline-flex size-8 items-center justify-center rounded-md hover:bg-muted focus-visible:outline-hidden cursor-pointer"
+                      className="inline-flex size-7 items-center justify-center rounded-md hover:bg-muted focus-visible:outline-hidden cursor-pointer"
                       aria-label="More options"
                     >
-                      <MoreVertical className="size-4 text-muted-foreground" />
+                      <MoreVertical className="size-3.5 text-muted-foreground" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem

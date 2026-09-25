@@ -47,6 +47,7 @@ import {
 } from "../domain/quotation-types";
 import { saveQuotationAction } from "../server/quotation-actions";
 import { VehicleOfferDocument } from "./vehicle-offer-document";
+import { exportElementToPdf } from "@/lib/pdf-export";
 
 type Props = {
   open: boolean;
@@ -182,13 +183,10 @@ export function QuotationModal({
     setMode("PREVIEW");
   }
 
-  // 1. Generate & Download PDF Action
+  // 1. Generate & Download PDF Action (Full A4 coverage on both Mobile & PC)
   async function handleGeneratePdf() {
     setIsGeneratingPdf(true);
     try {
-      const { toJpeg } = await import("html-to-image");
-      const { jsPDF } = await import("jspdf");
-
       const element = document.getElementById("printable-quotation-offer");
       if (!element) {
         throw new Error("Could not find quotation document element");
@@ -196,66 +194,16 @@ export function QuotationModal({
 
       toast.info("Generating professional PDF...");
 
-      // Standard fixed document width (760px) ensures right side is NEVER truncated regardless of screen or modal width
-      const TARGET_WIDTH = 760;
-
-      // Convert HTML element to crisp high-res JPEG with native compression (~200KB vs 7MB raw PNG)
-      const dataUrl = await toJpeg(element, {
-        quality: 0.90,
-        pixelRatio: 2,
-        backgroundColor: "#ffffff",
-        width: TARGET_WIDTH,
-        style: {
-          width: `${TARGET_WIDTH}px`,
-          maxWidth: `${TARGET_WIDTH}px`,
-          minWidth: `${TARGET_WIDTH}px`,
-          margin: "0",
-          boxShadow: "none",
-        },
-      });
-
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-        compress: true,
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfPageHeight = pdf.internal.pageSize.getHeight();
-
-      // Get natural dimensions of generated image
-      const img = new Image();
-      img.src = dataUrl;
-      await new Promise((resolve) => {
-        img.onload = resolve;
-      });
-
-      // Fit neatly within A4 with balanced margins
-      const marginMm = 8;
-      const targetWidth = pdfWidth - marginMm * 2;
-      const maxHeight = pdfPageHeight - marginMm * 2;
-
-      let renderWidth = targetWidth;
-      let renderHeight = (img.height * targetWidth) / img.width;
-
-      // If document is taller than available height, scale proportionally to fit 1 page
-      if (renderHeight > maxHeight) {
-        renderWidth = (renderWidth * maxHeight) / renderHeight;
-        renderHeight = maxHeight;
-      }
-
-      // Center horizontally and vertically on page
-      const xPos = (pdfWidth - renderWidth) / 2;
-      const yPos = Math.max(marginMm, (pdfPageHeight - renderHeight) / 2);
-
-      pdf.addImage(dataUrl, "JPEG", xPos, yPos, renderWidth, renderHeight, undefined, "FAST");
-
       const cleanCustomer = customerName.replace(/[^a-zA-Z0-9]/g, "_") || "Customer";
       const cleanVehicle = vehicleModel.replace(/[^a-zA-Z0-9]/g, "_") || "Vehicle";
       const filename = `Vehicle_Purchase_Offer_${cleanCustomer}_${cleanVehicle}.pdf`;
 
-      pdf.save(filename);
+      await exportElementToPdf(element, {
+        filename,
+        targetWidth: 760,
+        marginMm: 8,
+      });
+
       toast.success(`PDF downloaded: ${filename}`);
     } catch (err) {
       console.error("PDF generation failed:", err);

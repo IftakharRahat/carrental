@@ -15,6 +15,7 @@ import {
   Phone,
   Printer,
   RotateCcw,
+  Share2,
   ShieldCheck,
   User,
 } from "lucide-react";
@@ -35,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatAed } from "@/lib/currency";
+import { exportElementToPdf, shareElementAsPdf } from "@/lib/pdf-export";
 import type { CarDetailsFull } from "../domain/car-details-types";
 import {
   generateReceiptWhatsAppMessage,
@@ -71,6 +73,7 @@ export function PurchaseReceiptDialog({
   // View & Edit mode: "PREVIEW" or "EDIT"
   const [mode, setMode] = useState<"PREVIEW" | "EDIT">("PREVIEW");
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isSharingPdf, setIsSharingPdf] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
   // Editable Form Fields
@@ -193,7 +196,7 @@ export function PurchaseReceiptDialog({
     toast.info("Receipt fields reset to original car record");
   };
 
-  // 1. Download PDF Action
+  // 1. Download PDF Action (Clean desktop A4 render on both Mobile & PC)
   async function handleDownloadPdf() {
     const element = document.getElementById("printable-purchase-receipt");
     if (!element) {
@@ -203,57 +206,45 @@ export function PurchaseReceiptDialog({
 
     setIsGeneratingPdf(true);
     try {
-      const { toJpeg } = await import("html-to-image");
-      const { jsPDF } = await import("jspdf");
-
-      // Fixed 760px width ensures receipt layout is never clipped regardless of screen size
-      const TARGET_WIDTH = 760;
-
-      const imgData = await toJpeg(element, {
-        quality: 0.90,
-        pixelRatio: 2,
-        backgroundColor: "#ffffff",
-        width: TARGET_WIDTH,
-        style: {
-          width: `${TARGET_WIDTH}px`,
-          maxWidth: `${TARGET_WIDTH}px`,
-          minWidth: `${TARGET_WIDTH}px`,
-          margin: "0",
-          boxShadow: "none",
-        },
-      });
-
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-        compress: true,
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 8;
-      const printWidth = pdfWidth - margin * 2;
-
-      const img = new Image();
-      img.src = imgData;
-      await new Promise((resolve) => {
-        img.onload = resolve;
-      });
-
-      const imgHeight = (img.height * printWidth) / img.width;
-      const finalHeight = Math.min(imgHeight, pdfHeight - margin * 2);
-
-      pdf.addImage(imgData, "JPEG", margin, margin, printWidth, finalHeight, undefined, "FAST");
-
       const filename = `Payment_Voucher_${car.carNumber}_${sellerName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
-      pdf.save(filename);
+      await exportElementToPdf(element, {
+        filename,
+        targetWidth: 760,
+        marginMm: 8,
+      });
       toast.success(`PDF downloaded: ${filename}`);
     } catch (err) {
       console.error("PDF generation error:", err);
       toast.error("Could not generate PDF. Please use the Print Receipt button to save as PDF.");
     } finally {
       setIsGeneratingPdf(false);
+    }
+  }
+
+  // 1b. Share PDF via Web Share API (actual PDF file sent to WhatsApp)
+  async function handleSharePdf() {
+    const element = document.getElementById("printable-purchase-receipt");
+    if (!element) {
+      toast.error("Receipt element not found");
+      return;
+    }
+
+    setIsSharingPdf(true);
+    try {
+      const filename = `Payment_Voucher_${car.carNumber}_${sellerName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+      await shareElementAsPdf(element, {
+        filename,
+        targetWidth: 760,
+        marginMm: 8,
+      });
+      toast.success("PDF shared successfully!");
+    } catch (err: unknown) {
+      // User cancelled the share dialog — not an error
+      if (err instanceof Error && err.name === "AbortError") return;
+      console.error("Share PDF error:", err);
+      toast.error("Could not share PDF. Try downloading it instead.");
+    } finally {
+      setIsSharingPdf(false);
     }
   }
 
@@ -843,13 +834,22 @@ export function PurchaseReceiptDialog({
 
                   <Button
                     type="button"
-                    variant="outline"
                     size="sm"
-                    onClick={handleWhatsAppShare}
-                    className="gap-1.5 text-xs text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10"
+                    onClick={handleSharePdf}
+                    disabled={isSharingPdf}
+                    className="gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
                   >
-                    <MessageSquare className="size-3.5 text-emerald-600" />
-                    Share WhatsApp
+                    {isSharingPdf ? (
+                      <>
+                        <Loader2 className="size-3.5 animate-spin" />
+                        Sharing...
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="size-3.5" />
+                        Share PDF
+                      </>
+                    )}
                   </Button>
 
                   <Button
@@ -889,57 +889,57 @@ export function PurchaseReceiptDialog({
               <div className="w-full overflow-x-auto p-1 sm:p-4 rounded-xl flex justify-center bg-slate-100 dark:bg-slate-900/60 border">
                 <div
                   id="printable-purchase-receipt"
-                  className="bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-xl border border-slate-200 p-4 sm:p-6 space-y-5 sm:space-y-6 shadow-xs print:border-none print:p-8 print:text-black font-sans box-border overflow-hidden"
+                  className="bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-xl border border-slate-200 p-6 space-y-6 shadow-xs print:border-none print:p-8 print:text-black font-sans box-border overflow-hidden"
                   style={{ colorScheme: "light" }}
                 >
                 {/* Header */}
-                <div className="flex justify-between items-start border-b pb-4">
+                <div className="flex justify-between items-start border-b border-slate-200 pb-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                      <div className="size-8 rounded-lg bg-emerald-600/10 text-emerald-700 flex items-center justify-center font-bold text-sm">
                         CS
                       </div>
                       <div>
-                        <h2 className="text-lg font-bold tracking-tight leading-tight">
+                        <h2 className="text-lg font-bold tracking-tight leading-tight text-slate-900">
                           {businessName}
                         </h2>
-                        <p className="text-xs text-muted-foreground print:text-gray-600">
+                        <p className="text-xs text-slate-600 print:text-gray-600">
                           {businessAddress} · {businessPhone}
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider print:border print:border-emerald-600">
+                    <div className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 text-xs font-bold uppercase tracking-wider print:border print:border-emerald-600">
                       Payment Voucher
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1 font-mono font-semibold">
+                    <p className="text-xs text-slate-600 mt-1 font-mono font-semibold">
                       REF: {voucherNumber}
                     </p>
-                    <p className="text-xs text-muted-foreground">{formattedDisplayDate}</p>
+                    <p className="text-xs text-slate-600">{formattedDisplayDate}</p>
                   </div>
                 </div>
 
                 {/* Seller / Supplier & Acquisition Summary */}
-                <div className="grid grid-cols-2 gap-4 text-xs bg-muted/30 p-3.5 rounded-lg border">
+                <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-3.5 rounded-lg border border-slate-200">
                   <div>
-                    <span className="font-semibold text-muted-foreground uppercase text-[10px] tracking-wider block mb-1">
+                    <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">
                       Seller (Customer / Supplier):
                     </span>
-                    <p className="font-bold text-sm text-foreground">{sellerName}</p>
+                    <p className="font-bold text-sm text-slate-900">{sellerName}</p>
                     {sellerPhone && (
-                      <p className="text-muted-foreground print:text-gray-700">
+                      <p className="text-slate-600 print:text-gray-700">
                         Phone: {sellerPhone}
                       </p>
                     )}
-                    <p className="text-muted-foreground print:text-gray-700">
+                    <p className="text-slate-600 print:text-gray-700">
                       Emirates ID:{" "}
                       {sellerEmiratesId ? (
-                        <strong className="text-foreground font-mono print:text-black font-semibold">
+                        <strong className="text-slate-900 font-mono print:text-black font-semibold">
                           {sellerEmiratesId}
                         </strong>
                       ) : (
-                        <span className="font-mono text-muted-foreground/60">
+                        <span className="font-mono text-slate-400">
                           ____________________
                         </span>
                       )}
@@ -947,23 +947,23 @@ export function PurchaseReceiptDialog({
                   </div>
 
                   <div className="text-right">
-                    <span className="font-semibold text-muted-foreground uppercase text-[10px] tracking-wider block mb-1">
+                    <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">
                       Acquisition Vehicle:
                     </span>
-                    <p className="font-bold text-sm text-foreground">
+                    <p className="font-bold text-sm text-slate-900">
                       {car.carNumber} · {carBrand} {carModel}
                     </p>
                     {carYear && (
-                      <p className="text-muted-foreground print:text-gray-700">
+                      <p className="text-slate-600 print:text-gray-700">
                         Year: {carYear}
                       </p>
                     )}
                     {vinChassis && (
-                      <p className="text-muted-foreground font-mono text-[11px] print:text-gray-700">
+                      <p className="text-slate-600 font-mono text-[11px] print:text-gray-700">
                         VIN: {vinChassis}
                       </p>
                     )}
-                    <p className="text-muted-foreground print:text-gray-700">
+                    <p className="text-slate-600 print:text-gray-700">
                       Condition: {condition}
                     </p>
                   </div>
@@ -971,36 +971,36 @@ export function PurchaseReceiptDialog({
 
                 {/* Payment Breakdown Table */}
                 <div className="space-y-2">
-                  <div className="rounded-lg border overflow-hidden">
+                  <div className="rounded-lg border border-slate-200 overflow-hidden">
                     <table className="w-full text-xs text-left">
-                      <thead className="bg-muted/60 text-muted-foreground border-b uppercase font-semibold text-[10px]">
+                      <thead className="bg-slate-100 text-slate-600 border-b border-slate-200 uppercase font-semibold text-[10px]">
                         <tr>
                           <th className="py-2.5 px-3">Item Description</th>
                           <th className="py-2.5 px-3">Method</th>
                           <th className="py-2.5 px-3 text-right">Amount (AED)</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y">
+                      <tbody className="divide-y divide-slate-200">
                         <tr>
                           <td className="py-3 px-3">
-                            <p className="font-semibold text-foreground">
+                            <p className="font-semibold text-slate-900">
                               {itemDescription}
                             </p>
                           </td>
-                          <td className="py-3 px-3 capitalize text-muted-foreground">
+                          <td className="py-3 px-3 capitalize text-slate-600">
                             {paymentMethod}
                           </td>
-                          <td className="py-3 px-3 text-right font-bold text-sm text-foreground">
+                          <td className="py-3 px-3 text-right font-bold text-sm text-slate-900">
                             {formatAed(numPriceDisplay)}
                           </td>
                         </tr>
                       </tbody>
-                      <tfoot className="bg-muted/20 border-t font-semibold">
+                      <tfoot className="bg-slate-50 border-t border-slate-200 font-semibold">
                         <tr>
-                          <td colSpan={2} className="py-2.5 px-3 text-right text-xs">
+                          <td colSpan={2} className="py-2.5 px-3 text-right text-xs text-slate-700">
                             Total Paid to Seller:
                           </td>
-                          <td className="py-2.5 px-3 text-right text-base font-bold text-primary print:text-black">
+                          <td className="py-2.5 px-3 text-right text-base font-bold text-emerald-700 print:text-black">
                             {formatAed(numPriceDisplay)}
                           </td>
                         </tr>
@@ -1008,46 +1008,46 @@ export function PurchaseReceiptDialog({
                     </table>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 font-medium pt-1">
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium pt-1">
                     <CheckCircle2 className="size-4" />
                     <span>Full payment disbursed and verified in finance ledger</span>
                   </div>
                 </div>
 
                 {/* Legal / Transfer Acknowledgement */}
-                <div className="border-t pt-3 text-[11px] text-muted-foreground space-y-2.5 print:text-gray-700">
+                <div className="border-t border-slate-200 pt-3 text-[11px] text-slate-600 space-y-2.5 print:text-gray-700">
                   <p className="leading-relaxed">
                     <strong>Acknowledgement:</strong> {acknowledgementClause}
                   </p>
 
-                  <div className="rounded-lg border border-slate-200 bg-muted/40 p-3 text-foreground dark:text-slate-200 print:bg-gray-50 print:border-gray-300 print:text-black">
-                    <p className="font-semibold text-[11px] text-foreground mb-1">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-slate-900 print:bg-gray-50 print:border-gray-300 print:text-black">
+                    <p className="font-semibold text-[11px] text-slate-900 mb-1">
                       The Seller acknowledges and confirms that:
                     </p>
-                    <p className="italic text-[11px] leading-relaxed text-muted-foreground print:text-gray-800">
+                    <p className="italic text-[11px] leading-relaxed text-slate-700 print:text-gray-800">
                       &ldquo;{sellerConfirmationClause}&rdquo;
                     </p>
                   </div>
                 </div>
 
                 {/* Signatures */}
-                <div className="grid grid-cols-2 gap-8 pt-6 border-t text-xs">
+                <div className="grid grid-cols-2 gap-8 pt-6 border-t border-slate-200 text-xs">
                   <div className="space-y-10">
-                    <p className="font-bold text-foreground text-[11px] uppercase tracking-wider">
+                    <p className="font-bold text-slate-900 text-[11px] uppercase tracking-wider">
                       Seller sign:
                     </p>
-                    <div className="border-t border-dashed pt-1.5 text-muted-foreground">
-                      <p className="font-medium text-foreground">{sellerSignerName}</p>
+                    <div className="border-t border-dashed border-slate-300 pt-1.5 text-slate-600">
+                      <p className="font-medium text-slate-900">{sellerSignerName}</p>
                       <p className="text-[10px]">Date: ________________________</p>
                     </div>
                   </div>
 
                   <div className="space-y-10 text-right">
-                    <p className="font-bold text-foreground text-[11px] uppercase tracking-wider">
+                    <p className="font-bold text-slate-900 text-[11px] uppercase tracking-wider">
                       Buyer / Yard Sign:
                     </p>
-                    <div className="border-t border-dashed pt-1.5 text-muted-foreground">
-                      <p className="font-medium text-foreground">{buyerSignerName}</p>
+                    <div className="border-t border-dashed border-slate-300 pt-1.5 text-slate-600">
+                      <p className="font-medium text-slate-900">{buyerSignerName}</p>
                       <p className="text-[10px]">Date: ________________________</p>
                     </div>
                   </div>
@@ -1055,13 +1055,13 @@ export function PurchaseReceiptDialog({
 
                 {/* Footer Closing / Thank You Note */}
                 <div className="border-t border-slate-200 pt-3 text-center space-y-0.5 print:pt-4">
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 print:text-black">
+                  <p className="text-xs font-bold text-slate-800 print:text-black">
                     {thankYouNote?.trim() || `Thank you for doing business with ${businessName || DEFAULT_BUSINESS_NAME}.`}
                   </p>
                   <p className="text-xs font-semibold text-emerald-700 print:text-emerald-800">
                     📞 {businessPhone}
                   </p>
-                  <p className="text-[10px] text-slate-400 print:text-gray-500 pt-0.5">
+                  <p className="text-[10px] text-slate-500 print:text-gray-500 pt-0.5">
                     Generated via Car Scrap Business Management System &bull; Official Payment Voucher
                   </p>
                 </div>
@@ -1093,13 +1093,22 @@ export function PurchaseReceiptDialog({
 
                   <Button
                     type="button"
-                    variant="outline"
                     size="sm"
-                    onClick={handleWhatsAppShare}
-                    className="gap-1.5 text-xs text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10"
+                    onClick={handleSharePdf}
+                    disabled={isSharingPdf}
+                    className="gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
                   >
-                    <MessageSquare className="size-3.5 text-emerald-600" />
-                    Share WhatsApp
+                    {isSharingPdf ? (
+                      <>
+                        <Loader2 className="size-3.5 animate-spin" />
+                        Sharing...
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="size-3.5" />
+                        Share PDF
+                      </>
+                    )}
                   </Button>
 
                   <Button
