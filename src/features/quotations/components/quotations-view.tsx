@@ -18,6 +18,7 @@ import {
   Plus,
   Printer,
   Search,
+  Share2,
   Sparkles,
   Tag,
   Trash2,
@@ -127,6 +128,23 @@ export function QuotationsView({
     const msg = generateQuotationWhatsAppMessage(q);
     const url = generateWhatsAppUrl(q.customerWhatsapp, msg);
     window.open(url, "_blank");
+  }
+
+  function handleNativeShare(q: QuotationData) {
+    const msg = generateQuotationWhatsAppMessage(q);
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      navigator.share({
+        title: `Offer ${q.quotationNumberFormatted} - ${q.vehicleModel}`,
+        text: msg,
+      }).catch((err: unknown) => {
+        if (err instanceof Error && err.name === "AbortError") return;
+        navigator.clipboard.writeText(msg);
+        toast.success("Offer details copied to clipboard!");
+      });
+    } else {
+      navigator.clipboard.writeText(msg);
+      toast.success("Offer details copied to clipboard!");
+    }
   }
 
   const totalOfferedValue = useMemo(
@@ -370,11 +388,23 @@ export function QuotationsView({
                       size="sm"
                       onClick={() => handleQuickWhatsApp(q)}
                       className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1 text-[11px] h-7 px-2"
+                      title="WhatsApp message"
                     >
                       <MessageSquare className="size-3" />
                       WhatsApp
                     </Button>
                   )}
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleNativeShare(q)}
+                    className="gap-1 text-[11px] h-7 px-2"
+                    title="Share offer details"
+                  >
+                    <Share2 className="size-3 text-slate-600" />
+                    Share
+                  </Button>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger
@@ -384,6 +414,13 @@ export function QuotationsView({
                       <MoreVertical className="size-3.5 text-muted-foreground" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleNativeShare(q)}
+                        className="gap-2"
+                      >
+                        <Share2 className="size-4" /> Share Offer Details
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => handleStatusChange(q.id, "ACCEPTED")}
                         className="gap-2 text-emerald-600"

@@ -36,11 +36,12 @@ export async function exportElementToPdf(
   const quality = options.quality ?? 0.95;
 
   // 1. Create an isolated off-screen staging container with fixed desktop width (760px)
+  // Use absolute positioning with top: -99999px so mobile browser viewports (390px) do not constrain it
   const staging = document.createElement("div");
   staging.setAttribute("aria-hidden", "true");
-  staging.style.position = "fixed";
-  staging.style.left = "-10000px";
-  staging.style.top = "0";
+  staging.style.position = "absolute";
+  staging.style.left = "0";
+  staging.style.top = "-99999px";
   staging.style.width = `${targetWidth}px`;
   staging.style.minWidth = `${targetWidth}px`;
   staging.style.maxWidth = `${targetWidth}px`;
@@ -50,6 +51,7 @@ export async function exportElementToPdf(
   staging.style.opacity = "0";
   staging.style.pointerEvents = "none";
   staging.style.overflow = "visible";
+  staging.style.boxSizing = "border-box";
 
   // Force light mode theme tokens so dark mode never bleeds into exported PDF
   staging.style.setProperty("--background", "oklch(0.985 0.008 85)");
@@ -175,9 +177,9 @@ export async function shareElementAsPdf(
   // 1. Create isolated off-screen staging container at desktop width
   const staging = document.createElement("div");
   staging.setAttribute("aria-hidden", "true");
-  staging.style.position = "fixed";
-  staging.style.left = "-10000px";
-  staging.style.top = "0";
+  staging.style.position = "absolute";
+  staging.style.left = "0";
+  staging.style.top = "-99999px";
   staging.style.width = `${targetWidth}px`;
   staging.style.minWidth = `${targetWidth}px`;
   staging.style.maxWidth = `${targetWidth}px`;
@@ -187,6 +189,7 @@ export async function shareElementAsPdf(
   staging.style.opacity = "0";
   staging.style.pointerEvents = "none";
   staging.style.overflow = "visible";
+  staging.style.boxSizing = "border-box";
 
   staging.style.setProperty("--background", "oklch(0.985 0.008 85)");
   staging.style.setProperty("--foreground", "oklch(0.2 0.025 235)");

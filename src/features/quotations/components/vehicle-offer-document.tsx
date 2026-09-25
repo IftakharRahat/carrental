@@ -28,7 +28,7 @@ export const VehicleOfferDocument = React.forwardRef<HTMLDivElement, Props>(
       <div
         ref={ref}
         id="printable-quotation-offer"
-        className={`bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-2xl border border-slate-200 p-6 sm:p-7 shadow-lg print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full print:m-0 font-sans box-border overflow-hidden ${className}`}
+        className={`bg-white text-slate-900 mx-auto w-full max-w-[760px] rounded-2xl border border-slate-200 p-7 shadow-lg print:border-none print:shadow-none print:p-0 print:max-w-none print:w-full print:m-0 font-sans box-border overflow-hidden ${className}`}
         style={{ colorScheme: "light" }}
       >
         {/* Document Header */}
@@ -39,7 +39,7 @@ export const VehicleOfferDocument = React.forwardRef<HTMLDivElement, Props>(
                 <CarFront className="size-5" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-slate-900 leading-tight truncate">
+                <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900 leading-tight truncate">
                   {data.businessName || "USED GARAGE UAE"}
                 </h1>
                 <p className="text-[11px] font-semibold text-emerald-700 tracking-wide uppercase">
@@ -80,7 +80,7 @@ export const VehicleOfferDocument = React.forwardRef<HTMLDivElement, Props>(
 
         {/* Big Document Title Banner */}
         <div className="my-3.5 rounded-xl bg-slate-900 py-2.5 px-4 text-center shadow-xs">
-          <h2 className="text-sm sm:text-base font-black tracking-wider text-white uppercase">
+          <h2 className="text-base font-black tracking-wider text-white uppercase">
             VEHICLE PURCHASE OFFER
           </h2>
         </div>
@@ -182,7 +182,7 @@ export const VehicleOfferDocument = React.forwardRef<HTMLDivElement, Props>(
               <Sparkles className="size-3.5 text-emerald-600" />
               OUR BEST MARKET-BASED OFFER
             </span>
-            <div className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-emerald-700">
+            <div className="mt-1 text-3xl font-black tracking-tight text-emerald-700">
               AED {data.offerPrice.toLocaleString("en-US")}
             </div>
             <p className="mt-0.5 text-[11px] font-medium text-slate-600">

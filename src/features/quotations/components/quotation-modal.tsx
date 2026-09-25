@@ -47,7 +47,7 @@ import {
 } from "../domain/quotation-types";
 import { saveQuotationAction } from "../server/quotation-actions";
 import { VehicleOfferDocument } from "./vehicle-offer-document";
-import { exportElementToPdf } from "@/lib/pdf-export";
+import { exportElementToPdf, shareElementAsPdf } from "@/lib/pdf-export";
 
 type Props = {
   open: boolean;
@@ -65,6 +65,7 @@ export function QuotationModal({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isSharingPdf, setIsSharingPdf] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
   // Tab mode: "FORM" or "PREVIEW"
@@ -210,6 +211,35 @@ export function QuotationModal({
       toast.error("Could not generate PDF. You can also use the Print button to Save as PDF.");
     } finally {
       setIsGeneratingPdf(false);
+    }
+  }
+
+  // 1b. Share PDF directly via WhatsApp / native share
+  async function handleSharePdf() {
+    setIsSharingPdf(true);
+    try {
+      const element = document.getElementById("printable-quotation-offer");
+      if (!element) {
+        throw new Error("Could not find quotation document element");
+      }
+
+      const cleanCustomer = customerName.replace(/[^a-zA-Z0-9]/g, "_") || "Customer";
+      const cleanVehicle = vehicleModel.replace(/[^a-zA-Z0-9]/g, "_") || "Vehicle";
+      const filename = `Vehicle_Purchase_Offer_${cleanCustomer}_${cleanVehicle}.pdf`;
+
+      await shareElementAsPdf(element, {
+        filename,
+        targetWidth: 760,
+        marginMm: 8,
+      });
+
+      toast.success("PDF shared successfully!");
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") return;
+      console.error("PDF share failed:", err);
+      toast.error("Could not share PDF. Please use Generate PDF to download.");
+    } finally {
+      setIsSharingPdf(false);
     }
   }
 
@@ -648,10 +678,11 @@ export function QuotationModal({
                   {/* 2. 📄 Generate PDF Button */}
                   <Button
                     type="button"
+                    variant="outline"
                     size="sm"
                     onClick={handleGeneratePdf}
                     disabled={isGeneratingPdf}
-                    className="gap-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="gap-1.5 text-xs font-semibold"
                   >
                     {isGeneratingPdf ? (
                       <>
@@ -661,7 +692,28 @@ export function QuotationModal({
                     ) : (
                       <>
                         <FileDown className="size-4" />
-                        📄 Generate PDF
+                        Download PDF
+                      </>
+                    )}
+                  </Button>
+
+                  {/* 3. 📤 Share PDF Button (Mobile WhatsApp file share) */}
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleSharePdf}
+                    disabled={isSharingPdf}
+                    className="gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                  >
+                    {isSharingPdf ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        Sharing...
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="size-4" />
+                        Share PDF
                       </>
                     )}
                   </Button>
