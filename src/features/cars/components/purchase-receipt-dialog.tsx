@@ -35,7 +35,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { formatAed, numberToAedWords } from "@/lib/currency";
+import { formatAed } from "@/lib/currency";
 import { exportElementToPdf, shareElementAsPdf } from "@/lib/pdf-export";
 import type { CarDetailsFull } from "../domain/car-details-types";
 import {
@@ -106,7 +106,7 @@ export function PurchaseReceiptDialog({
     car.paymentMethod.replace(/_/g, " "),
   );
   const [itemDescription, setItemDescription] = useState(
-    `Purchase of Vehicle (${car.carNumber}) - Full ownership and title transfer for scrap & recovery`,
+    `Purchase of Vehicle (${car.carNumber})`,
   );
 
   // Legal Clauses & Signatures
@@ -114,7 +114,7 @@ export function PurchaseReceiptDialog({
     `The seller acknowledges receipt of full payment of ${formatAed(car.purchasePrice)} as stated above and hereby surrenders and transfers all vehicle rights, title, and possession to the buyer free from any legal claims or encumbrances.`,
   );
   const [sellerConfirmationClause, setSellerConfirmationClause] = useState(
-    "I confirm that, to the best of my knowledge, there are no outstanding traffic fines, police cases, legal claims, or liabilities arising before the sale date. Any such pre-existing issue discovered later shall be the Seller’s responsibility.",
+    "Seller confirms that, to the best of their knowledge, there are no outstanding traffic fines, police cases, legal claims or liabilities arising before the sale date. Any pre-existing issue discovered later remains the Seller’s responsibility.",
   );
   const [sellerSignerName, setSellerSignerName] = useState(car.seller.name);
   const [buyerSignerName, setBuyerSignerName] = useState(DEFAULT_BUSINESS_NAME);
@@ -141,10 +141,13 @@ export function PurchaseReceiptDialog({
       setPurchasePrice(car.purchasePrice);
       setPaymentMethod(car.paymentMethod.replace(/_/g, " "));
       setItemDescription(
-        `Purchase of Vehicle (${car.carNumber}) - Full ownership and title transfer for scrap & recovery`,
+        `Purchase of Vehicle (${car.carNumber})`,
       );
       setAcknowledgementClause(
         `The seller acknowledges receipt of full payment of ${formatAed(car.purchasePrice)} as stated above and hereby surrenders and transfers all vehicle rights, title, and possession to the buyer free from any legal claims or encumbrances.`,
+      );
+      setSellerConfirmationClause(
+        "Seller confirms that, to the best of their knowledge, there are no outstanding traffic fines, police cases, legal claims or liabilities arising before the sale date. Any pre-existing issue discovered later remains the Seller’s responsibility.",
       );
       setSellerSignerName(car.seller.name);
       setBuyerSignerName(businessName || DEFAULT_BUSINESS_NAME);
@@ -182,13 +185,13 @@ export function PurchaseReceiptDialog({
     setPurchasePrice(car.purchasePrice);
     setPaymentMethod(car.paymentMethod.replace(/_/g, " "));
     setItemDescription(
-      `Purchase of Vehicle (${car.carNumber}) - Full ownership and title transfer for scrap & recovery`,
+      `Purchase of Vehicle (${car.carNumber})`,
     );
     setAcknowledgementClause(
       `The seller acknowledges receipt of full payment of ${formatAed(car.purchasePrice)} as stated above and hereby surrenders and transfers all vehicle rights, title, and possession to the buyer free from any legal claims or encumbrances.`,
     );
     setSellerConfirmationClause(
-      "I confirm that, to the best of my knowledge, there are no outstanding traffic fines, police cases, legal claims, or liabilities arising before the sale date. Any such pre-existing issue discovered later shall be the Seller’s responsibility.",
+      "Seller confirms that, to the best of their knowledge, there are no outstanding traffic fines, police cases, legal claims or liabilities arising before the sale date. Any pre-existing issue discovered later remains the Seller’s responsibility.",
     );
     setSellerSignerName(car.seller.name);
     setBuyerSignerName(DEFAULT_BUSINESS_NAME);
@@ -886,10 +889,10 @@ export function PurchaseReceiptDialog({
               </div>
 
               {/* Printable Receipt Container */}
-              <div className="w-full overflow-x-auto p-1 sm:p-4 rounded-xl flex justify-center bg-slate-100 dark:bg-slate-900/60 border">
+              <div className="w-full overflow-x-auto p-1 sm:p-4 rounded-xl flex justify-center bg-slate-100 dark:bg-slate-900/60">
                 <div
                   id="printable-purchase-receipt"
-                  className="bg-white text-slate-900 mx-auto w-full max-w-[760px] min-h-[1060px] flex flex-col justify-between rounded-xl border border-slate-200 p-7 shadow-xs print:border-none print:p-6 print:text-black font-sans box-border"
+                  className="bg-white text-slate-900 mx-auto w-full max-w-[760px] min-h-[960px] flex flex-col justify-between rounded-xl border border-slate-200 p-7 shadow-xs print:border-none print:p-6 print:text-black font-sans box-border"
                   style={{ colorScheme: "light" }}
                 >
                   {/* Top & Main Body Sections */}
@@ -901,14 +904,9 @@ export function PurchaseReceiptDialog({
                           CS
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
-                            <h2 className="text-xl font-black tracking-tight text-slate-900 uppercase">
-                              {businessName}
-                            </h2>
-                            <span className="rounded bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-1.5 py-0.5 tracking-wider uppercase border border-emerald-300">
-                              Verified Yard
-                            </span>
-                          </div>
+                          <h2 className="text-xl font-black tracking-tight text-slate-900 uppercase">
+                            {businessName}
+                          </h2>
                           <p className="text-xs font-semibold text-emerald-700 tracking-wide uppercase mt-0.5">
                             Automotive Salvage, Scrap & Vehicle Recovery Division
                           </p>
@@ -938,7 +936,7 @@ export function PurchaseReceiptDialog({
                     {/* Document Status Banner */}
                     <div className="rounded-lg bg-slate-100 border border-slate-200 py-1.5 px-3 flex items-center justify-between text-xs">
                       <span className="font-bold uppercase tracking-wider text-slate-700 text-[11px]">
-                        Vehicle Acquisition & Title Transfer Settlement
+                        Vehicle Acquisition
                       </span>
                       <span className="font-mono text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                         Status: Disbursed & Verified
@@ -1004,18 +1002,6 @@ export function PurchaseReceiptDialog({
                               {condition}
                             </span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">VIN / Chassis No:</span>
-                            <span className="font-mono text-[11px] font-semibold text-slate-800 text-right">
-                              {vinChassis || "Logged at yard intake"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Intake Classification:</span>
-                            <span className="font-semibold text-slate-800 text-right">
-                              Parts Salvage & Metal Scrap
-                            </span>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -1026,7 +1012,7 @@ export function PurchaseReceiptDialog({
                         <thead className="bg-slate-100 text-slate-800 border-b border-slate-200 uppercase font-bold text-[10px] tracking-wider">
                           <tr>
                             <th className="py-2 px-3 w-10 text-center">No.</th>
-                            <th className="py-2 px-3">Transaction Item & Description</th>
+                            <th className="py-2 px-3">Transaction Item</th>
                             <th className="py-2 px-3">Category</th>
                             <th className="py-2 px-3">Method</th>
                             <th className="py-2 px-3 text-right">Amount (AED)</th>
@@ -1036,9 +1022,8 @@ export function PurchaseReceiptDialog({
                           <tr>
                             <td className="py-2.5 px-3 text-center font-bold text-slate-400">01</td>
                             <td className="py-2.5 px-3">
-                              <p className="font-bold text-slate-900 text-xs">{itemDescription}</p>
-                              <p className="text-[10px] text-slate-500 mt-0.5">
-                                Full legal and physical possession transfer free of past liabilities
+                              <p className="font-bold text-slate-900 text-xs">
+                                {itemDescription || `Purchase of Vehicle (${car.carNumber})`}
                               </p>
                             </td>
                             <td className="py-2.5 px-3 text-[11px] font-medium text-slate-600">
@@ -1050,15 +1035,6 @@ export function PurchaseReceiptDialog({
                             <td className="py-2.5 px-3 text-right font-black text-sm text-slate-900">
                               {formatAed(numPriceDisplay)}
                             </td>
-                          </tr>
-                          <tr className="bg-slate-50/50 text-[11px] text-slate-500">
-                            <td className="py-2 px-3 text-center">02</td>
-                            <td className="py-2 px-3 font-medium text-slate-600">
-                              Yard intake inspection, handling & scrap de-registration processing
-                            </td>
-                            <td className="py-2 px-3">Yard Operations</td>
-                            <td className="py-2 px-3">Service</td>
-                            <td className="py-2 px-3 text-right font-semibold text-emerald-700">INCLUDED</td>
                           </tr>
                         </tbody>
                         <tfoot className="border-t-2 border-slate-300 bg-slate-50">
@@ -1074,104 +1050,59 @@ export function PurchaseReceiptDialog({
                       </table>
                     </div>
 
-                    {/* Amount in Words Banner */}
-                    <div className="rounded-lg bg-emerald-50/70 border border-emerald-200 p-2.5 flex items-center justify-between text-xs">
-                      <div>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-800 block">
-                          Amount in Words:
-                        </span>
-                        <span className="font-bold text-slate-900 text-xs italic">
-                          {numberToAedWords(numPriceDisplay)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-emerald-800 text-[11px] font-bold shrink-0">
-                        <CheckCircle2 className="size-4 text-emerald-600" />
-                        <span>Disbursed & Ledger Verified</span>
-                      </div>
-                    </div>
-
-                    {/* Legal Transfer Declarations & Warranty Clauses */}
+                    {/* Seller Declaration */}
                     <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-1.5 text-xs">
                       <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1">
                         <ShieldCheck className="size-3.5 text-slate-700" />
                         <h4 className="font-bold uppercase tracking-wider text-[10px] text-slate-800">
-                          Legal Transfer, Encumbrance Warranty & Scrap Declarations
+                          Seller Declaration
                         </h4>
                       </div>
-                      <div className="grid grid-cols-2 gap-3 text-[11px] leading-relaxed text-slate-600">
-                        <div>
-                          <p className="font-semibold text-slate-800 mb-0.5">1. Title Release & Possession:</p>
-                          <p>{acknowledgementClause}</p>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800 mb-0.5">2. Seller Warranty on Fines & Claims:</p>
-                          <p className="italic">&ldquo;{sellerConfirmationClause}&rdquo;</p>
-                        </div>
+                      <p className="text-[11px] leading-relaxed text-slate-700 flex items-start gap-2">
+                        <span className="text-emerald-600 font-bold shrink-0">☑</span>
+                        <span>
+                          {sellerConfirmationClause ||
+                            "Seller confirms that, to the best of their knowledge, there are no outstanding traffic fines, police cases, legal claims or liabilities arising before the sale date. Any pre-existing issue discovered later remains the Seller’s responsibility."}
+                        </span>
+                      </p>
+                    </div>
+
+                    {/* Verification & Acknowledgement */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-1.5 text-xs">
+                      <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1">
+                        <CheckCircle2 className="size-3.5 text-emerald-600" />
+                        <h4 className="font-bold uppercase tracking-wider text-[10px] text-slate-800">
+                          Verification & Acknowledgement
+                        </h4>
                       </div>
-                      <div className="pt-1 border-t border-slate-200/80 flex items-center justify-between text-[10px] text-slate-500">
-                        <span>Vehicle acquired strictly in &ldquo;AS-IS&rdquo; salvage state for metal recovery & dismantling.</span>
-                        <span className="font-semibold text-slate-600">Free of judicial impounds or undisclosed liens.</span>
+                      <div className="space-y-1.5 text-[11px] text-slate-700">
+                        <p className="flex items-start gap-2">
+                          <span className="text-emerald-600 font-bold shrink-0">☑</span>
+                          <span>Seller identity & vehicle ownership verified via original possession certificate.</span>
+                        </p>
+                        <p className="flex items-start gap-2">
+                          <span className="text-emerald-600 font-bold shrink-0">☑</span>
+                          <span>Seller accepts the stated terms & conditions; no physical signature required.</span>
+                        </p>
+                        <p className="flex items-start gap-2">
+                          <span className="text-emerald-600 font-bold shrink-0">☑</span>
+                          <span>Transaction & payment recorded electronically in the system.</span>
+                        </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Bottom: Signatures and Footer Closing (Anchored at page bottom) */}
-                  <div className="space-y-4 pt-4">
-                    {/* Signatures & Official Stamp Seal Block (3 Columns) */}
-                    <div className="grid grid-cols-3 gap-4 pt-3 border-t border-slate-200 text-xs">
-                      {/* Seller Sign */}
-                      <div className="space-y-10">
-                        <p className="font-bold text-slate-900 text-[10px] uppercase tracking-wider">
-                          Seller (Transferor):
-                        </p>
-                        <div className="border-t border-dashed border-slate-400 pt-1.5 text-slate-600">
-                          <p className="font-bold text-slate-900 text-xs">{sellerSignerName}</p>
-                          <p className="text-[10px] mt-0.5 text-slate-500">Signature: ______________________</p>
-                          <p className="text-[10px] text-slate-500">Date: __________________________</p>
-                        </div>
-                      </div>
-
-                      {/* Official Stamp Box */}
-                      <div className="flex flex-col items-center justify-center p-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50/50 text-center min-h-[85px]">
-                        <div className="size-7 rounded-full border border-slate-300 flex items-center justify-center text-slate-400 mb-1">
-                          <ShieldCheck className="size-3.5 text-emerald-600" />
-                        </div>
-                        <p className="text-[9px] font-black uppercase tracking-wider text-slate-600">
-                          OFFICIAL STAMP / SEAL
-                        </p>
-                        <p className="text-[8px] text-slate-400">
-                          Car Scrap Business UAE
-                        </p>
-                        <p className="text-[8px] text-emerald-700 font-bold mt-0.5">
-                          Verified & Ledger Booked
-                        </p>
-                      </div>
-
-                      {/* Yard Evaluator Sign */}
-                      <div className="space-y-10 text-right">
-                        <p className="font-bold text-slate-900 text-[10px] uppercase tracking-wider">
-                          Yard Evaluator / Cashier:
-                        </p>
-                        <div className="border-t border-dashed border-slate-400 pt-1.5 text-slate-600">
-                          <p className="font-bold text-slate-900 text-xs">{buyerSignerName}</p>
-                          <p className="text-[10px] mt-0.5 text-slate-500">Signature: ______________________</p>
-                          <p className="text-[10px] text-slate-500">Date: __________________________</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Footer Closing / Thank You Note */}
-                    <div className="border-t border-slate-200 pt-2 text-center space-y-0.5 print:pt-2">
-                      <p className="text-xs font-bold text-slate-800 print:text-black">
-                        {thankYouNote?.trim() || `Thank you for doing business with ${businessName || DEFAULT_BUSINESS_NAME}.`}
-                      </p>
-                      <p className="text-[11px] font-semibold text-emerald-700 print:text-emerald-800">
-                        Hotline & WhatsApp: {businessPhone}
-                      </p>
-                      <p className="text-[9px] text-slate-400 print:text-gray-500">
-                        Generated via Car Scrap Business Management System &bull; Official Acquisition Voucher &bull; Confidential &bull; Valid Document
-                      </p>
-                    </div>
+                  {/* Footer Closing / Thank You Note */}
+                  <div className="border-t border-slate-200 pt-3 text-center space-y-0.5 print:pt-2">
+                    <p className="text-xs font-bold text-slate-800 print:text-black">
+                      {thankYouNote?.trim() || `Thank you for doing business with ${businessName || DEFAULT_BUSINESS_NAME}.`}
+                    </p>
+                    <p className="text-[11px] font-semibold text-emerald-700 print:text-emerald-800">
+                      Hotline & WhatsApp: {businessPhone}
+                    </p>
+                    <p className="text-[9px] text-slate-400 print:text-gray-500">
+                      Generated via Car Scrap Business Management System &bull; Official Acquisition Voucher &bull; Confidential &bull; Valid Document
+                    </p>
                   </div>
                 </div>
               </div>
