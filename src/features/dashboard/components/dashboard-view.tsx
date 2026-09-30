@@ -282,7 +282,7 @@ export function DashboardView({ data }: DashboardViewProps) {
             title="Total Business Expenses"
             value={formatCurrency(overall.totalBusinessExpenses)}
             detail="General overheads, rent, utilities, tools"
-            href="/expenses"
+            href="/expenses/business"
             icon={Briefcase}
             badge="Overheads"
           />

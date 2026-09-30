@@ -327,7 +327,7 @@ export function QuickExpenseDialog({
               type="button"
               onClick={() => {
                 onOpenChange(false);
-                router.push("/expenses");
+                router.push("/expenses/business");
               }}
               className="text-muted-foreground hover:text-primary text-xs underline cursor-pointer"
             >

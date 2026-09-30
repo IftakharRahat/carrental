@@ -14,7 +14,7 @@ async function main() {
 
   const passwordHash = await bcrypt.hash("admin123", 10);
 
-  // 1. Seed or update primary admin: admin@carscrap.ae
+  // Seed or update primary production admin: admin@carscrap.ae
   const admin = await db.userProfile.upsert({
     where: { email: "admin@carscrap.ae" },
     update: {
@@ -32,25 +32,7 @@ async function main() {
     },
   });
 
-  // 2. Also update local dev admin if present or create it
-  await db.userProfile.upsert({
-    where: { email: "admin@local.car-scrap.test" },
-    update: {
-      passwordHash,
-      role: "ADMIN",
-      isActive: true,
-      name: "Local Administrator",
-    },
-    create: {
-      email: "admin@local.car-scrap.test",
-      name: "Local Administrator",
-      passwordHash,
-      role: "ADMIN",
-      isActive: true,
-    },
-  });
-
-  console.log("✅ Admin seeded successfully:", admin.email, "(Password: admin123)");
+  console.log("✅ Production Admin seeded successfully:", admin.email, "(Password: admin123)");
 }
 
 main().catch((err) => {

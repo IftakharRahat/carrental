@@ -124,28 +124,6 @@ export function QuotationModal({
     onOpenChange(nextOpen);
   };
 
-  // Pre-fill user's exact demo request for quick testing
-  function prefillSampleDemo() {
-    setBusinessName("USED GARAGE UAE");
-    setBusinessPhone("+971 56 270 9960");
-    setBusinessAddress("Sharjah 10 Industrial Area");
-    setQuotationDate(new Date().toISOString().split("T")[0]);
-    setCustomerName("Ahmed Mohammed");
-    setCustomerWhatsapp("+971 50 123 4567");
-    setCustomerLocation("Sharjah, UAE");
-    setVehicleModel("Nissan Patrol");
-    setModelYear(2018);
-    setCondition("Accident / Damaged");
-    setCustomerNotes(
-      "Front-end damaged, engine is running, airbags are deployed, and the vehicle has been standing for approximately 2 months.",
-    );
-    setAskingPrice(18000);
-    setOfferPrice(12500);
-    setTerms(DEFAULT_TERMS);
-    setThankYouNote("Thank you for contacting USED GARAGE UAE.");
-    toast.success("Loaded Ahmed Mohammed's Nissan Patrol sample data");
-  }
-
   // Construct current data payload
   const currentQuotationData: QuotationInput = {
     businessName: businessName.trim() || DEFAULT_BUSINESS_NAME,
@@ -429,25 +407,6 @@ export function QuotationModal({
           {mode === "FORM" ? (
             /* ================= FORM INPUT MODE ================= */
             <form onSubmit={handleGoToPreview} className="space-y-6">
-              {/* Quick Fill Helper */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs">
-                <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
-                  <Sparkles className="size-4 text-emerald-600 shrink-0" />
-                  <span>
-                    Want to test quickly? Load the Ahmed Mohammed (Nissan Patrol) sample offer.
-                  </span>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={prefillSampleDemo}
-                  className="h-8 text-xs font-semibold border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10"
-                >
-                  ⚡ Fill Sample Offer
-                </Button>
-              </div>
-
               {/* Section: Customer Details */}
               <div className="space-y-3">
                 <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
