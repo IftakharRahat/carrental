@@ -1,4 +1,4 @@
-export type StockCarStatus = "IN_STOCK" | "PARTIALLY_RECOVERED" | "COMPLETED";
+export type StockCarStatus = "IN_STOCK" | "PARTIALLY_RECOVERED" | "COMPLETED" | "VOIDED";
 
 export type StockCarCondition =
   "SCRAP" | "ACCIDENT_DAMAGED" | "ENGINE_ISSUE" | "GEARBOX_ISSUE" | "OTHER";

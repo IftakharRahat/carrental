@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { conditionLabels } from "@/features/stock/domain/stock-types";
-import type { CarDetailsFull } from "../domain/car-details-types";
+import type { CarDetailsFull, CarStatus } from "../domain/car-details-types";
 import { updateCarAction } from "../server/update-car-action";
 
 type EditCarDialogProps = {
@@ -41,6 +41,7 @@ export function EditCarDialog({ car, open, onOpenChange }: EditCarDialogProps) {
   const [brand, setBrand] = useState(car.brand);
   const [model, setModel] = useState(car.model);
   const [year, setYear] = useState(car.year?.toString() ?? "");
+  const [status, setStatus] = useState<CarStatus>(car.status);
   const [condition, setCondition] = useState(car.condition);
   const [conditionOther, setConditionOther] = useState(car.conditionOther ?? "");
   const [purchasePrice, setPurchasePrice] = useState(car.purchasePrice.toString());
@@ -53,6 +54,7 @@ export function EditCarDialog({ car, open, onOpenChange }: EditCarDialogProps) {
       setBrand(car.brand);
       setModel(car.model);
       setYear(car.year?.toString() ?? "");
+      setStatus(car.status);
       setCondition(car.condition);
       setConditionOther(car.conditionOther ?? "");
       setPurchasePrice(car.purchasePrice.toString());
@@ -67,6 +69,7 @@ export function EditCarDialog({ car, open, onOpenChange }: EditCarDialogProps) {
     setBrand(car.brand);
     setModel(car.model);
     setYear(car.year?.toString() ?? "");
+    setStatus(car.status);
     setCondition(car.condition);
     setConditionOther(car.conditionOther ?? "");
     setPurchasePrice(car.purchasePrice.toString());
@@ -87,6 +90,7 @@ export function EditCarDialog({ car, open, onOpenChange }: EditCarDialogProps) {
     formData.set("brand", brand);
     formData.set("model", model);
     formData.set("year", year);
+    formData.set("status", status);
     formData.set("condition", condition);
     formData.set("conditionOther", conditionOther);
     formData.set("purchasePrice", purchasePrice);
@@ -117,8 +121,8 @@ export function EditCarDialog({ car, open, onOpenChange }: EditCarDialogProps) {
             Edit Car Details — {car.carNumber}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Update the vehicle information. Changes to purchase price will also
-            update the finance ledger.
+            Update the vehicle information, status, and pricing. Changes to
+            purchase price will automatically update the finance ledger.
           </DialogDescription>
         </DialogHeader>
 
@@ -157,22 +161,40 @@ export function EditCarDialog({ car, open, onOpenChange }: EditCarDialogProps) {
             </div>
           </div>
 
-          {/* Year */}
-          <div className="space-y-1.5">
-            <Label htmlFor="edit-year" className="text-xs font-medium">
-              Year
-            </Label>
-            <Input
-              id="edit-year"
-              type="number"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              placeholder="e.g. 2015"
-              className="text-sm"
-            />
-            {fieldErrors.year && (
-              <p className="text-xs text-destructive">{fieldErrors.year[0]}</p>
-            )}
+          {/* Year & Status */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-year" className="text-xs font-medium">
+                Year
+              </Label>
+              <Input
+                id="edit-year"
+                type="number"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                placeholder="e.g. 2015"
+                className="text-sm"
+              />
+              {fieldErrors.year && (
+                <p className="text-xs text-destructive">{fieldErrors.year[0]}</p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-status" className="text-xs font-medium">
+                Status <span className="text-destructive">*</span>
+              </Label>
+              <select
+                id="edit-status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value as CarStatus)}
+                className="flex h-9 w-full items-center rounded-md border border-input bg-background px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-medium"
+              >
+                <option value="IN_STOCK">In Stock</option>
+                <option value="PARTIALLY_RECOVERED">Partially Recovered</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="VOIDED">Voided</option>
+              </select>
+            </div>
           </div>
 
           {/* Condition */}

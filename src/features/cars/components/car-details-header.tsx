@@ -8,6 +8,7 @@ import {
   Edit,
   FileText,
   Plus,
+  RefreshCw,
   Wrench,
 } from "lucide-react";
 
@@ -22,6 +23,7 @@ import {
 import { conditionLabels } from "@/features/stock/domain/stock-types";
 import type { CarDetailsFull } from "../domain/car-details-types";
 import { AddExpenseDialog } from "./add-expense-dialog";
+import { ChangeStatusDialog } from "./change-status-dialog";
 import { EditCarDialog } from "./edit-car-dialog";
 import { PurchaseReceiptDialog } from "./purchase-receipt-dialog";
 
@@ -41,6 +43,11 @@ const statusVariants: Record<string, { label: string; className: string }> = {
     className:
       "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium",
   },
+  VOIDED: {
+    label: "Voided",
+    className:
+      "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400 font-medium",
+  },
 };
 
 type CarDetailsHeaderProps = {
@@ -51,6 +58,7 @@ type CarDetailsHeaderProps = {
 export function CarDetailsHeader({ car, isViewer = false }: CarDetailsHeaderProps) {
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   const statusConfig = statusVariants[car.status] ?? {
     label: car.status,
@@ -73,9 +81,26 @@ export function CarDetailsHeader({ car, isViewer = false }: CarDetailsHeaderProp
             <span className="text-muted-foreground/50">·</span>
             <span className="text-xs text-muted-foreground">{conditionLabel}</span>
             <span className="text-muted-foreground/50">·</span>
-            <Badge variant="outline" className={`text-xs ${statusConfig.className}`}>
-              Status: {statusConfig.label}
-            </Badge>
+            {!isViewer ? (
+              <button
+                type="button"
+                onClick={() => setStatusDialogOpen(true)}
+                className="group cursor-pointer inline-flex items-center gap-1 transition-transform active:scale-95"
+                title="Click to change status"
+              >
+                <Badge
+                  variant="outline"
+                  className={`text-xs transition-all group-hover:ring-2 group-hover:ring-primary/40 ${statusConfig.className}`}
+                >
+                  Status: {statusConfig.label}
+                  <RefreshCw className="size-2.5 ml-1 opacity-60 group-hover:opacity-100" />
+                </Badge>
+              </button>
+            ) : (
+              <Badge variant="outline" className={`text-xs ${statusConfig.className}`}>
+                Status: {statusConfig.label}
+              </Badge>
+            )}
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
@@ -158,13 +183,22 @@ export function CarDetailsHeader({ car, isViewer = false }: CarDetailsHeaderProp
                 View in Stock
               </DropdownMenuItem>
               {!isViewer && (
-                <DropdownMenuItem
-                  onClick={() => setEditDialogOpen(true)}
-                  className="cursor-pointer"
-                >
-                  <Edit className="size-4 mr-2" />
-                  Edit Car Details (Admin)
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem
+                    onClick={() => setEditDialogOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <Edit className="size-4 mr-2" />
+                    Edit Car Details (Admin)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setStatusDialogOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <RefreshCw className="size-4 mr-2" />
+                    Change Status (Admin)
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -185,6 +219,15 @@ export function CarDetailsHeader({ car, isViewer = false }: CarDetailsHeaderProp
           car={car}
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
+        />
+      )}
+
+      {/* Change Status Dialog */}
+      {!isViewer && (
+        <ChangeStatusDialog
+          car={car}
+          open={statusDialogOpen}
+          onOpenChange={setStatusDialogOpen}
         />
       )}
     </>

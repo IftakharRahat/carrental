@@ -39,6 +39,9 @@ const updateCarInputSchema = z
       .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid AED amount")
       .refine((v) => Number(v) > 0, "Amount must be greater than zero"),
     paymentMethod: z.enum(["CASH", "BANK_TRANSFER", "CHEQUE", "OTHER"]),
+    status: z
+      .enum(["IN_STOCK", "PARTIALLY_RECOVERED", "COMPLETED", "VOIDED"])
+      .optional(),
     vinChassis: z
       .string()
       .trim()
@@ -80,6 +83,7 @@ export async function updateCarAction(
     conditionOther: formData.get("conditionOther") as string,
     purchasePrice: formData.get("purchasePrice") as string,
     paymentMethod: formData.get("paymentMethod") as string,
+    status: formData.get("status") as string,
     vinChassis: formData.get("vinChassis") as string,
     notes: formData.get("notes") as string,
   };
@@ -115,6 +119,8 @@ export async function updateCarAction(
         year: true,
         condition: true,
         conditionOther: true,
+        status: true,
+        completionDate: true,
         purchasePrice: true,
         paymentMethod: true,
         vinChassis: true,
@@ -130,6 +136,15 @@ export async function updateCarAction(
     const priceChanged =
       Number(car.purchasePrice) !== Number(updates.purchasePrice);
 
+    let completionDate = car.completionDate;
+    if (updates.status) {
+      if (updates.status === "COMPLETED" && !completionDate) {
+        completionDate = new Date();
+      } else if (updates.status !== "COMPLETED" && car.status === "COMPLETED") {
+        completionDate = null;
+      }
+    }
+
     await db.$transaction(async (tx) => {
       // Update the car record
       await tx.car.update({
@@ -140,6 +155,8 @@ export async function updateCarAction(
           year: updates.year ?? null,
           condition: updates.condition,
           conditionOther: updates.conditionOther ?? null,
+          status: updates.status ?? car.status,
+          completionDate,
           purchasePrice: updates.purchasePrice,
           paymentMethod: updates.paymentMethod,
           vinChassis: updates.vinChassis ?? null,

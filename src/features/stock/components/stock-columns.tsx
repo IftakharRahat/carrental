@@ -15,6 +15,7 @@ import {
   type StockCarItem,
   type StockCarStatus,
 } from "../domain/stock-types";
+import { ChangeStatusDialog } from "@/features/cars/components/change-status-dialog";
 import { StockRowActions } from "./stock-row-actions";
 
 function CarThumbnail({ src, alt }: { src: string | null; alt: string }) {
@@ -60,7 +61,45 @@ const statusVariants: Record<
     className:
       "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
   },
+  VOIDED: {
+    label: "Voided",
+    className:
+      "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400",
+  },
 };
+
+function StockStatusCell({ car }: { car: StockCarItem }) {
+  const [open, setOpen] = useState(false);
+  const status = car.status;
+  const config = statusVariants[status] ?? {
+    label: status,
+    className: "",
+  };
+
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="group inline-flex items-center gap-1 cursor-pointer transition-transform active:scale-95"
+        title="Click to change status"
+      >
+        <Badge
+          variant="outline"
+          className={`text-xs font-medium cursor-pointer transition-all group-hover:ring-2 group-hover:ring-primary/40 ${config.className}`}
+        >
+          {config.label}
+        </Badge>
+      </button>
+
+      <ChangeStatusDialog
+        car={car}
+        open={open}
+        onOpenChange={setOpen}
+      />
+    </div>
+  );
+}
 
 export const stockColumns: ColumnDef<StockCarItem>[] = [
   {
@@ -208,21 +247,7 @@ export const stockColumns: ColumnDef<StockCarItem>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status;
-      const config = statusVariants[status] ?? {
-        label: status,
-        className: "",
-      };
-      return (
-        <Badge
-          variant="outline"
-          className={`text-xs font-medium ${config.className}`}
-        >
-          {config.label}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => <StockStatusCell car={row.original} />,
   },
   {
     accessorKey: "daysInStock",
