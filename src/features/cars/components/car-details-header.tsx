@@ -128,23 +128,40 @@ export function CarDetailsHeader({ car, isViewer = false }: CarDetailsHeaderProp
             triggerVariant="outline"
           />
 
+          {!isViewer && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditDialogOpen(true)}
+              className="gap-1.5 shadow-xs"
+              data-testid="edit-car-header-btn"
+            >
+              <Edit className="size-4" />
+              Edit Car
+            </Button>
+          )}
+
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="inline-flex items-center justify-center gap-1 h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-medium shadow-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2"
+              className="inline-flex items-center justify-center gap-1 h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-medium shadow-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 cursor-pointer"
               aria-label="More options"
             >
               More
               <ChevronDown className="size-3.5 text-muted-foreground" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuItem
                 render={<Link href={`/stock?search=${car.carNumber}`} />}
+                className="cursor-pointer"
               >
                 <CarFront className="size-4 mr-2" />
                 View in Stock
               </DropdownMenuItem>
               {!isViewer && (
-                <DropdownMenuItem onSelect={() => setEditDialogOpen(true)}>
+                <DropdownMenuItem
+                  onClick={() => setEditDialogOpen(true)}
+                  className="cursor-pointer"
+                >
                   <Edit className="size-4 mr-2" />
                   Edit Car Details (Admin)
                 </DropdownMenuItem>

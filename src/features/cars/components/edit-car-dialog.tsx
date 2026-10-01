@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Edit, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -47,6 +47,21 @@ export function EditCarDialog({ car, open, onOpenChange }: EditCarDialogProps) {
   const [paymentMethod, setPaymentMethod] = useState(car.paymentMethod);
   const [vinChassis, setVinChassis] = useState(car.vinChassis ?? "");
   const [notes, setNotes] = useState(car.notes ?? "");
+
+  useEffect(() => {
+    if (open) {
+      setBrand(car.brand);
+      setModel(car.model);
+      setYear(car.year?.toString() ?? "");
+      setCondition(car.condition);
+      setConditionOther(car.conditionOther ?? "");
+      setPurchasePrice(car.purchasePrice.toString());
+      setPaymentMethod(car.paymentMethod);
+      setVinChassis(car.vinChassis ?? "");
+      setNotes(car.notes ?? "");
+      setFieldErrors({});
+    }
+  }, [open, car]);
 
   function resetForm() {
     setBrand(car.brand);
