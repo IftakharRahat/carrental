@@ -71,6 +71,7 @@ export async function getDashboardData(
         amount: true,
         direction: true,
         category: true,
+        referenceType: true,
         transactionDate: true,
       },
     }),
@@ -121,12 +122,14 @@ export async function getDashboardData(
     saleDate: r.saleDate.toISOString().slice(0, 10),
   }));
 
-  const cashTransactions: RawDashboardCashTx[] = rawCashTransactions.map((tx) => ({
-    amount: Number(tx.amount),
-    direction: tx.direction as "IN" | "OUT",
-    category: tx.category,
-    transactionDate: tx.transactionDate.toISOString().slice(0, 10),
-  }));
+  const cashTransactions: RawDashboardCashTx[] = rawCashTransactions
+    .filter((tx) => tx.referenceType !== "OPENING_BALANCE")
+    .map((tx) => ({
+      amount: Number(tx.amount),
+      direction: tx.direction as "IN" | "OUT",
+      category: tx.category,
+      transactionDate: tx.transactionDate.toISOString().slice(0, 10),
+    }));
 
   // Perform pure calculations
   const overall = calculateOverallKpis({

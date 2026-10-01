@@ -82,12 +82,12 @@ export async function getMonthlyReportData(
         id: true,
         amount: true,
         direction: true,
+        referenceType: true,
         transactionDate: true,
       },
     }),
     db.cashTransaction.findFirst({
       where: {
-        category: "ADJUSTMENT",
         referenceType: "OPENING_BALANCE",
         status: "ACTIVE",
       },
@@ -150,13 +150,15 @@ export async function getMonthlyReportData(
     saleDate: r.saleDate.toISOString().slice(0, 10),
   }));
 
-  // Format cash transactions
-  const cashTransactions: RawCashTxForReport[] = rawCashTransactions.map((tx) => ({
-    id: tx.id,
-    amount: Number(tx.amount),
-    direction: tx.direction,
-    transactionDate: tx.transactionDate.toISOString().slice(0, 10),
-  }));
+  // Format cash transactions (exclude opening balance to avoid double-counting with openingCash)
+  const cashTransactions: RawCashTxForReport[] = rawCashTransactions
+    .filter((tx) => tx.referenceType !== "OPENING_BALANCE")
+    .map((tx) => ({
+      id: tx.id,
+      amount: Number(tx.amount),
+      direction: tx.direction,
+      transactionDate: tx.transactionDate.toISOString().slice(0, 10),
+    }));
 
   // Derive metrics
   const { metrics, completedCars, purchasedCars, expenseBreakdown } =

@@ -22,6 +22,7 @@ import {
 import { conditionLabels } from "@/features/stock/domain/stock-types";
 import type { CarDetailsFull } from "../domain/car-details-types";
 import { AddExpenseDialog } from "./add-expense-dialog";
+import { EditCarDialog } from "./edit-car-dialog";
 import { PurchaseReceiptDialog } from "./purchase-receipt-dialog";
 
 const statusVariants: Record<string, { label: string; className: string }> = {
@@ -49,6 +50,7 @@ type CarDetailsHeaderProps = {
 
 export function CarDetailsHeader({ car, isViewer = false }: CarDetailsHeaderProps) {
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const statusConfig = statusVariants[car.status] ?? {
     label: car.status,
@@ -141,10 +143,12 @@ export function CarDetailsHeader({ car, isViewer = false }: CarDetailsHeaderProp
                 <CarFront className="size-4 mr-2" />
                 View in Stock
               </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                <Edit className="size-4 mr-2" />
-                Edit Car Details (Admin)
-              </DropdownMenuItem>
+              {!isViewer && (
+                <DropdownMenuItem onSelect={() => setEditDialogOpen(true)}>
+                  <Edit className="size-4 mr-2" />
+                  Edit Car Details (Admin)
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -157,6 +161,15 @@ export function CarDetailsHeader({ car, isViewer = false }: CarDetailsHeaderProp
         open={expenseDialogOpen}
         onOpenChange={setExpenseDialogOpen}
       />
+
+      {/* Edit Car Details Dialog */}
+      {!isViewer && (
+        <EditCarDialog
+          car={car}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+        />
+      )}
     </>
   );
 }
