@@ -10,6 +10,7 @@ import {
   requireActor,
 } from "@/lib/auth/actor";
 import { db } from "@/lib/db";
+import { syncCarPurchaseCashTransaction } from "./car-purchase-cash-sync";
 
 const updateCarStatusSchema = z.object({
   carId: z.string().uuid(),
@@ -87,6 +88,15 @@ export async function updateCarStatusAction(input: {
         },
       });
 
+      // Cancelling (voiding) a car refunds its purchase amount to Available Cash;
+      // un-voiding re-applies it.
+      await syncCarPurchaseCashTransaction(tx, {
+        carId,
+        fromStatus: car.status,
+        toStatus: newStatus,
+        reason: notes,
+      });
+
       await tx.auditLog.create({
         data: {
           actorId: actor.profileId,
@@ -112,6 +122,7 @@ export async function updateCarStatusAction(input: {
     revalidatePath(`/cars/${formatCarNumber(car.carNumber)}`);
     revalidatePath("/reports");
     revalidatePath("/analytics");
+    revalidatePath("/finance");
 
     return { ok: true, message: `Status updated to ${newStatus.replace("_", " ")}.` };
   } catch (error) {

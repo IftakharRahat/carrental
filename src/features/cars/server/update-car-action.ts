@@ -10,6 +10,7 @@ import {
   requireActor,
 } from "@/lib/auth/actor";
 import { db } from "@/lib/db";
+import { syncCarPurchaseCashTransaction } from "./car-purchase-cash-sync";
 
 const updateCarInputSchema = z
   .object({
@@ -172,7 +173,6 @@ export async function updateCarAction(
           where: {
             referenceType: "CAR_PURCHASE",
             referenceId: carId,
-            status: "ACTIVE",
           },
         });
 
@@ -186,6 +186,16 @@ export async function updateCarAction(
             },
           });
         }
+      }
+
+      // Cancelling (voiding) a car refunds its purchase amount to Available Cash;
+      // un-voiding re-applies it.
+      if (updates.status) {
+        await syncCarPurchaseCashTransaction(tx, {
+          carId,
+          fromStatus: car.status,
+          toStatus: updates.status,
+        });
       }
 
       // Create audit log entry
@@ -225,6 +235,7 @@ export async function updateCarAction(
     revalidatePath("/stock");
     revalidatePath("/cars");
     revalidatePath(`/cars/${formatCarNumber(car.carNumber)}`);
+    revalidatePath("/finance");
 
     return { ok: true };
   } catch (error) {
