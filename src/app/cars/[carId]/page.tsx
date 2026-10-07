@@ -85,7 +85,11 @@ export default async function CarDetailsPage({
       <CarKpiStrip kpis={car.kpis} />
 
       {/* 7.3 Tabs & Details */}
-      <CarDetailsTabs car={car} isViewer={isViewer} />
+      <CarDetailsTabs
+        car={car}
+        isViewer={isViewer}
+        canVoidSales={actor?.role === "ADMIN"}
+      />
     </div>
   );
 }

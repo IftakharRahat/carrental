@@ -89,6 +89,7 @@ export async function getCarDetails(
     paymentMethod: rec.paymentMethod,
     notes: rec.notes,
     status: rec.status as "ACTIVE" | "VOIDED",
+    voidReason: rec.voidReason,
   }));
 
   const kpis = calculateCarKpis({

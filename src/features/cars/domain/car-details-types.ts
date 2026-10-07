@@ -64,6 +64,7 @@ export type CarRecoveryRecord = {
   paymentMethod: PaymentMethod;
   notes: string | null;
   status: "ACTIVE" | "VOIDED";
+  voidReason?: string | null;
 };
 
 export type CarRecoveryItemProgress = {

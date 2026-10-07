@@ -2,7 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireActor } from "@/lib/auth/actor";
+import { formatCarNumber } from "@/features/cars/domain/car-number";
+import {
+  AuthenticationError,
+  AuthorizationError,
+  requireActor,
+} from "@/lib/auth/actor";
 import { isDatabaseConfigured } from "@/lib/config-state";
 import { db } from "@/lib/db";
 import {
@@ -367,6 +372,198 @@ export async function markCarCompletedAction(
         error instanceof Error
           ? error.message
           : "Failed to mark car as completed.",
+    };
+  }
+}
+
+/**
+ * Cancels (voids) a recorded whole-car or item sale.
+ *
+ * - Marks the RecoveryTransaction as VOIDED (kept for audit, excluded from totals).
+ * - Voids the linked Money In CashTransaction so Available Cash drops back.
+ * - Returns a sold part back to PENDING so it can be sold again.
+ * - Rolls the car status back (COMPLETED/PARTIALLY_RECOVERED -> IN_STOCK etc.)
+ *   when the cancelled sale was what moved it forward.
+ */
+export async function voidRecoveryTransactionAction(input: {
+  recoveryId: string;
+  voidReason: string;
+}): Promise<ActionResult<{ recoveryId: string; carNumber: number }>> {
+  if (!isDatabaseConfigured()) {
+    return { ok: false, message: "Database is not configured." };
+  }
+
+  const recoveryId = String(input.recoveryId ?? "").trim();
+  const voidReason = String(input.voidReason ?? "").trim();
+
+  if (!/^[0-9a-f-]{36}$/i.test(recoveryId)) {
+    return { ok: false, message: "Invalid sale reference." };
+  }
+  if (voidReason.length < 3 || voidReason.length > 500) {
+    return {
+      ok: false,
+      message: "Please enter a reason (3-500 characters).",
+      fieldErrors: { voidReason: ["Please enter a reason (3-500 characters)."] },
+    };
+  }
+
+  try {
+    const actor = await requireActor("finance:void");
+
+    const result = await db.$transaction(async (tx) => {
+      const recovery = await tx.recoveryTransaction.findUnique({
+        where: { id: recoveryId },
+        include: {
+          car: {
+            select: {
+              id: true,
+              carNumber: true,
+              status: true,
+              completionDate: true,
+            },
+          },
+        },
+      });
+
+      if (!recovery) {
+        throw new Error("Sale record not found.");
+      }
+      if (recovery.status === "VOIDED") {
+        throw new Error("This sale is already cancelled.");
+      }
+
+      const now = new Date();
+      const { car } = recovery;
+
+      // 1. Void the recovery / sale record
+      await tx.recoveryTransaction.update({
+        where: { id: recovery.id },
+        data: {
+          status: "VOIDED",
+          voidReason,
+          voidedAt: now,
+          voidedById: actor.profileId,
+        },
+      });
+
+      // 2. Void the matching Money In entry so Available Cash is corrected
+      await tx.cashTransaction.updateMany({
+        where: {
+          referenceType: "RECOVERY_TRANSACTION",
+          referenceId: recovery.id,
+          status: "ACTIVE",
+        },
+        data: {
+          status: "VOIDED",
+          voidReason: `Sale cancelled: ${voidReason}`,
+        },
+      });
+
+      const remainingActive = await tx.recoveryTransaction.findMany({
+        where: { carId: car.id, status: "ACTIVE" },
+        select: { mode: true, itemType: true, itemLabel: true },
+      });
+
+      // 3. Put the sold part back to PENDING (only if no other active sale covers it)
+      if (recovery.mode === "ITEM" && recovery.itemType) {
+        const sameItemStillSold = remainingActive.filter(
+          (r) =>
+            r.mode === "ITEM" &&
+            r.itemType === recovery.itemType &&
+            (r.itemLabel ?? null) === (recovery.itemLabel ?? null),
+        ).length;
+
+        const soldItems = await tx.recoveryItem.findMany({
+          where: {
+            carId: car.id,
+            type: recovery.itemType,
+            label: recovery.itemLabel ?? null,
+            status: "SOLD",
+          },
+          orderBy: { updatedAt: "desc" },
+          select: { id: true },
+        });
+
+        if (soldItems.length > sameItemStillSold) {
+          await tx.recoveryItem.update({
+            where: { id: soldItems[0].id },
+            data: { status: "PENDING" },
+          });
+        }
+      }
+
+      // 4. Roll back car status where the cancelled sale drove it
+      let nextStatus = car.status;
+      if (car.status !== "VOIDED") {
+        if (recovery.mode === "WHOLE_CAR" && car.status === "COMPLETED") {
+          nextStatus = remainingActive.length > 0 ? "PARTIALLY_RECOVERED" : "IN_STOCK";
+        } else if (
+          car.status === "PARTIALLY_RECOVERED" &&
+          remainingActive.length === 0
+        ) {
+          nextStatus = "IN_STOCK";
+        }
+      }
+
+      if (nextStatus !== car.status) {
+        await tx.car.update({
+          where: { id: car.id },
+          data: {
+            status: nextStatus,
+            completionDate: nextStatus === "COMPLETED" ? car.completionDate : null,
+            updatedById: actor.profileId,
+            version: { increment: 1 },
+          },
+        });
+      }
+
+      // 5. Audit log
+      await tx.auditLog.create({
+        data: {
+          actorId: actor.profileId,
+          action: "VOID",
+          entityType: "RECOVERY_TRANSACTION",
+          entityId: recovery.id,
+          before: {
+            status: "ACTIVE",
+            amount: recovery.amount.toString(),
+            mode: recovery.mode,
+            carStatus: car.status,
+          },
+          after: {
+            status: "VOIDED",
+            voidReason,
+            voidedAt: now.toISOString(),
+            carStatus: nextStatus,
+          },
+        },
+      });
+
+      return { recoveryId: recovery.id, carNumber: car.carNumber };
+    });
+
+    revalidatePath(`/cars/${formatCarNumber(result.carNumber)}`);
+    revalidatePath("/sell");
+    revalidatePath("/stock");
+    revalidatePath("/cars");
+    revalidatePath("/finance");
+    revalidatePath("/reports");
+    revalidatePath("/analytics");
+    revalidatePath("/");
+
+    return { ok: true, data: result };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return { ok: false, message: "Only Admin users can cancel a sale." };
+    }
+    if (error instanceof AuthenticationError) {
+      return { ok: false, message: error.message };
+    }
+    console.error("Failed to void recovery transaction", error);
+    return {
+      ok: false,
+      message:
+        error instanceof Error ? error.message : "Failed to cancel the sale.",
     };
   }
 }

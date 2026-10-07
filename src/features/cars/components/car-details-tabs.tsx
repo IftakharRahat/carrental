@@ -13,6 +13,7 @@ import {
   Receipt,
   TrendingUp,
   Wallet,
+  XCircle,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -32,17 +33,23 @@ import {
   expenseCategoryLabels,
   recoveryTypeLabels,
 } from "../domain/car-details-calculations";
-import type { CarDetailsFull } from "../domain/car-details-types";
+import type { CarDetailsFull, CarRecoveryRecord } from "../domain/car-details-types";
 import { AddExpenseDialog } from "./add-expense-dialog";
+import { VoidRecoveryDialog } from "./void-recovery-dialog";
 
 type CarDetailsTabsProps = {
   car: CarDetailsFull;
   isViewer?: boolean;
+  canVoidSales?: boolean;
 };
 
 type TabKey = "overview" | "expenses" | "recovery" | "history" | "documents";
 
-export function CarDetailsTabs({ car, isViewer = false }: CarDetailsTabsProps) {
+export function CarDetailsTabs({
+  car,
+  isViewer = false,
+  canVoidSales = false,
+}: CarDetailsTabsProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
 
@@ -101,7 +108,13 @@ export function CarDetailsTabs({ car, isViewer = false }: CarDetailsTabsProps) {
           />
         )}
 
-        {activeTab === "recovery" && <RecoveryTab car={car} isViewer={isViewer} />}
+        {activeTab === "recovery" && (
+          <RecoveryTab
+            car={car}
+            isViewer={isViewer}
+            canVoidSales={canVoidSales && !isViewer}
+          />
+        )}
 
         {activeTab === "history" && <HistoryTab car={car} isViewer={isViewer} />}
 
@@ -384,10 +397,14 @@ function ExpensesTab({
 function RecoveryTab({
   car,
   isViewer = false,
+  canVoidSales = false,
 }: {
   car: CarDetailsFull;
   isViewer?: boolean;
+  canVoidSales?: boolean;
 }) {
+  const [voidTarget, setVoidTarget] = useState<CarRecoveryRecord | null>(null);
+
   return (
     <div className="space-y-5">
       {/* Recovery Transactions */}
@@ -403,7 +420,7 @@ function RecoveryTab({
         </CardHeader>
         <CardContent>
           {car.recoveries.length > 0 ? (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40">
@@ -413,34 +430,83 @@ function RecoveryTab({
                     <TableHead className="text-xs font-semibold">Buyer</TableHead>
                     <TableHead className="text-xs font-semibold">Payment</TableHead>
                     <TableHead className="text-xs font-semibold text-right">Amount</TableHead>
+                    <TableHead className="text-xs font-semibold text-right">Status</TableHead>
+                    {canVoidSales && (
+                      <TableHead className="text-xs font-semibold text-right">Action</TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {car.recoveries.map((rec) => (
-                    <TableRow key={rec.id}>
-                      <TableCell className="text-xs font-mono text-muted-foreground">
-                        {rec.saleDate}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-[10px]">
-                          {rec.mode.replaceAll("_", " ")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs font-medium">
-                        {rec.itemType ? recoveryTypeLabels[rec.itemType] : "Whole Car"}
-                        {rec.itemLabel ? ` - ${rec.itemLabel}` : ""}
-                      </TableCell>
-                      <TableCell className="text-xs font-medium">
-                        {isViewer ? "[Protected Buyer]" : rec.buyerName}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {rec.paymentMethod.replaceAll("_", " ")}
-                      </TableCell>
-                      <TableCell className="text-xs font-semibold font-mono text-right text-emerald-600 dark:text-emerald-400">
-                        {formatAed(rec.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {car.recoveries.map((rec) => {
+                    const isVoided = rec.status === "VOIDED";
+                    return (
+                      <TableRow key={rec.id} className={isVoided ? "opacity-60" : undefined}>
+                        <TableCell className="text-xs font-mono text-muted-foreground">
+                          {rec.saleDate}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[10px]">
+                            {rec.mode.replaceAll("_", " ")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs font-medium">
+                          <span className={isVoided ? "line-through" : undefined}>
+                            {rec.itemType ? recoveryTypeLabels[rec.itemType] : "Whole Car"}
+                            {rec.itemLabel ? ` - ${rec.itemLabel}` : ""}
+                          </span>
+                          {isVoided && rec.voidReason && (
+                            <p className="text-destructive text-[10px] mt-0.5 max-w-[220px] truncate">
+                              Cancelled: {rec.voidReason}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs font-medium">
+                          {isViewer ? "[Protected Buyer]" : rec.buyerName}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {rec.paymentMethod.replaceAll("_", " ")}
+                        </TableCell>
+                        <TableCell
+                          className={`text-xs font-semibold font-mono text-right ${
+                            isVoided
+                              ? "line-through text-muted-foreground"
+                              : "text-emerald-600 dark:text-emerald-400"
+                          }`}
+                        >
+                          {formatAed(rec.amount)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] ${
+                              isVoided
+                                ? "border-destructive/30 bg-destructive/10 text-destructive"
+                                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                            }`}
+                          >
+                            {isVoided ? "CANCELLED" : "ACTIVE"}
+                          </Badge>
+                        </TableCell>
+                        {canVoidSales && (
+                          <TableCell className="text-right">
+                            {!isVoided && (
+                              <Button
+                                id={`void-recovery-${rec.id}`}
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 gap-1 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => setVoidTarget(rec)}
+                              >
+                                <XCircle className="size-3.5" />
+                                Cancel
+                              </Button>
+                            )}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -455,6 +521,14 @@ function RecoveryTab({
           )}
         </CardContent>
       </Card>
+
+      <VoidRecoveryDialog
+        recovery={voidTarget}
+        open={voidTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setVoidTarget(null);
+        }}
+      />
     </div>
   );
 }
