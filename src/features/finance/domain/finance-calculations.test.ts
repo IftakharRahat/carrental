@@ -207,4 +207,74 @@ describe("finance-calculations", () => {
     // 20000 + 15000 - 10000 = 25000
     expect(summary.availableCash).toBe(25000);
   });
+
+  it("handles voided transactions without mutating running balance or summary totals", () => {
+    const openingCash = 10000;
+    const txs: RawTransactionInput[] = [
+      {
+        id: "tx-1",
+        transactionDate: "2026-03-01",
+        createdAt: "2026-03-01T00:00:00Z",
+        direction: "IN",
+        category: "OTHER_INCOME",
+        referenceType: "MANUAL",
+        referenceId: "man-1",
+        amount: 5000,
+        paymentMethod: "CASH",
+        description: "Scrap sale",
+        status: "ACTIVE",
+      },
+      {
+        id: "tx-voided",
+        transactionDate: "2026-03-02",
+        createdAt: "2026-03-02T00:00:00Z",
+        direction: "OUT",
+        category: "BUSINESS_EXPENSE",
+        referenceType: "EXPENSE",
+        referenceId: "exp-void",
+        amount: 2000,
+        paymentMethod: "CASH",
+        description: "Cancelled office repair",
+        status: "VOIDED",
+        voidReason: "Deal cancelled",
+      },
+      {
+        id: "tx-2",
+        transactionDate: "2026-03-03",
+        createdAt: "2026-03-03T00:00:00Z",
+        direction: "OUT",
+        category: "CAR_EXPENSE",
+        referenceType: "EXPENSE",
+        referenceId: "exp-2",
+        amount: 1000,
+        paymentMethod: "CASH",
+        description: "Towing",
+        status: "ACTIVE",
+      },
+    ];
+
+    const rows = calculateRunningBalances(txs, openingCash);
+
+    expect(rows).toHaveLength(3);
+    // tx-1: 10,000 + 5,000 = 15,000
+    expect(rows[0].id).toBe("tx-1");
+    expect(rows[0].runningBalance).toBe(15000);
+    expect(rows[0].status).toBe("ACTIVE");
+
+    // tx-voided: does not subtract 2,000, runningBalance stays 15,000
+    expect(rows[1].id).toBe("tx-voided");
+    expect(rows[1].runningBalance).toBe(15000);
+    expect(rows[1].status).toBe("VOIDED");
+    expect(rows[1].voidReason).toBe("Deal cancelled");
+
+    // tx-2: 15,000 - 1,000 = 14,000
+    expect(rows[2].id).toBe("tx-2");
+    expect(rows[2].runningBalance).toBe(14000);
+
+    const summary = calculateFinanceSummary(rows, rows, openingCash);
+    expect(summary.moneyIn).toBe(5000);
+    // moneyOut must only be 1000, NOT 3000!
+    expect(summary.moneyOut).toBe(1000);
+    expect(summary.availableCash).toBe(14000);
+  });
 });

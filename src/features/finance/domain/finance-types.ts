@@ -83,6 +83,39 @@ export type ConfigureOpeningCashInput = z.infer<
   typeof configureOpeningCashSchema
 >;
 
+export const updateCashTransactionSchema = z.object({
+  id: z.string().uuid("Invalid transaction ID"),
+  transactionDate: z.string().min(1, "Transaction date is required"),
+  amount: positiveAedAmount,
+  paymentMethod: z.enum(["CASH", "BANK_TRANSFER", "CHEQUE", "OTHER"] as const, {
+    error: "Select a payment method",
+  }),
+  description: z
+    .string()
+    .trim()
+    .min(2, "Description / reason is required (min 2 characters)")
+    .max(500),
+  category: z.string().trim().optional(),
+  carId: z.string().uuid("Invalid car ID").optional().or(z.literal("")),
+});
+
+export type UpdateCashTransactionInput = z.infer<
+  typeof updateCashTransactionSchema
+>;
+
+export const voidCashTransactionSchema = z.object({
+  id: z.string().uuid("Invalid transaction ID"),
+  voidReason: z
+    .string()
+    .trim()
+    .min(3, "Please provide a reason for voiding (min 3 characters)")
+    .max(500),
+});
+
+export type VoidCashTransactionInput = z.infer<
+  typeof voidCashTransactionSchema
+>;
+
 export type LedgerRowItem = {
   id: string;
   transactionDate: string;
@@ -100,6 +133,8 @@ export type LedgerRowItem = {
   moneyOut: number | null;
   runningBalance: number;
   isOpeningBalance: boolean;
+  status: "ACTIVE" | "VOIDED";
+  voidReason?: string | null;
 };
 
 export type FinanceSummaryKpis = {

@@ -71,7 +71,6 @@ export async function getFinanceLedgerData(filters: FinanceFilterParams = {}): P
       getCustomCashCategories(),
       getCarsForFinance(),
       db.cashTransaction.findMany({
-        where: { status: "ACTIVE" },
         include: {
           car: {
             select: {
@@ -116,6 +115,7 @@ export async function getFinanceLedgerData(filters: FinanceFilterParams = {}): P
     carNumber: tx.car?.carNumber,
     carName: tx.car ? `${tx.car.brand} ${tx.car.model}` : null,
     status: tx.status,
+    voidReason: tx.voidReason,
   }));
 
   // Calculate full chronological running balance

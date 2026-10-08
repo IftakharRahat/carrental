@@ -6,10 +6,12 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Download,
+  Edit2,
   Filter,
   Landmark,
   Search,
   Settings,
+  Trash2,
   TrendingDown,
   TrendingUp,
   Wallet,
@@ -34,7 +36,9 @@ import type {
 } from "../domain/finance-types";
 import { AddCategoryDialog } from "./add-category-dialog";
 import { ConfigureOpeningCashDialog } from "./configure-opening-cash-dialog";
+import { EditCashTransactionDialog } from "./edit-cash-transaction-dialog";
 import { ManualTransactionDialog } from "./manual-transaction-dialog";
+import { VoidCashTransactionDialog } from "./void-cash-transaction-dialog";
 
 type FinanceViewProps = {
   initialRows: LedgerRowItem[];
@@ -66,6 +70,9 @@ export function FinanceView({
   const [directionFilter, setDirectionFilter] = useState<"ALL" | "IN" | "OUT">(
     "ALL",
   );
+  const [statusFilter, setStatusFilter] = useState<"ACTIVE" | "VOIDED" | "ALL">(
+    "ACTIVE",
+  );
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("ALL");
   const [carFilter, setCarFilter] = useState<string>("ALL");
@@ -75,6 +82,8 @@ export function FinanceView({
   const [manualTxOpen, setManualTxOpen] = useState(false);
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
   const [openingCashOpen, setOpeningCashOpen] = useState(false);
+  const [editingRow, setEditingRow] = useState<LedgerRowItem | null>(null);
+  const [voidingRow, setVoidingRow] = useState<LedgerRowItem | null>(null);
 
   // Derive unique categories present in ledger or custom lists
   const allUniqueCategories = useMemo(() => {
@@ -134,6 +143,12 @@ export function FinanceView({
         return false;
       }
 
+      // Status
+      if (statusFilter !== "ALL") {
+        const rowStatus = row.status || "ACTIVE";
+        if (rowStatus !== statusFilter) return false;
+      }
+
       // Category
       if (categoryFilter !== "ALL" && row.category !== categoryFilter) {
         return false;
@@ -172,6 +187,7 @@ export function FinanceView({
     effectiveStart,
     effectiveEnd,
     directionFilter,
+    statusFilter,
     categoryFilter,
     paymentMethodFilter,
     carFilter,
@@ -184,6 +200,7 @@ export function FinanceView({
     let filteredOut = 0;
 
     for (const r of filteredRows) {
+      if (r.status === "VOIDED") continue;
       if (r.moneyIn !== null) filteredIn += r.moneyIn;
       if (r.moneyOut !== null) filteredOut += r.moneyOut;
     }
@@ -248,6 +265,7 @@ export function FinanceView({
   const hasActiveFilters =
     datePreset !== "ALL" ||
     directionFilter !== "ALL" ||
+    statusFilter !== "ACTIVE" ||
     categoryFilter !== "ALL" ||
     paymentMethodFilter !== "ALL" ||
     carFilter !== "ALL" ||
@@ -258,6 +276,7 @@ export function FinanceView({
     setCustomStartDate("");
     setCustomEndDate("");
     setDirectionFilter("ALL");
+    setStatusFilter("ACTIVE");
     setCategoryFilter("ALL");
     setPaymentMethodFilter("ALL");
     setCarFilter("ALL");
@@ -480,8 +499,8 @@ export function FinanceView({
             )}
           </div>
 
-          {/* Secondary Filters: Direction, Category, Payment Method, Car, Search */}
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-5">
+          {/* Secondary Filters: Direction, Status, Category, Payment Method, Car, Search */}
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             {/* Search Input */}
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -505,6 +524,21 @@ export function FinanceView({
                 <option value="ALL">All Flows (In & Out)</option>
                 <option value="IN">Money In Only</option>
                 <option value="OUT">Money Out Only</option>
+              </select>
+            </div>
+
+            {/* Status Filter */}
+            <div>
+              <select
+                className="flex h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(e.target.value as "ACTIVE" | "VOIDED" | "ALL")
+                }
+              >
+                <option value="ACTIVE">Active Only</option>
+                <option value="ALL">All Records</option>
+                <option value="VOIDED">Voided Only</option>
               </select>
             </div>
 
@@ -585,13 +619,14 @@ export function FinanceView({
                 <th className="py-3 px-3 text-right">Money In (AED)</th>
                 <th className="py-3 px-3 text-right">Money Out (AED)</th>
                 <th className="py-3 px-4 text-right">Running Balance</th>
+                {!isViewer && <th className="py-3 px-3 text-right">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
               {filteredRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={isViewer ? 9 : 10}
                     className="py-12 text-center text-muted-foreground text-sm"
                   >
                     No financial transactions found matching the selected filters.
@@ -600,6 +635,7 @@ export function FinanceView({
               ) : (
                 filteredRows.map((row) => {
                   const isMoneyIn = row.direction === "IN";
+                  const isVoided = row.status === "VOIDED";
                   const displayMethod =
                     row.paymentMethod === "BANK_TRANSFER"
                       ? "Bank Transfer"
@@ -612,7 +648,9 @@ export function FinanceView({
                   return (
                     <tr
                       key={row.id}
-                      className="hover:bg-muted/30 transition-colors group"
+                      className={`hover:bg-muted/30 transition-colors group ${
+                        isVoided ? "opacity-60 bg-muted/10" : ""
+                      }`}
                       data-testid={`ledger-row-${row.id}`}
                     >
                       {/* Date */}
@@ -644,13 +682,23 @@ export function FinanceView({
                       {/* Category */}
                       <td className="py-3 px-3 whitespace-nowrap font-medium text-xs">
                         <div className="flex items-center gap-1.5">
-                          <span>{row.category}</span>
+                          <span className={isVoided ? "line-through text-muted-foreground" : ""}>
+                            {row.category}
+                          </span>
                           {row.customCategory && (
                             <Badge
                               variant="outline"
                               className="text-[10px] px-1 py-0 h-4 text-muted-foreground font-normal"
                             >
                               Custom
+                            </Badge>
+                          )}
+                          {isVoided && (
+                            <Badge
+                              variant="destructive"
+                              className="text-[10px] px-1 py-0 h-4"
+                            >
+                              Voided
                             </Badge>
                           )}
                         </div>
@@ -676,11 +724,21 @@ export function FinanceView({
 
                       {/* Description */}
                       <td className="py-3 px-3 text-xs max-w-xs truncate text-foreground">
-                        <span title={row.description}>{row.description}</span>
+                        <span
+                          title={row.description}
+                          className={isVoided ? "line-through text-muted-foreground" : ""}
+                        >
+                          {row.description}
+                        </span>
                         {row.carName && (
                           <span className="ml-1 text-[11px] text-muted-foreground">
                             ({row.carName})
                           </span>
+                        )}
+                        {isVoided && row.voidReason && (
+                          <div className="text-[10px] text-destructive italic mt-0.5">
+                            Void Reason: {row.voidReason}
+                          </div>
                         )}
                       </td>
 
@@ -692,7 +750,13 @@ export function FinanceView({
                       {/* Money In */}
                       <td className="py-3 px-3 whitespace-nowrap text-right font-mono text-xs">
                         {row.moneyIn !== null ? (
-                          <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
+                          <span
+                            className={
+                              isVoided
+                                ? "line-through text-muted-foreground opacity-70"
+                                : "text-emerald-700 dark:text-emerald-400 font-semibold"
+                            }
+                          >
                             +{formatAed(row.moneyIn)}
                           </span>
                         ) : (
@@ -703,7 +767,13 @@ export function FinanceView({
                       {/* Money Out */}
                       <td className="py-3 px-3 whitespace-nowrap text-right font-mono text-xs">
                         {row.moneyOut !== null ? (
-                          <span className="text-rose-700 dark:text-rose-400 font-semibold">
+                          <span
+                            className={
+                              isVoided
+                                ? "line-through text-muted-foreground opacity-70"
+                                : "text-rose-700 dark:text-rose-400 font-semibold"
+                            }
+                          >
                             -{formatAed(row.moneyOut)}
                           </span>
                         ) : (
@@ -713,8 +783,54 @@ export function FinanceView({
 
                       {/* Running Balance */}
                       <td className="py-3 px-4 whitespace-nowrap text-right font-mono text-xs font-bold text-foreground">
-                        {formatAed(row.runningBalance)}
+                        {isVoided ? (
+                          <span className="text-muted-foreground text-xs font-normal italic">—</span>
+                        ) : (
+                          formatAed(row.runningBalance)
+                        )}
                       </td>
+
+                      {/* Actions Column */}
+                      {!isViewer && (
+                        <td className="py-3 px-3 whitespace-nowrap text-right">
+                          {isVoided ? (
+                            <span className="text-[11px] text-muted-foreground italic">
+                              Voided
+                            </span>
+                          ) : (
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="xs"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => {
+                                  if (row.isOpeningBalance) {
+                                    setOpeningCashOpen(true);
+                                  } else {
+                                    setEditingRow(row);
+                                  }
+                                }}
+                                title="Edit transaction"
+                              >
+                                <Edit2 className="size-3.5 mr-1" />
+                                Edit
+                              </Button>
+                              {!row.isOpeningBalance && (
+                                <Button
+                                  variant="ghost"
+                                  size="xs"
+                                  className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  onClick={() => setVoidingRow(row)}
+                                  title="Void transaction"
+                                >
+                                  <Trash2 className="size-3.5 mr-1" />
+                                  Void
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })
@@ -730,6 +846,20 @@ export function FinanceView({
         open={openingCashOpen}
         onOpenChange={setOpeningCashOpen}
         triggerButton={false}
+      />
+
+      {/* Edit & Void Modals */}
+      <EditCashTransactionDialog
+        transaction={editingRow}
+        availableCars={availableCars}
+        open={Boolean(editingRow)}
+        onOpenChange={(open) => !open && setEditingRow(null)}
+      />
+
+      <VoidCashTransactionDialog
+        transaction={voidingRow}
+        open={Boolean(voidingRow)}
+        onOpenChange={(open) => !open && setVoidingRow(null)}
       />
     </div>
   );

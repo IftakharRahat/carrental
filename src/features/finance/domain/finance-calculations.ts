@@ -19,6 +19,7 @@ export type RawTransactionInput = {
   carNumber?: number | null;
   carName?: string | null;
   status: string;
+  voidReason?: string | null;
 };
 
 export function resolveLedgerCategory(
@@ -74,55 +75,63 @@ export function calculateRunningBalances(
   openingCash: number,
   itemTypeMap: Map<string, string> = new Map(),
 ): LedgerRowItem[] {
-  // 1. Sort all active transactions strictly chronologically (ascending date)
-  const sorted = [...allTransactions]
-    .filter((tx) => tx.status === "ACTIVE")
-    .sort((a, b) => {
-      const dateA =
-        typeof a.transactionDate === "string"
-          ? a.transactionDate.slice(0, 10)
-          : a.transactionDate.toISOString().slice(0, 10);
-      const dateB =
-        typeof b.transactionDate === "string"
-          ? b.transactionDate.slice(0, 10)
-          : b.transactionDate.toISOString().slice(0, 10);
+  // Sort all transactions strictly chronologically (ascending date)
+  const sorted = [...allTransactions].sort((a, b) => {
+    const dateA =
+      typeof a.transactionDate === "string"
+        ? a.transactionDate.slice(0, 10)
+        : a.transactionDate.toISOString().slice(0, 10);
+    const dateB =
+      typeof b.transactionDate === "string"
+        ? b.transactionDate.slice(0, 10)
+        : b.transactionDate.toISOString().slice(0, 10);
 
-      const dateComp = dateA.localeCompare(dateB);
-      if (dateComp !== 0) return dateComp;
+    const dateComp = dateA.localeCompare(dateB);
+    if (dateComp !== 0) return dateComp;
 
-      // Opening balance always first on same date
-      const isOpeningA = a.referenceType === "OPENING_BALANCE";
-      const isOpeningB = b.referenceType === "OPENING_BALANCE";
-      if (isOpeningA && !isOpeningB) return -1;
-      if (!isOpeningA && isOpeningB) return 1;
+    // Opening balance always first on same date
+    const isOpeningA = a.referenceType === "OPENING_BALANCE";
+    const isOpeningB = b.referenceType === "OPENING_BALANCE";
+    if (isOpeningA && !isOpeningB) return -1;
+    if (!isOpeningA && isOpeningB) return 1;
 
-      // Then secondary sort by createdAt
-      const createdA = new Date(a.createdAt).getTime();
-      const createdB = new Date(b.createdAt).getTime();
-      return createdA - createdB;
-    });
+    // Then secondary sort by createdAt
+    const createdA = new Date(a.createdAt).getTime();
+    const createdB = new Date(b.createdAt).getTime();
+    return createdA - createdB;
+  });
 
   let currentBalance = openingCash;
   const processedRows: LedgerRowItem[] = [];
 
   for (const tx of sorted) {
     const isOpening = tx.referenceType === "OPENING_BALANCE";
+    const isVoided = tx.status === "VOIDED";
     const amountNum = Math.abs(Number(tx.amount.toString()));
     const validAmount = Number.isFinite(amountNum) ? amountNum : 0;
 
     let moneyIn: number | null = null;
     let moneyOut: number | null = null;
 
-    if (isOpening) {
-      // If opening balance transaction exists in ledger, it sets or reflects opening cash
-      moneyIn = validAmount;
-      currentBalance = validAmount;
-    } else if (tx.direction === "IN") {
-      moneyIn = validAmount;
-      currentBalance += validAmount;
+    if (!isVoided) {
+      if (isOpening) {
+        // Opening balance transaction sets/reflects opening cash
+        moneyIn = validAmount;
+        currentBalance = validAmount;
+      } else if (tx.direction === "IN") {
+        moneyIn = validAmount;
+        currentBalance += validAmount;
+      } else {
+        moneyOut = validAmount;
+        currentBalance -= validAmount;
+      }
     } else {
-      moneyOut = validAmount;
-      currentBalance -= validAmount;
+      // Voided transactions retain their amount for strikethrough display
+      if (tx.direction === "IN") {
+        moneyIn = validAmount;
+      } else {
+        moneyOut = validAmount;
+      }
     }
 
     const txDate =
@@ -149,6 +158,8 @@ export function calculateRunningBalances(
       moneyOut,
       runningBalance: Math.round(currentBalance * 100) / 100,
       isOpeningBalance: isOpening,
+      status: isVoided ? "VOIDED" : "ACTIVE",
+      voidReason: tx.voidReason || null,
     });
   }
 
@@ -160,12 +171,12 @@ export function calculateFinanceSummary(
   filteredRows: LedgerRowItem[],
   openingCash: number,
 ): FinanceSummaryKpis {
-  // Sum Money In and Money Out within current filtered view (excluding synthetic opening row if present)
+  // Sum Money In and Money Out within current filtered view (excluding synthetic opening row and voided rows)
   let filteredMoneyIn = 0;
   let filteredMoneyOut = 0;
 
   for (const row of filteredRows) {
-    if (row.isOpeningBalance) continue;
+    if (row.isOpeningBalance || row.status === "VOIDED") continue;
     if (row.moneyIn !== null) {
       filteredMoneyIn += row.moneyIn;
     }
@@ -175,12 +186,12 @@ export function calculateFinanceSummary(
   }
 
   // Core formula: Available Cash = actual Cash/Bank balance = Opening Cash + Money In - Money Out
-  // Calculated across all lifetime transactions up to the latest point
+  // Calculated across all lifetime transactions up to the latest point (excluding voided)
   let lifetimeMoneyIn = 0;
   let lifetimeMoneyOut = 0;
 
   for (const row of allProcessedRows) {
-    if (row.isOpeningBalance) continue;
+    if (row.isOpeningBalance || row.status === "VOIDED") continue;
     if (row.moneyIn !== null) {
       lifetimeMoneyIn += row.moneyIn;
     }
