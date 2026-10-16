@@ -11,15 +11,14 @@ import {
   LogIn,
   Mail,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 
 export function LoginView() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams?.get("from") || "/";
 
-  const [email, setEmail] = useState("admin@carscrap.ae");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -55,11 +54,7 @@ export function LoginView() {
     }
   };
 
-  const handleQuickFill = (roleEmail: string) => {
-    setEmail(roleEmail);
-    setPassword("admin123");
-    setErrorMessage(null);
-  };
+
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[oklch(0.225_0.035_235)] via-[oklch(0.18_0.04_210)] to-[oklch(0.15_0.03_190)] px-4 py-12">
@@ -185,38 +180,7 @@ export function LoginView() {
             </button>
           </form>
 
-          {/* Quick preset credentials helper */}
-          <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-white/10" />
-            <span className="text-[10px] uppercase tracking-widest text-white/30">
-              Quick Sign In Preset
-            </span>
-            <div className="h-px flex-1 bg-white/10" />
-          </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickFill("admin@carscrap.ae")}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-white/70 transition-colors hover:bg-white/[0.09] hover:text-white cursor-pointer"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-[oklch(0.54_0.12_166)]" />
-              <span>Admin</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickFill("admin@local.car-scrap.test")}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-white/70 transition-colors hover:bg-white/[0.09] hover:text-white cursor-pointer"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-[oklch(0.54_0.12_166)]" />
-              <span>Local Admin</span>
-            </button>
-          </div>
-
-          <p className="mt-3 text-center text-[11px] text-white/40">
-            Default credentials: <code className="text-white/70">admin@carscrap.ae</code> / <code className="text-white/70">admin123</code>
-          </p>
         </div>
 
         {/* Footer info */}

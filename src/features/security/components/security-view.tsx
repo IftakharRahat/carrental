@@ -6,7 +6,10 @@ import {
   CheckCircle2,
   Database,
   Download,
+  Eye,
+  EyeOff,
   FileSpreadsheet,
+  KeyRound,
   Lock,
   RefreshCw,
   ShieldCheck,
@@ -36,6 +39,7 @@ import type {
   UserRole,
 } from "../domain/security-types";
 import {
+  changePasswordAction,
   createUserAction,
   generateFullDatabaseBackupAction,
   updateUserRoleAction,
@@ -54,6 +58,14 @@ export function SecurityView({ data }: SecurityViewProps) {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState<UserRole>("STAFF");
+
+  // Change password state
+  const [currentPwd, setCurrentPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [showCurrentPwd, setShowCurrentPwd] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [pwdError, setPwdError] = useState<string | null>(null);
 
   // Edit user role modal state
   const [editingUser, setEditingUser] = useState<UserProfileItem | null>(null);
@@ -82,6 +94,36 @@ export function SecurityView({ data }: SecurityViewProps) {
         toast.success(`Full database backup generated (${filename}).`);
       } else {
         toast.error(res.message);
+      }
+    });
+  };
+
+  // Change password handler
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwdError(null);
+
+    if (newPwd.length < 8) {
+      setPwdError("New password must be at least 8 characters.");
+      return;
+    }
+
+    if (newPwd !== confirmPwd) {
+      setPwdError("New password and confirmation do not match.");
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await changePasswordAction(currentPwd, newPwd);
+      if (res.ok) {
+        toast.success("Password changed successfully.");
+        setCurrentPwd("");
+        setNewPwd("");
+        setConfirmPwd("");
+        setShowCurrentPwd(false);
+        setShowNewPwd(false);
+      } else {
+        setPwdError(res.message);
       }
     });
   };
@@ -250,6 +292,112 @@ export function SecurityView({ data }: SecurityViewProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Change Password Card */}
+      <Card className="border-border/80 shadow-xs" data-testid="change-password-card">
+        <CardHeader className="border-b bg-muted/20 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <KeyRound className="size-4 text-primary" />
+            <CardTitle className="text-sm font-semibold">
+              Change Your Password
+            </CardTitle>
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Update your login password. You will need to sign in again with the new password.
+          </p>
+        </CardHeader>
+        <CardContent className="p-4">
+          <form onSubmit={handleChangePassword} className="max-w-sm space-y-3">
+            {pwdError && (
+              <div className="flex items-start gap-2 rounded-md border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 px-3 py-2 text-xs text-red-700 dark:text-red-300">
+                <XCircle className="size-3.5 shrink-0 mt-0.5" />
+                <span>{pwdError}</span>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label htmlFor="current-password" className="text-xs">Current Password *</Label>
+              <div className="relative">
+                <Input
+                  id="current-password"
+                  type={showCurrentPwd ? "text" : "password"}
+                  value={currentPwd}
+                  onChange={(e) => setCurrentPwd(e.target.value)}
+                  placeholder="Enter current password"
+                  className="h-8 text-xs pr-9"
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPwd(!showCurrentPwd)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showCurrentPwd ? "Hide password" : "Show password"}
+                >
+                  {showCurrentPwd ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="new-password" className="text-xs">New Password * <span className="text-muted-foreground font-normal">(min 8 characters)</span></Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showNewPwd ? "text" : "password"}
+                  value={newPwd}
+                  onChange={(e) => setNewPwd(e.target.value)}
+                  placeholder="Enter new password"
+                  className="h-8 text-xs pr-9"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPwd(!showNewPwd)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showNewPwd ? "Hide password" : "Show password"}
+                >
+                  {showNewPwd ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm-password" className="text-xs">Confirm New Password *</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                placeholder="Re-enter new password"
+                className="h-8 text-xs"
+                required
+                minLength={8}
+                autoComplete="new-password"
+              />
+            </div>
+
+            <div className="pt-1">
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isPending || !currentPwd || !newPwd || !confirmPwd}
+                className="gap-1.5 text-xs"
+                data-testid="change-password-btn"
+              >
+                {isPending ? (
+                  <RefreshCw className="size-3.5 animate-spin" />
+                ) : (
+                  <KeyRound className="size-3.5" />
+                )}
+                Update Password
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Section 17.2 Users Management Table */}
       <Card className="border-border/80 shadow-xs">

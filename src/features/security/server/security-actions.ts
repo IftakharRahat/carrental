@@ -267,3 +267,67 @@ export async function generateFullDatabaseBackupAction(): Promise<
     },
   };
 }
+
+/**
+ * Allows any authenticated user to change their own password.
+ */
+export async function changePasswordAction(
+  currentPassword: string,
+  newPassword: string,
+): Promise<ActionResult<{ id: string }>> {
+  if (!isDatabaseConfigured()) {
+    return { ok: false, message: "Database is not configured." };
+  }
+
+  const actor = await requireActor();
+
+  if (!newPassword || newPassword.length < 8) {
+    return {
+      ok: false,
+      message: "New password must be at least 8 characters long.",
+    };
+  }
+
+  if (currentPassword === newPassword) {
+    return {
+      ok: false,
+      message: "New password must be different from the current password.",
+    };
+  }
+
+  // Fetch user to verify current password
+  const user = await db.userProfile.findUnique({
+    where: { id: actor.profileId },
+  });
+
+  if (!user) {
+    return { ok: false, message: "User account not found." };
+  }
+
+  const { verifyPassword } = await import("@/lib/auth/password");
+
+  const isCurrentValid = await verifyPassword(currentPassword, user.passwordHash);
+  if (!isCurrentValid) {
+    return { ok: false, message: "Current password is incorrect." };
+  }
+
+  const newHash = await hashPassword(newPassword);
+
+  await db.userProfile.update({
+    where: { id: actor.profileId },
+    data: { passwordHash: newHash },
+  });
+
+  // Write audit log
+  await db.auditLog.create({
+    data: {
+      actorId: actor.profileId,
+      action: "UPDATE",
+      entityType: "UserProfile",
+      entityId: actor.profileId,
+      reason: "Password changed by user",
+    },
+  });
+
+  return { ok: true, data: { id: actor.profileId } };
+}
