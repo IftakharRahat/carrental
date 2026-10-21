@@ -91,6 +91,7 @@ export async function createUserAction(
   email: string,
   name: string,
   role: UserRole,
+  password: string,
 ): Promise<ActionResult<{ id: string }>> {
   if (!isDatabaseConfigured()) {
     return { ok: false, message: "Database is not configured." };
@@ -104,7 +105,7 @@ export async function createUserAction(
     };
   }
 
-  const parsed = createUserSchema.safeParse({ email, name, role });
+  const parsed = createUserSchema.safeParse({ email, name, role, password });
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message || "Invalid input." };
   }
@@ -120,8 +121,7 @@ export async function createUserAction(
     };
   }
 
-  const defaultPassword = "password123";
-  const passwordHash = await hashPassword(defaultPassword);
+  const passwordHash = await hashPassword(parsed.data.password);
 
   const created = await db.userProfile.create({
     data: {

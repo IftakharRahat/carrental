@@ -58,6 +58,10 @@ export function SecurityView({ data }: SecurityViewProps) {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState<UserRole>("STAFF");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserConfirmPassword, setNewUserConfirmPassword] = useState("");
+  const [showNewUserPassword, setShowNewUserPassword] = useState(false);
+  const [newUserError, setNewUserError] = useState<string | null>(null);
 
   // Change password state
   const [currentPwd, setCurrentPwd] = useState("");
@@ -131,17 +135,33 @@ export function SecurityView({ data }: SecurityViewProps) {
   // Add user handler
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
+    setNewUserError(null);
+
+    if (newUserPassword.length < 8) {
+      setNewUserError("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (newUserPassword !== newUserConfirmPassword) {
+      setNewUserError("Password and confirmation do not match.");
+      return;
+    }
+
     startTransition(async () => {
-      const res = await createUserAction(newEmail, newName, newRole);
+      const res = await createUserAction(newEmail, newName, newRole, newUserPassword);
       if (res.ok) {
-        toast.success(`User "${newName}" invited successfully.`);
+        toast.success(`User "${newName}" created successfully.`);
         setAddUserOpen(false);
         setNewName("");
         setNewEmail("");
         setNewRole("STAFF");
+        setNewUserPassword("");
+        setNewUserConfirmPassword("");
+        setShowNewUserPassword(false);
+        setNewUserError(null);
         window.location.reload();
       } else {
-        toast.error(res.message);
+        setNewUserError(res.message);
       }
     });
   };
@@ -754,6 +774,13 @@ export function SecurityView({ data }: SecurityViewProps) {
               <CardTitle className="text-base font-bold">Invite New User</CardTitle>
             </CardHeader>
             <form onSubmit={handleCreateUser} className="space-y-4 p-4">
+              {newUserError && (
+                <div className="flex items-start gap-2 rounded-md border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 px-3 py-2 text-xs text-red-700 dark:text-red-300">
+                  <XCircle className="size-3.5 shrink-0 mt-0.5" />
+                  <span>{newUserError}</span>
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <Label htmlFor="new-user-name" className="text-xs">Full Name *</Label>
                 <Input
@@ -793,17 +820,60 @@ export function SecurityView({ data }: SecurityViewProps) {
                 </select>
               </div>
 
+              <div className="space-y-1.5">
+                <Label htmlFor="new-user-password" className="text-xs">Password * <span className="text-muted-foreground font-normal">(min 8 characters)</span></Label>
+                <div className="relative">
+                  <Input
+                    id="new-user-password"
+                    type={showNewUserPassword ? "text" : "password"}
+                    value={newUserPassword}
+                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    placeholder="Enter password"
+                    className="h-8 text-xs pr-9"
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewUserPassword(!showNewUserPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showNewUserPassword ? "Hide password" : "Show password"}
+                  >
+                    {showNewUserPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="new-user-confirm-password" className="text-xs">Confirm Password *</Label>
+                <Input
+                  id="new-user-confirm-password"
+                  type="password"
+                  value={newUserConfirmPassword}
+                  onChange={(e) => setNewUserConfirmPassword(e.target.value)}
+                  placeholder="Re-enter password"
+                  className="h-8 text-xs"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                />
+              </div>
+
               <div className="flex items-center justify-end gap-2 pt-2 border-t">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setAddUserOpen(false)}
+                  onClick={() => {
+                    setAddUserOpen(false);
+                    setNewUserError(null);
+                  }}
                 >
                   Cancel
                 </Button>
                 <Button type="submit" size="sm" disabled={isPending}>
-                  {isPending ? "Inviting..." : "Create Account"}
+                  {isPending ? "Creating..." : "Create Account"}
                 </Button>
               </div>
             </form>

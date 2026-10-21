@@ -70,4 +70,5 @@ export const createUserSchema = z.object({
   email: z.string().email("Please provide a valid email address"),
   name: z.string().min(2, "Name must be at least 2 characters"),
   role: z.enum(["ADMIN", "STAFF", "VIEWER"]),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
